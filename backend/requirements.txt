@@ -1,0 +1,12 @@
+﻿Django>=5.2,<5.3
+djangorestframework>=3.15,<3.16
+django-cors-headers>=4.4,<5
+python-dotenv>=1.0
+psycopg[binary]>=3.2        # 别再用 psycopg2-binary
+redis>=5.0
+Pillow>=10.2
+djangorestframework-simplejwt>=5.3
+django-filter>=24.3,<25
+channels>=4.1,<5
+channels-redis>=4.1,<5
+daphne>=4.1,<5
