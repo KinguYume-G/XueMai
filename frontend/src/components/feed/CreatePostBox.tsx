@@ -63,7 +63,7 @@ const CreatePostBox: React.FC<CreatePostBoxProps> = ({
                     setIsFocused(false);
                   }
                 }}
-                placeholder="分享你的想法...（实时/经验/招聘/作品）"
+                placeholder="分享你的想法...(求助/经验/招募/作品)"
                 className="w-full resize-none border-0 focus:outline-none focus:ring-0 text-base placeholder-gray-500 min-h-[60px] max-h-[200px]"
                 rows={isFocused ? 3 : 1}
               />

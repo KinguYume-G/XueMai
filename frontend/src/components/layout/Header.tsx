@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Bell, MessageCircle, Plus } from 'lucide-react';
+import { Search, Bell, MessageCircle, ChevronDown } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import SearchBar from '../common/SearchBar';
@@ -8,13 +8,14 @@ import UserDropdown from '../profile/UserDropdown';
 const Header: React.FC = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b">
-      <div className="h-16 flex items-center justify-between px-6">
+      <div className="h-16 flex items-center justify-between px-4 sm:px-6">
         {/* Logo */}
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">学</span>
           </div>
-          <span className="text-xl font-bold text-gray-900">学脉 | UniPulse Asia</span>
+          <span className="text-lg sm:text-xl font-bold text-gray-900 hidden sm:block">学脉 | UniPulse Asia</span>
+          <span className="text-lg font-bold text-gray-900 sm:hidden">学脉</span>
         </div>
 
         {/* Search Bar - Hidden on mobile */}
@@ -54,10 +55,10 @@ const Header: React.FC = () => {
             </Badge>
           </Button>
 
-          {/* Create Button */}
+          {/* Create Button with Dropdown */}
           <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-            <Plus className="h-4 w-4 mr-2" />
             创建
+            <ChevronDown className="h-4 w-4 ml-1" />
           </Button>
 
           {/* User Dropdown */}

@@ -5,27 +5,27 @@ import { Button } from '../ui/button';
 
 const RightPanel: React.FC = () => {
   const schoolZones = [
-    { name: 'APU专区', locked: false },
+    { name: 'APU 专区', locked: false },
     { name: '清华大学专区', locked: true },
     { name: '北京大学专区', locked: true },
   ];
 
   const hotTopics = [
     '#AI论文写作技巧',
-    '#马来西亚实习找工作指南',
+    '#马来西亚实习避坑指南',
     '#跨文化交流经验',
     '#2024秋季交换项目',
   ];
 
   const exchangeReminders = [
     {
-      project: '早稻田大学交换项目',
-      deadline: '2024-03-15',
+      project: '新加坡国立大学交换',
+      deadline: '2024-10-15',
       urgent: true,
     },
     {
-      project: '清华大学暑期项目',
-      deadline: '2024-04-20',
+      project: '香港大学暑期项目',
+      deadline: '2024-11-01',
       urgent: false,
     },
   ];

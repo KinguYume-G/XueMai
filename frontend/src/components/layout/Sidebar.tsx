@@ -1,16 +1,18 @@
 import React from 'react';
 import { 
   Home, 
-  MessageSquare, 
+  FileText, 
   Users, 
-  Repeat, 
   Briefcase, 
-  DollarSign, 
-  Bot, 
-  Info,
+  Briefcase as JobIcon, 
+  Lightbulb, 
+  Wrench, 
+  Building,
   Clock,
-  Archive,
-  Bookmark
+  FileText as SubscribedIcon,
+  Bookmark,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useState } from 'react';
@@ -22,29 +24,30 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const mainMenuItems = [
     { icon: Home, label: '主页', href: '/', active: true },
-    { icon: MessageSquare, label: '专业论坛', href: '/forums' },
+    { icon: FileText, label: '专业论坛', href: '/forums' },
     { icon: Users, label: '社区', href: '/community' },
-    { icon: Repeat, label: '交换项目', href: '/exchange' },
-    { icon: Briefcase, label: '实习&职位', href: '/jobs' },
-    { icon: DollarSign, label: '创业/赚钱', href: '/startup' },
-    { icon: Bot, label: 'AI工具箱', href: '/ai' },
-    { icon: Info, label: '关于APU', href: '/about' },
+    { icon: Briefcase, label: '交换项目', href: '/exchange' },
+    { icon: JobIcon, label: '实习 & 职位', href: '/jobs' },
+    { icon: Lightbulb, label: '创业/悬赏', href: '/startup' },
+    { icon: Wrench, label: 'AI 工具箱', href: '/ai' },
+    { icon: Building, label: '关于 APU/高校', href: '/about' },
   ];
 
   const secondaryItems = [
     { icon: Clock, label: '最近访问', href: '/recent' },
-    { icon: Archive, label: '已归档', href: '/archived' },
+    { icon: SubscribedIcon, label: '已订阅', href: '/subscribed' },
     { icon: Bookmark, label: '收藏', href: '/bookmarks' },
   ];
 
   return (
-    <div className={`bg-white h-full border-r ${className}`}>
+    <div className={`bg-white h-full ${className}`}>
       <div className="p-4 space-y-6">
         {/* Main Menu */}
-        <nav className="space-y-2">
+        <nav className="space-y-1">
           {mainMenuItems.map((item, index) => (
             <Button
               key={index}
@@ -69,7 +72,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
             次级
           </h3>
-          <nav className="space-y-2">
+          <nav className="space-y-1">
             {secondaryItems.map((item, index) => (
               <Button
                 key={index}
@@ -87,12 +90,22 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         </div>
 
         {/* Bottom Controls */}
-        <div className="pt-4 border-t space-y-2">
+        <div className="pt-4 border-t space-y-3">
           {/* Theme Toggle */}
-          <ThemeToggle showLabel={true} size="md" />
+          <div className="flex items-center justify-between px-3">
+            <div className="flex items-center space-x-2">
+              <Sun className="h-4 w-4 text-gray-500" />
+              <Moon className="h-4 w-4 text-gray-500" />
+              <span className="text-sm text-gray-600">主题</span>
+            </div>
+            <ThemeToggle showLabel={false} size="sm" />
+          </div>
 
           {/* Language Switch */}
-          <LanguageSwitch showLabel={true} size="md" />
+          <div className="flex items-center justify-between px-3">
+            <span className="text-sm text-gray-600">语言</span>
+            <LanguageSwitch showLabel={false} size="sm" />
+          </div>
         </div>
       </div>
     </div>

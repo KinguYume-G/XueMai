@@ -1,67 +1,45 @@
 import React from 'react';
-import CreatePostBox from './CreatePostBox';
 import PostCard from './PostCard';
-import FeedTabs from './FeedTabs';
 
 interface FeedContainerProps {
   className?: string;
 }
 
 const FeedContainer: React.FC<FeedContainerProps> = ({ className }) => {
-  // 模拟数据
+  // 模拟数据 - 根据图片中的内容
   const samplePosts = [
     {
       id: '1',
       author: {
-        name: '张小明',
+        name: 'Jane Doe APU',
         avatar: '/placeholder-avatar.jpg',
-        badge: '关注生活'
+        badge: 'APU'
       },
-      content: '今天在APU的图书馆学习了一整天，环境真的很棒！推荐给所有需要安静学习环境的同学。\n\n#APU学习 #图书馆',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=400&fit=crop',
+      content: '成为下一个大型科技创新者\n\n在亚太科技大学(APU),我们不仅仅是教育学生,我们还在培养能够塑造未来数字格局的创新者、领导者和思想家。加入我们,踏上一段激动人心的旅程,释放您的潜力,成为一名科技大师。',
+      image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&h=400&fit=crop',
       likes: 122,
       comments: 15,
       timestamp: '2小时前',
       isLiked: false,
       isBookmarked: false,
-      tags: ['APU学习', '图书馆']
+      tags: ['#校园生活']
     },
     {
       id: '2',
       author: {
-        name: '李华',
+        name: 'John Smith SJTU',
         avatar: '/placeholder-avatar.jpg',
-        badge: '实习经验'
+        badge: 'SJTU'
       },
-      content: '分享一些在马来西亚找实习的经验：\n\n1. 准备好英文简历\n2. 多关注LinkedIn上的职位\n3. 参加学校的career fair\n4. 主动联系HR\n\n希望对大家有帮助！',
+      content: '招聘前端开发实习生!\n\n我们的创业团队正在寻找一名充满激情的前端开发实习生,参与我们的AI教育平台项目。要求熟悉React 和 Tailwind CSS。这是一个绝佳的学习和成长机会!感兴趣的同学请私信。',
       likes: 89,
       comments: 23,
-      timestamp: '4小时前',
-      isLiked: true,
-      isBookmarked: false,
-      tags: ['实习', '马来西亚', '求职经验']
-    },
-    {
-      id: '3',
-      author: {
-        name: '王小红',
-        avatar: '/placeholder-avatar.jpg',
-        badge: '交换项目'
-      },
-      content: '早稻田大学的交换项目申请已经开始了！有想去的同学可以联系我，我可以分享一些申请经验。',
-      likes: 67,
-      comments: 8,
-      timestamp: '6小时前',
+      timestamp: '5小时前',
       isLiked: false,
-      isBookmarked: true,
-      tags: ['早稻田大学', '交换项目', '申请经验']
+      isBookmarked: false,
+      tags: ['#招募', 'React', 'Tailwind CSS', '实习']
     }
   ];
-
-  const handlePost = (content: string, images: File[]) => {
-    console.log('New post:', { content, images });
-    // 这里会调用API创建新帖子
-  };
 
   const handleLike = (postId: string) => {
     console.log('Like post:', postId);
@@ -80,14 +58,7 @@ const FeedContainer: React.FC<FeedContainerProps> = ({ className }) => {
   };
 
   return (
-    <div className={`max-w-2xl mx-auto ${className}`}>
-      {/* Create Post Box */}
-      <CreatePostBox
-        onPost={handlePost}
-        userAvatar="/placeholder-avatar.jpg"
-        userName="当前用户"
-      />
-
+    <div className={`${className}`}>
       {/* Posts Feed */}
       <div className="space-y-6">
         {samplePosts.map((post) => (
@@ -100,6 +71,13 @@ const FeedContainer: React.FC<FeedContainerProps> = ({ className }) => {
             onComment={handleComment}
           />
         ))}
+        
+        {/* Loading skeleton */}
+        <div className="space-y-4">
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+        </div>
       </div>
     </div>
   );

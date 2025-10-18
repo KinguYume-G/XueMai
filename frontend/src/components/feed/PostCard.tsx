@@ -103,6 +103,17 @@ const PostCard: React.FC<PostCardProps> = ({
             </div>
           </div>
           
+          {/* Tags */}
+          {post.tags && post.tags.length > 0 && (
+            <div className="flex items-center space-x-2">
+              {post.tags.slice(0, 1).map((tag, index) => (
+                <Badge key={index} variant="outline" className="text-xs">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -120,14 +131,17 @@ const PostCard: React.FC<PostCardProps> = ({
 
         {/* Content */}
         <div className="mb-4">
+          <h3 className="text-lg font-bold text-gray-900 mb-2">
+            {post.content.split('\n')[0]}
+          </h3>
           <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">
-            {post.content}
+            {post.content.split('\n').slice(1).join('\n')}
           </p>
           
           {/* Tags */}
-          {post.tags && post.tags.length > 0 && (
+          {post.tags && post.tags.length > 1 && (
             <div className="flex flex-wrap gap-2 mt-3">
-              {post.tags.map((tag, index) => (
+              {post.tags.slice(1).map((tag, index) => (
                 <TagBadge
                   key={index}
                   label={tag}
