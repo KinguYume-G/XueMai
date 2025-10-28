@@ -1,107 +1,84 @@
-import React from 'react';
-import { ArrowRight, Lock, Calendar } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
+import { useEffect, useState } from 'react'
+import { ChevronRight, Lock, Calendar } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { getSchools, getTopics, getExchangePrograms } from '@/services/mock'
+import type { School, Topic, ExchangeProgram } from '@/types/post'
 
-const RightPanel: React.FC = () => {
-  const schoolZones = [
-    { name: 'APU 专区', locked: false },
-    { name: '清华大学专区', locked: true },
-    { name: '北京大学专区', locked: true },
-  ];
+export default function RightPanel() {
+  const [schools, setSchools] = useState<School[]>([])
+  const [topics, setTopics] = useState<Topic[]>([])
+  const [programs, setPrograms] = useState<ExchangeProgram[]>([])
 
-  const hotTopics = [
-    '#AI论文写作技巧',
-    '#马来西亚实习避坑指南',
-    '#跨文化交流经验',
-    '#2024秋季交换项目',
-  ];
-
-  const exchangeReminders = [
-    {
-      project: '新加坡国立大学交换',
-      deadline: '2024-10-15',
-      urgent: true,
-    },
-    {
-      project: '香港大学暑期项目',
-      deadline: '2024-11-01',
-      urgent: false,
-    },
-  ];
+  useEffect(() => {
+    getSchools().then(setSchools)
+    getTopics().then(setTopics)
+    getExchangePrograms().then(setPrograms)
+  }, [])
 
   return (
-    <div className="p-4 space-y-6">
-      {/* School Zones */}
-      <Card>
+    <aside className="fixed right-0 top-16 bottom-0 w-80 overflow-y-auto p-6 space-y-4">
+      {/* School Zones Card */}
+      <Card className="border shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg font-semibold">学校专区</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {schoolZones.map((zone, index) => (
-            <Button
-              key={index}
-              variant="ghost"
-              className={`w-full justify-between h-auto p-3 ${
-                zone.locked ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-50'
-              }`}
-              disabled={zone.locked}
+        <CardContent className="space-y-1">
+          {schools.map((school) => (
+            <button
+              key={school.id}
+              className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm hover:bg-secondary/80 transition-colors"
             >
-              <span className="text-sm font-medium">{zone.name}</span>
-              {zone.locked ? (
-                <Lock className="h-4 w-4" />
-              ) : (
-                <ArrowRight className="h-4 w-4" />
-              )}
-            </Button>
+              <div className="flex items-center gap-2">
+                {school.isLocked && <Lock className="h-4 w-4 text-muted-foreground" />}
+                <span className={school.isLocked ? 'text-muted-foreground' : 'font-medium'}>
+                  {school.name}
+                </span>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </button>
           ))}
         </CardContent>
       </Card>
 
-      {/* Hot Topics */}
-      <Card>
+      {/* Hot Topics Card */}
+      <Card className="border shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg font-semibold">热门话题</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {hotTopics.map((topic, index) => (
-            <Button
-              key={index}
-              variant="ghost"
-              className="w-full justify-start h-auto p-2 text-blue-600 hover:bg-blue-50"
-            >
-              <span className="text-sm">{topic}</span>
-            </Button>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Exchange Project Reminders */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold">交换项目提醒</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {exchangeReminders.map((reminder, index) => (
-            <div
-              key={index}
-              className="flex items-start space-x-3 p-3 rounded-lg bg-gray-50"
-            >
-              <Calendar className={`h-5 w-5 mt-0.5 ${reminder.urgent ? 'text-red-500' : 'text-gray-400'}`} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {reminder.project}
-                </p>
-                <p className={`text-xs mt-1 ${reminder.urgent ? 'text-red-600' : 'text-gray-500'}`}>
-                  截止日期: {reminder.deadline}
-                </p>
-              </div>
+        <CardContent className="space-y-2">
+          {topics.map((topic) => (
+            <div key={topic.id} className="flex items-start gap-2">
+              <span className="text-xl">#</span>
+              <button className="text-sm text-left hover:text-primary transition-colors">
+                {topic.title}
+              </button>
             </div>
           ))}
         </CardContent>
       </Card>
-    </div>
-  );
-};
 
-export default RightPanel;
+      {/* Exchange Programs Card */}
+      <Card className="border shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-semibold">交换项目提醒</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {programs.map((program, index) => (
+            <div key={program.id}>
+              {index > 0 && <Separator className="mb-3" />}
+              <button className="flex items-start gap-3 text-left w-full hover:bg-secondary/50 -mx-2 px-2 py-1 rounded-lg transition-colors">
+                <Calendar className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium mb-0.5">{program.title}</div>
+                  <div className="text-xs text-muted-foreground">{program.deadline}</div>
+                </div>
+              </button>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </aside>
+  )
+}
+

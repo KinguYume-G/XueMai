@@ -1,38 +1,51 @@
-import React, { useState } from 'react';
-import CreatePostBox from '../components/feed/CreatePostBox';
-import FeedContainer from '../components/feed/FeedContainer';
-import FeedTabs from '../components/feed/FeedTabs';
+import { useState, useEffect } from 'react'
+import CreatePostBox from '@/components/feed/CreatePostBox'
+import FeedTabs from '@/components/feed/FeedTabs'
+import PostCard from '@/components/feed/PostCard'
+import { getPosts } from '@/services/mock'
+import type { Post } from '@/types/post'
 
-const Home: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('recommended');
-  const [autoTranslate, setAutoTranslate] = useState(false);
+export default function Home() {
+  const [activeTab, setActiveTab] = useState('recommend')
+  const [posts, setPosts] = useState<Post[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const handlePost = (content: string, images: File[]) => {
-    console.log('New post:', { content, images });
-    // 这里可以添加发布帖子的逻辑
-  };
+  useEffect(() => {
+    setLoading(true)
+    getPosts()
+      .then(setPosts)
+      .finally(() => setLoading(false))
+  }, [activeTab])
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="space-y-4">
       {/* Create Post Box */}
-      <CreatePostBox 
-        onPost={handlePost}
-        userAvatar="/placeholder-avatar.jpg"
-        userName="张小明"
-      />
+      <CreatePostBox />
 
       {/* Feed Tabs */}
-      <FeedTabs
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        autoTranslate={autoTranslate}
-        onToggleTranslate={() => setAutoTranslate(!autoTranslate)}
-      />
-
-      {/* Feed Container */}
-      <FeedContainer />
+      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
+        <FeedTabs activeTab={activeTab} onTabChange={setActiveTab} />
+        
+        {/* Posts List */}
+        <div className="divide-y">
+          {loading ? (
+            <div className="p-8 text-center text-muted-foreground">
+              加载中...
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground">
+              暂无内容
+            </div>
+          ) : (
+            posts.map((post) => (
+              <div key={post.id} className="p-0">
+                <PostCard post={post} />
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
-  );
-};
+  )
+}
 
-export default Home;

@@ -1,226 +1,122 @@
-import React, { useState } from 'react';
-import { 
-  ThumbsUp, 
-  MessageSquare, 
-  Bookmark, 
-  Share, 
-  MoreHorizontal,
-  Heart
-} from 'lucide-react';
-import { Card, CardContent } from '../ui/card';
-import { Button } from '../ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Badge } from '../ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
-import TagBadge from './TagBadge';
-import { User } from 'lucide-react';
-
-interface Post {
-  id: string;
-  author: {
-    name: string;
-    avatar: string;
-    badge?: string;
-  };
-  content: string;
-  image?: string;
-  likes: number;
-  comments: number;
-  timestamp: string;
-  isLiked: boolean;
-  isBookmarked: boolean;
-  tags?: string[];
-}
+import { useState } from 'react'
+import { Heart, MessageCircle, Share2, MoreHorizontal } from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import type { Post } from '@/types/post'
 
 interface PostCardProps {
-  post: Post;
-  onLike?: (postId: string) => void;
-  onBookmark?: (postId: string) => void;
-  onShare?: (postId: string) => void;
-  onComment?: (postId: string) => void;
+  post: Post
 }
 
-const PostCard: React.FC<PostCardProps> = ({
-  post,
-  onLike,
-  onBookmark,
-  onShare,
-  onComment
-}) => {
-  const [isLiked, setIsLiked] = useState(post.isLiked);
-  const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked);
-  const [likesCount, setLikesCount] = useState(post.likes);
+export default function PostCard({ post }: PostCardProps) {
+  const [isLiked, setIsLiked] = useState(post.isLiked)
+  const [likes, setLikes] = useState(post.likes)
 
   const handleLike = () => {
-    const newLikedState = !isLiked;
-    setIsLiked(newLikedState);
-    setLikesCount(prev => newLikedState ? prev + 1 : prev - 1);
-    onLike?.(post.id);
-  };
-
-  const handleBookmark = () => {
-    const newBookmarkedState = !isBookmarked;
-    setIsBookmarked(newBookmarkedState);
-    onBookmark?.(post.id);
-  };
-
-  const handleShare = () => {
-    onShare?.(post.id);
-  };
-
-  const handleComment = () => {
-    onComment?.(post.id);
-  };
+    setIsLiked(!isLiked)
+    setLikes(isLiked ? likes - 1 : likes + 1)
+  }
 
   return (
-    <Card className="mb-6 hover:shadow-md transition-shadow duration-200">
-      <CardContent className="p-4">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3">
+    <Card className="border shadow-sm overflow-hidden">
+      <div className="p-4">
+        {/* Author Info */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex gap-3">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={post.author.avatar} alt={post.author.name} />
-              <AvatarFallback>
-                <User className="h-4 w-4" />
-              </AvatarFallback>
+              <AvatarImage src={post.author.avatar} />
+              <AvatarFallback>{post.author.name[0]}</AvatarFallback>
             </Avatar>
             <div>
-              <div className="flex items-center space-x-2">
-                <span className="font-semibold text-gray-900">{post.author.name}</span>
-                {post.author.badge && (
-                  <Badge variant="secondary" className="text-xs">
-                    {post.author.badge}
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-sm">{post.author.name}</span>
+                {post.author.schoolBadge && (
+                  <Badge variant="secondary" className="text-xs px-2 py-0">
+                    {post.author.schoolBadge} {post.author.school}
                   </Badge>
                 )}
               </div>
-              <span className="text-sm text-gray-500">{post.timestamp}</span>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                {post.timestamp}
+              </div>
             </div>
           </div>
           
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full"
+            aria-label="更多选项"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Content */}
+        <div className="space-y-3">
+          {post.title && (
+            <h3 className="font-semibold text-lg">{post.title}</h3>
+          )}
+          <p className="text-sm leading-relaxed text-foreground/90">
+            {post.content}
+          </p>
+          
           {/* Tags */}
           {post.tags && post.tags.length > 0 && (
-            <div className="flex items-center space-x-2">
-              {post.tags.slice(0, 1).map((tag, index) => (
-                <Badge key={index} variant="outline" className="text-xs">
+            <div className="flex flex-wrap gap-2">
+              {post.tags.map((tag, index) => (
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="rounded-md px-3 py-1 text-xs font-medium hover:bg-secondary/80 cursor-pointer"
+                >
                   {tag}
                 </Badge>
               ))}
             </div>
           )}
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>举报</DropdownMenuItem>
-              <DropdownMenuItem>复制链接</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>关注用户</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
+      </div>
 
-        {/* Content */}
-        <div className="mb-4">
-          <h3 className="text-lg font-bold text-gray-900 mb-2">
-            {post.content.split('\n')[0]}
-          </h3>
-          <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">
-            {post.content.split('\n').slice(1).join('\n')}
-          </p>
-          
-          {/* Tags */}
-          {post.tags && post.tags.length > 1 && (
-            <div className="flex flex-wrap gap-2 mt-3">
-              {post.tags.slice(1).map((tag, index) => (
-                <TagBadge
-                  key={index}
-                  label={tag}
-                  variant={index % 3 === 0 ? 'blue' : index % 3 === 1 ? 'green' : 'yellow'}
-                  onClick={() => console.log(`Clicked tag: ${tag}`)}
-                />
-              ))}
-            </div>
-          )}
+      {/* Image */}
+      {post.image && (
+        <div className="relative w-full aspect-[2/1] bg-muted">
+          <img
+            src={post.image}
+            alt={post.title}
+            className="w-full h-full object-cover"
+          />
         </div>
+      )}
 
-        {/* Image */}
-        {post.image && (
-          <div className="mb-4">
-            <img
-              src={post.image}
-              alt="Post content"
-              className="w-full max-h-[400px] object-cover rounded-lg"
-            />
-          </div>
-        )}
+      {/* Actions */}
+      <div className="flex items-center gap-6 px-4 py-3 border-t">
+        <button
+          onClick={handleLike}
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors group"
+        >
+          <Heart
+            className={`h-5 w-5 ${
+              isLiked ? 'fill-primary text-primary' : 'group-hover:scale-110 transition-transform'
+            }`}
+          />
+          <span className={isLiked ? 'text-primary font-medium' : ''}>
+            {likes}
+          </span>
+        </button>
 
-        {/* Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-          <div className="flex items-center space-x-6">
-            {/* Like */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLike}
-              className={`flex items-center space-x-2 ${
-                isLiked ? 'text-blue-600' : 'text-gray-600'
-              }`}
-            >
-              {isLiked ? (
-                <Heart className="h-4 w-4 fill-current" />
-              ) : (
-                <ThumbsUp className="h-4 w-4" />
-              )}
-              <span className="text-sm">{likesCount}</span>
-            </Button>
+        <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+          <MessageCircle className="h-5 w-5" />
+          <span>{post.comments}</span>
+        </button>
 
-            {/* Comment */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleComment}
-              className="flex items-center space-x-2 text-gray-600"
-            >
-              <MessageSquare className="h-4 w-4" />
-              <span className="text-sm">{post.comments}</span>
-            </Button>
-
-            {/* Bookmark */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBookmark}
-              className={`${
-                isBookmarked ? 'text-blue-600' : 'text-gray-600'
-              }`}
-            >
-              <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
-            </Button>
-          </div>
-
-          {/* Share */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleShare}
-            className="text-gray-600"
-          >
-            <Share className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardContent>
+        <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors ml-auto">
+          <Share2 className="h-5 w-5" />
+        </button>
+      </div>
     </Card>
-  );
-};
+  )
+}
 
-export default PostCard;
