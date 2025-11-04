@@ -1,0 +1,58 @@
+# environments
+.venv
+
+
+# api keys
+.env.local
+.env
+
+# node 
+node_modules
+
+
+# ai
+.claude/
+
+
+#else
+.ruff_cache
+
+
+
+# gpt given
+# --- Python / Django ---
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.sqlite3
+db.sqlite3
+celerybeat-schedule
+
+# User uploads & collectstatic 输出
+media/
+staticfiles/
+
+# --- Node / Frontend ---
+node_modules/
+dist/
+build/
+.vite/
+*.tsbuildinfo
+coverage/
+
+# --- Env / Secrets ---
+.env
+.env.*
+frontend/.env.local
+backend/.env
+
+# --- Tools / IDE / OS ---
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
