@@ -2,18 +2,66 @@ import { useEffect, useState } from 'react'
 import { ChevronRight, Lock, Calendar } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { getSchools, getTopics, getExchangePrograms } from '@/services/mock'
-import type { School, Topic, ExchangeProgram } from '@/types/post'
+
+// 临时类型定义（待后端API完善后移除）
+interface School {
+  id: string
+  name: string
+  isLocked: boolean
+}
+
+interface Topic {
+  id: string
+  title: string
+  tag: string
+}
+
+interface ExchangeProgram {
+  id: string
+  title: string
+  deadline: string
+}
 
 export default function RightPanel() {
-  const [schools, setSchools] = useState<School[]>([])
-  const [topics, setTopics] = useState<Topic[]>([])
-  const [programs, setPrograms] = useState<ExchangeProgram[]>([])
+  const [schools] = useState<School[]>([
+    { id: 'apu', name: 'APU 专区', isLocked: false },
+    { id: 'tsinghua', name: '清华大学专区', isLocked: true },
+    { id: 'pku', name: '北京大学专区', isLocked: true }
+  ])
+  
+  const [topics] = useState<Topic[]>([
+    { id: '1', title: 'AI论文写作技巧', tag: '#AI论文写作技巧' },
+    { id: '2', title: '马来西亚实习机指南', tag: '#马来西亚实习机指南' },
+    { id: '3', title: '跨文化交流经验', tag: '#跨文化交流经验' },
+    { id: '4', title: '2024秋季交换信息', tag: '#2024秋季交换信息' }
+  ])
+  
+  const [programs] = useState<ExchangeProgram[]>([
+    { id: '1', title: '新加坡国立大学交换', deadline: '截止日期: 2024-10-15' },
+    { id: '2', title: '香港大学暑期项目', deadline: '截止日期: 2024-11-01' }
+  ])
+
+  // TODO: 替换为真实API调用
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     try {
+  //       const [schoolsData, topicsData, programsData] = await Promise.all([
+  //         apiClient.get('/schools/'),
+  //         apiClient.get('/topics/'),
+  //         apiClient.get('/exchange_programs/')
+  //       ])
+  //       setSchools(schoolsData)
+  //       setTopics(topicsData)
+  //       setPrograms(programsData)
+  //     } catch (error) {
+  //       console.error('Failed to load panel data:', error)
+  //     }
+  //   }
+  //   loadData()
+  // }, [])
 
   useEffect(() => {
-    getSchools().then(setSchools)
-    getTopics().then(setTopics)
-    getExchangePrograms().then(setPrograms)
+    // 暂时不加载数据，使用静态内容
   }, [])
 
   return (

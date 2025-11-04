@@ -7,9 +7,9 @@ interface FeedTabsProps {
 }
 
 const tabs = [
-  { id: 'recommend', label: '推荐' },
-  { id: 'latest', label: '最新' },
-  { id: 'following', label: '关注' },
+  { id: 'hot', label: '推荐' },
+  { id: 'new', label: '最新' },
+  { id: 'follow', label: '关注' },
 ]
 
 export default function FeedTabs({ activeTab, onTabChange }: FeedTabsProps) {

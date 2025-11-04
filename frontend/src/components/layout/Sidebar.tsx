@@ -1,28 +1,31 @@
-import { Home, GraduationCap, Users, Briefcase, Bot, BookmarkIcon, Globe, Moon, Settings, MessageCircle } from 'lucide-react'
+import { Home, GraduationCap, Users, Briefcase, Bot, BookmarkIcon, Globe, Moon, Settings, MessageCircle, Plane } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 interface NavItem {
   icon: React.ElementType
   label: string
-  active?: boolean
+  path: string
 }
 
 const navigationItems: NavItem[] = [
-  { icon: Home, label: '主页', active: true },
-  { icon: GraduationCap, label: '专业论坛' },
-  { icon: Users, label: '社区' },
-  { icon: Briefcase, label: '交换项目' },
-  { icon: Briefcase, label: '实习 & 机会' },
-  { icon: Bot, label: 'AI 真具箱' },
-  { icon: BookmarkIcon, label: '收藏' },
-  { icon: GraduationCap, label: '关于 APU' },
+  { icon: Home, label: '主页', path: '/' },
+  { icon: GraduationCap, label: '专业论坛', path: '/forums' },
+  { icon: Users, label: '社区', path: '/community' },
+  { icon: Plane, label: '交换项目', path: '/exchange' },
+  { icon: Briefcase, label: '实习 & 机会', path: '/internships' },
+  { icon: Bot, label: 'AI 真具箱', path: '/ai-tools' },
+  { icon: BookmarkIcon, label: '收藏', path: '/bookmarks' },
+  { icon: GraduationCap, label: '关于 APU', path: '/about-apu' },
 ]
 
 export default function Sidebar() {
   const [language, setLanguage] = useState('中')
   const [isDark, setIsDark] = useState(false)
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const languages = ['中', 'EN', 'MY']
 
@@ -33,13 +36,16 @@ export default function Sidebar() {
         <div className="flex-1 space-y-1">
           {navigationItems.map((item, index) => {
             const Icon = item.icon
+            const isActive = location.pathname === item.path ||
+              (item.path !== '/' && location.pathname.startsWith(item.path))
             return (
               <Button
                 key={index}
-                variant={item.active ? "secondary" : "ghost"}
+                variant={isActive ? "secondary" : "ghost"}
                 className={`w-full justify-start gap-3 h-11 px-4 ${
-                  item.active ? 'bg-secondary font-medium' : ''
+                  isActive ? 'bg-secondary font-medium' : ''
                 }`}
+                onClick={() => navigate(item.path)}
               >
                 <Icon className="h-5 w-5" />
                 <span>{item.label}</span>

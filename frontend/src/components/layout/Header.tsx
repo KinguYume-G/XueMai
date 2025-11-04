@@ -1,4 +1,6 @@
 import { Search, Bell, MessageSquare, Plus, ChevronDown } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -9,8 +11,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useAuthStore } from '@/store/authStore'
+
 
 export default function Header() {
+  const navigate = useNavigate()
+  const user = useAuthStore((state) => state.user)
+  const logout = useAuthStore((state) => state.logout)
+
+  const displayName = user?.profile?.username ?? user?.username ?? '访客'
+  const avatarSrc =
+    user?.profile?.avatar_url || user?.profile?.avatar || user?.avatar || undefined
+  const avatarFallback = displayName ? displayName.charAt(0).toUpperCase() : 'U'
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="flex h-16 items-center justify-between px-6">
@@ -61,22 +74,30 @@ export default function Header() {
           </Button>
 
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 rounded-full hover:bg-secondary/80 transition-colors p-1 pr-3">
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" />
-                  <AvatarFallback>U</AvatarFallback>
-                </Avatar>
+            <DropdownMenuTrigger className="flex items-center gap-2 rounded-full px-2 py-1 hover:bg-secondary/80">
+              <Avatar className="h-9 w-9">
+                {avatarSrc ? <AvatarImage src={avatarSrc} /> : null}
+                <AvatarFallback>{avatarFallback}</AvatarFallback>
+              </Avatar>
+              <div className="flex items-center gap-1 text-sm font-medium">
+                <span>{displayName}</span>
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              </button>
+              </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent className="w-56">
               <DropdownMenuItem>我的主页</DropdownMenuItem>
               <DropdownMenuItem>个人资料</DropdownMenuItem>
               <DropdownMenuItem>我的帖子</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>设置</DropdownMenuItem>
-              <DropdownMenuItem>退出登录</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  logout()
+                  navigate('/login', { replace: true })
+                }}
+              >
+                退出登录
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
