@@ -1,5 +1,5 @@
-import { Search, Bell, MessageSquare, Plus, ChevronDown } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Search, MessageSquare, Plus, ChevronDown } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useAuthStore } from '@/store/authStore'
+import { NotificationBell } from '@/components/notifications'
 
 
 export default function Header() {
@@ -29,9 +30,9 @@ export default function Header() {
       <div className="flex h-16 items-center justify-between px-6">
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <span className="text-lg font-bold text-white">学</span>
-          </div>
+          <Link to="/" className="inline-flex items-center">
+            <img src="/logo.png" alt="UniPulse Asia" className="h-7 md:h-8 w-auto" />
+          </Link>
           <span className="text-lg font-semibold">学脉 | UniPulse Asia</span>
         </div>
 
@@ -46,23 +47,32 @@ export default function Header() {
 
         {/* Right Actions */}
         <div className="flex items-center gap-3">
-          <Button
-            variant="default"
-            className="gap-2 rounded-full h-10 px-6 bg-primary hover:bg-primary/90"
-          >
-            <Plus className="h-4 w-4" />
-            创建
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-2 rounded-full h-10 px-6 bg-primary hover:bg-primary/90 text-white font-medium transition-colors">
+              <Plus className="h-4 w-4" />
+              创建
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuItem onClick={() => navigate('/create/post')}>
+                <span className="mr-2">📝</span>
+                发布帖子
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/create/question')}>
+                <span className="mr-2">❓</span>
+                提出问题
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/create/community')}>
+                <span className="mr-2">🌐</span>
+                创建社区
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/create/job')}>
+                <span className="mr-2">💼</span>
+                发布职位
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative rounded-full"
-            aria-label="通知"
-          >
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
-          </Button>
+          <NotificationBell />
 
           <Button
             variant="ghost"
