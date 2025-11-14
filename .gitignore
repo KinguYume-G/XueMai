@@ -46,6 +46,7 @@ coverage/
 # --- Env / Secrets ---
 .env
 .env.*
+**/.env*
 frontend/.env.local
 backend/.env
 
@@ -56,3 +57,18 @@ backend/.env
 .DS_Store
 Thumbs.db
 
+
+
+# ignore Windows reserved names
+backend/nul
+nul
+
+# ignore
+.env
+.env.local
+venv/
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+.next/

@@ -1,105 +1,206 @@
-import { useEffect } from 'react'
-import { Headphones, X, Send, Mic } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Headphones, Mic, Minus, Send, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card } from '@/components/ui/card'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { useChatWidgetStore } from '@/store/useChatWidgetStore'
+import { cn } from '@/lib/utils'
+
+const CHAT_WIDGET_PANEL_ID = 'chat-widget-panel'
+const CHAT_WIDGET_TITLE_ID = 'chat-widget-title'
 
 export default function ChatWidget() {
-  const { isOpen, toggle, close } = useChatWidgetStore()
+  const isOpen = useChatWidgetStore((state) => state.isOpen)
+  const openWidget = useChatWidgetStore((state) => state.open)
+  const closeWidget = useChatWidgetStore((state) => state.close)
+  const toggleWidget = useChatWidgetStore((state) => state.toggle)
 
-  // ESC键关闭聊天窗
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [message, setMessage] = useState('')
+  const [iconError, setIconError] = useState(false)
+
   useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+
+    const focusTimer = window.setTimeout(() => {
+      inputRef.current?.focus()
+    }, 0)
+
+    return () => {
+      window.clearTimeout(focusTimer)
+    }
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
-        close()
+      if (event.key === 'Escape') {
+        closeWidget()
       }
     }
 
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, close])
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, closeWidget])
 
-  const handleSendMessage = () => {
-    console.log('Send message clicked')
-  }
+  const handleOpenChange = useCallback(
+    (next: boolean) => {
+      if (next) {
+        openWidget()
+      } else {
+        closeWidget()
+      }
+    },
+    [openWidget, closeWidget]
+  )
 
-  const handleMicClick = () => {
-    console.log('Mic clicked')
-  }
+  const handleSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      if (!message.trim()) {
+        return
+      }
+      setMessage('')
+    },
+    [message]
+  )
+
+  const buttonSafeAreaStyle = useMemo(
+    () => ({
+      bottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)',
+      right: 'calc(env(safe-area-inset-right, 0px) + 1.5rem)',
+    }),
+    []
+  )
+
+  const panelSafeAreaStyle = useMemo(
+    () => ({
+      marginBottom: 'calc(env(safe-area-inset-bottom, 0px) + 6rem)',
+      marginRight: 'calc(env(safe-area-inset-right, 0px) + 1.5rem)',
+    }),
+    []
+  )
+
+  const handleIconError = useCallback(() => {
+    setIconError(true)
+  }, [])
 
   return (
     <>
-      {/* Talk with Us 按钮 */}
       <Button
-        onClick={toggle}
-        className="fixed bottom-6 right-6 bg-black text-white rounded-full px-4 h-11 shadow-lg flex items-center gap-2 hover:bg-gray-800 transition-colors z-50 md:bottom-6 md:right-6 max-md:bottom-4 max-md:right-4 max-md:scale-95"
-        aria-label="Talk with Us"
+        type="button"
+        onClick={toggleWidget}
+        aria-label="Open chat"
+        aria-expanded={isOpen}
+        aria-controls={CHAT_WIDGET_PANEL_ID}
+        className={cn(
+          'fixed z-[110] flex items-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-medium text-white shadow-lg transition-all hover:shadow-xl focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black',
+          'active:scale-[0.98]'
+        )}
+        style={buttonSafeAreaStyle}
       >
-        <Headphones className="h-6 w-6" />
-        <span className="font-medium">Talk with Us</span>
+        {!iconError ? (
+          <img
+            src="/ai.png"
+            alt="AI icon"
+            className="h-6 w-6 rounded-full bg-white/10 object-contain"
+            onError={handleIconError}
+          />
+        ) : (
+          <span className="flex items-center gap-1 rounded-full bg-white/10 px-2 py-1">
+            <Headphones className="h-4 w-4" />
+            <Mic className="h-4 w-4" />
+          </span>
+        )}
+        <span className="text-sm font-semibold">Talk with Us</span>
       </Button>
 
-      {/* 聊天窗口 */}
-      {isOpen && (
-        <Card className="fixed bottom-20 right-6 w-[380px] h-[520px] bg-white rounded-2xl shadow-2xl border z-50 overflow-hidden animate-in slide-in-from-bottom-4 md:bottom-20 md:right-6 md:w-[380px] md:h-[520px] max-md:bottom-16 max-md:right-4 max-md:w-[92vw] max-md:h-[70vh]">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b bg-gray-50">
-            <h3 className="font-semibold text-gray-900">Talk with Us</h3>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={close}
-              className="h-8 w-8 rounded-full hover:bg-gray-200"
-              aria-label="Close chat"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Body - 滚动区域 */}
-          <div className="flex-1 p-4 overflow-y-auto">
-            <div className="flex items-center justify-center h-full text-gray-500 text-center">
+      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+        <DialogContent
+          id={CHAT_WIDGET_PANEL_ID}
+          aria-labelledby={CHAT_WIDGET_TITLE_ID}
+          containerClassName="p-0"
+          className="w-[min(360px,calc(100vw-3rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+          style={panelSafeAreaStyle}
+        >
+          <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
+            <div className="flex items-center gap-3">
+              {!iconError ? (
+                <img
+                  src="/ai.png"
+                  alt="AI icon"
+                  className="h-8 w-8 rounded-full bg-white object-contain"
+                  onError={handleIconError}
+                />
+              ) : (
+                <span className="flex items-center gap-2 rounded-full bg-black/80 px-3 py-1 text-white">
+                  <Headphones className="h-4 w-4" />
+                  <Mic className="h-4 w-4" />
+                </span>
+              )}
               <div>
-                <Headphones className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-                <p className="text-sm">Use voice or text to communicate</p>
+                <p id={CHAT_WIDGET_TITLE_ID} className="text-sm font-semibold text-slate-900">
+                  Talk with Us
+                </p>
+                <p className="text-xs text-slate-500">Choose voice or text to communicate</p>
               </div>
             </div>
-          </div>
-
-          {/* Footer - 输入区域 */}
-          <div className="p-4 border-t bg-gray-50">
             <div className="flex items-center gap-2">
-              <Input
-                placeholder="Type your message..."
-                className="flex-1 rounded-full border-gray-300 focus:border-black focus:ring-black"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSendMessage()
-                  }
-                }}
-              />
-              <Button
-                size="icon"
-                onClick={handleSendMessage}
-                className="rounded-full bg-black hover:bg-gray-800 text-white"
-                aria-label="Send message"
+              <button
+                type="button"
+                aria-label="Minimize chat"
+                onClick={toggleWidget}
+                className="rounded-full p-1 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
               >
-                <Send className="h-4 w-4" />
-              </Button>
-              <Button
-                size="icon"
-                variant="outline"
-                onClick={handleMicClick}
-                className="rounded-full border-gray-300 hover:bg-gray-100"
-                aria-label="Voice message"
+                <Minus className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                aria-label="Close chat"
+                onClick={closeWidget}
+                className="rounded-full p-1 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
               >
-                <Mic className="h-4 w-4" />
-              </Button>
+                <X className="h-4 w-4" />
+              </button>
             </div>
           </div>
-        </Card>
-      )}
+
+          <div className="flex h-[380px] flex-col bg-white">
+            <div className="flex-1 overflow-y-auto px-4 py-3">
+              <div className="space-y-3 text-xs text-slate-500">
+                <div className="rounded-lg bg-slate-100 p-3 text-slate-600">
+                  👋 Hi there! We&apos;re here to help. Use voice or text to reach out — a real teammate will reply soon.
+                </div>
+                <div className="rounded-lg bg-black p-3 text-white">
+                  Tip: share your student ID or topic so we can route you faster.
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-200 bg-white px-4 py-3">
+              <form className="flex items-end gap-2" onSubmit={handleSubmit}>
+                <Input
+                  ref={inputRef}
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
+                  placeholder="Type your message..."
+                  className="min-h-[42px] flex-1 resize-none"
+                />
+                <Button type="submit" size="icon" className="h-10 w-10 shrink-0 bg-black hover:bg-black/90">
+                  <Send className="h-4 w-4" />
+                </Button>
+              </form>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
+
+

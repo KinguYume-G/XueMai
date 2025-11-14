@@ -32,25 +32,50 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
     
     def list(self, request, *args, **kwargs):
-        """列表响应中包含未读数量"""
+        """列表响应中包含未读数量统计"""
+        from django.db.models import Count
+
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
-        
-        # 计算未读数量
-        unread_count = Notification.objects.filter(
-            user=request.user, is_read=False
-        ).count()
-        
+
+        # 获取所有未读通知
+        unread_notifications = Notification.objects.filter(
+            user=request.user,
+            is_read=False
+        )
+
+        # 总未读数量
+        total_unread = unread_notifications.count()
+
+        # 按类型统计未读数量
+        type_counts = unread_notifications.values('type').annotate(
+            count=Count('id')
+        )
+
+        counts_by_type = {
+            'like': 0,
+            'comment': 0,
+            'follow': 0,
+            'system': 0,
+        }
+
+        for item in type_counts:
+            type_key = item['type'].lower()
+            if type_key in counts_by_type:
+                counts_by_type[type_key] = item['count']
+
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             response = self.get_paginated_response(serializer.data)
-            response.data['unread_count'] = unread_count
+            response.data['unread_count'] = total_unread
+            response.data['counts_by_type'] = counts_by_type
             return response
-        
+
         serializer = self.get_serializer(queryset, many=True)
         return Response({
             'data': serializer.data,
-            'unread_count': unread_count,
+            'unread_count': total_unread,
+            'counts_by_type': counts_by_type,
             'error': None
         })
     
@@ -97,14 +122,43 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=False, methods=['get'], url_path='unread_count')
     def unread_count(self, request):
-        """获取未读通知数量"""
-        count = Notification.objects.filter(
+        """获取未读通知数量（按类型统计）"""
+        from django.db.models import Count
+
+        # 获取所有未读通知
+        unread_notifications = Notification.objects.filter(
             user=request.user,
             is_read=False
-        ).count()
-        
+        )
+
+        # 总未读数量
+        total_count = unread_notifications.count()
+
+        # 按类型统计
+        type_counts = unread_notifications.values('type').annotate(
+            count=Count('id')
+        )
+
+        # 转换为字典格式
+        by_type = {
+            'like': 0,
+            'comment': 0,
+            'follow': 0,
+            'system': 0,
+        }
+
+        for item in type_counts:
+            type_key = item['type'].lower()
+            if type_key in by_type:
+                by_type[type_key] = item['count']
+
         return Response({
-            'data': {'unread_count': count},
+            'data': {
+                'total': total_count,
+                'by_type': by_type,
+                # 向后兼容
+                'unread_count': total_count,
+            },
             'error': None
         })
     

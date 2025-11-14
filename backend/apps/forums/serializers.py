@@ -1,8 +1,31 @@
 # Forums serializers
 from rest_framework import serializers
-from .models import Forum, Topic
+from .models import Forum, Topic, Faculty
 from apps.users.serializers import UserSerializer
 from apps.posts.serializers import TagSerializer
+
+
+class FacultySerializer(serializers.ModelSerializer):
+    """学院序列化器"""
+    hot_tags = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Faculty
+        fields = [
+            'id', 'name', 'slug', 'icon_url', 'description',
+            'major_count', 'topic_count', 'hot_tags', 'created_at'
+        ]
+        read_only_fields = ['created_at']
+
+    def get_hot_tags(self, obj):
+        # TODO: 实现真实的热门标签统计逻辑
+        # 第一版返回假数据
+        hot_tags_map = {
+            "computing": ["软件工程", "人工智能", "网络安全"],
+            "business": ["市场营销", "创业", "金融"],
+            "engineering": ["机械设计", "电子工程", "材料科学"],
+        }
+        return hot_tags_map.get(obj.slug, ["课程资料", "学术讨论", "经验分享"])
 
 
 class ForumSerializer(serializers.ModelSerializer):

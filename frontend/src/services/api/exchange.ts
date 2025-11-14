@@ -15,6 +15,9 @@ export const exchangeApi = {
    * 获取交换项目列表
    */
   async getPrograms(filters: ExchangeProgramFilters = {}): Promise<PaginatedResponse<ExchangeProgram>> {
+    console.log('📡 exchangeApi.getPrograms 被调用')
+    console.log('📊 筛选参数:', filters)
+
     const params = new URLSearchParams()
 
     if (filters.country) params.append('country', filters.country)
@@ -27,7 +30,13 @@ export const exchangeApi = {
     const queryString = params.toString()
     const url = `/exchange_programs/${queryString ? `?${queryString}` : ''}`
 
-    return apiClient.get(url)
+    console.log('🌐 请求 URL:', url)
+    console.log('🔗 完整路径:', `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api'}${url}`)
+
+    const response = await apiClient.get(url)
+    console.log('✅ 收到响应:', response)
+
+    return response
   },
 
   /**
@@ -38,27 +47,18 @@ export const exchangeApi = {
   },
 
   /**
-   * 获取即将截止的交换项目（未来14天内）
+   * 获取即将截止的交换项目
+   * 使用后端的 /exchange_programs/upcoming/ 接口
    */
   async getUpcoming(limit: number = 2): Promise<ExchangeProgram[]> {
-    const today = new Date()
-    const futureDate = new Date()
-    futureDate.setDate(today.getDate() + 14)
+    const url = `/exchange_programs/upcoming/?limit=${limit}`
+    return apiClient.get(url)
+  },
 
-    const deadlineBefore = futureDate.toISOString().split('T')[0]
-
-    const response = await this.getPrograms({
-      deadline_before: deadlineBefore,
-      page_size: limit,
-    })
-
-    // 过滤出截止日期在未来的项目
-    const upcomingPrograms = (response.data || []).filter((program) => {
-      if (!program.deadline) return false
-      const deadline = new Date(program.deadline)
-      return deadline >= today && deadline <= futureDate
-    })
-
-    return upcomingPrograms.slice(0, limit)
+  /**
+   * 收藏/取消收藏交换项目
+   */
+  async toggleBookmark(id: number): Promise<{ bookmarked: boolean }> {
+    return apiClient.post(`/exchange_programs/${id}/bookmark/`)
   },
 }

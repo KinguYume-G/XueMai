@@ -2,14 +2,19 @@ import { create } from 'zustand'
 
 interface ChatWidgetState {
   isOpen: boolean
-  toggle: () => void
   open: () => void
   close: () => void
+  toggle: () => void
 }
 
 export const useChatWidgetStore = create<ChatWidgetState>((set) => ({
   isOpen: false,
-  toggle: () => set((state) => ({ isOpen: !state.isOpen })),
   open: () => set({ isOpen: true }),
   close: () => set({ isOpen: false }),
+  toggle: () =>
+    set((state) => ({
+      isOpen: !state.isOpen,
+    })),
 }))
+
+

@@ -1,0 +1,78 @@
+{
+  "chat": {
+    "title": "Messages",
+    "tabs": {
+      "following": "Following",
+      "followers": "Followers",
+      "friends": "Friends",
+      "groups": "Groups",
+      "requests": "Requests"
+    },
+    "search": {
+      "placeholder": "Search contacts...",
+      "no_results": "No contacts found"
+    },
+    "empty": {
+      "following": "No following",
+      "followers": "No followers",
+      "friends": "No friends",
+      "groups": "No groups",
+      "requests": "No requests"
+    },
+    "input": {
+      "placeholder": "Type a message...",
+      "send": "Send"
+    },
+    "status": {
+      "online": "Online",
+      "offline": "Offline",
+      "last_seen": "Last seen: {{time}}"
+    },
+    "unread": {
+      "count": "{{count}} unread",
+      "badge": "{{count}}+"
+    },
+    "actions": {
+      "back": "Back",
+      "close": "Close",
+      "follow": "Follow",
+      "unfollow": "Unfollow",
+      "send_request": "Send Friend Request",
+      "accept": "Accept",
+      "reject": "Reject",
+      "more": "More"
+    },
+    "messages": {
+      "loading": "Loading...",
+      "no_messages": "No messages",
+      "send_failed": "Send failed",
+      "retry": "Retry"
+    },
+    "notifications": {
+      "request_sent": "Friend request sent",
+      "request_accepted": "Friend request accepted",
+      "request_rejected": "Friend request rejected",
+      "followed": "Followed",
+      "unfollowed": "Unfollowed"
+    }
+  },
+  "time": {
+    "just_now": "Just now",
+    "minutes_ago": "{{count}}m ago",
+    "hours_ago": "{{count}}h ago",
+    "yesterday": "Yesterday",
+    "days_ago": "{{count}}d ago",
+    "weeks_ago": "{{count}}w ago",
+    "months_ago": "{{count}}mo ago"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit"
+  }
+}

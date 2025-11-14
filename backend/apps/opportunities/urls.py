@@ -6,6 +6,7 @@ from . import views
 router = DefaultRouter()
 router.register(r'exchange_programs', views.ExchangeProgramViewSet, basename='exchange-program')
 router.register(r'internships', views.InternshipViewSet, basename='internship')
+router.register(r'startups', views.StartupViewSet, basename='startup')
 
 urlpatterns = [
     path('', include(router.urls)),

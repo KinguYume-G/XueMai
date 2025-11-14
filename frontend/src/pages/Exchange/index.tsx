@@ -27,8 +27,9 @@ export default function ExchangeListPage() {
   const [searchInput, setSearchInput] = useState(filters.search || '')
 
   useEffect(() => {
+    console.log('🎬 组件挂载，获取交换项目列表')
     fetchPrograms()
-  }, [fetchPrograms])
+  }, []) // 空数组，只在组件挂载时执行一次
 
   const handleSearchChange = (value: string) => {
     setSearchInput(value)
@@ -151,7 +152,7 @@ export default function ExchangeListPage() {
                     </p>
                     <div className="flex items-center justify-between pt-2">
                       <div className="text-xs text-muted-foreground">
-                        {program.host_university_name}
+                        {program.university}
                       </div>
                       <Button
                         size="sm"

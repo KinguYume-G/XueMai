@@ -82,6 +82,8 @@ INSTALLED_APPS = [
     "apps.notifications",
     "apps.opportunities",
     "apps.forums",
+    "apps.communities",
+    "apps.bookmarks",
     "apps.ai",
     "apps.uploads",
 ]

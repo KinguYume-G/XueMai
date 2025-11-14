@@ -34,6 +34,8 @@ urlpatterns = [
     path("api/", include("apps.notifications.urls")),
     path("api/", include("apps.opportunities.urls")),
     path("api/", include("apps.forums.urls")),
+    path("api/", include("apps.communities.urls")),
+    path("api/", include("apps.bookmarks.urls")),
     path("api/", include("apps.uploads.urls")),
     path("api/ai/", include("apps.ai.urls")),
 ]

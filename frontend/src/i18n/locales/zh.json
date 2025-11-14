@@ -1,0 +1,78 @@
+{
+  "chat": {
+    "title": "消息",
+    "tabs": {
+      "following": "关注",
+      "followers": "粉丝",
+      "friends": "好友",
+      "groups": "群聊",
+      "requests": "申请"
+    },
+    "search": {
+      "placeholder": "搜索联系人...",
+      "no_results": "没有找到联系人"
+    },
+    "empty": {
+      "following": "暂无关注",
+      "followers": "暂无粉丝",
+      "friends": "暂无好友",
+      "groups": "暂无群聊",
+      "requests": "暂无申请"
+    },
+    "input": {
+      "placeholder": "输入消息...",
+      "send": "发送"
+    },
+    "status": {
+      "online": "在线",
+      "offline": "离线",
+      "last_seen": "上次在线：{{time}}"
+    },
+    "unread": {
+      "count": "{{count}} 条未读",
+      "badge": "{{count}}+"
+    },
+    "actions": {
+      "back": "返回",
+      "close": "关闭",
+      "follow": "关注",
+      "unfollow": "取消关注",
+      "send_request": "发送好友申请",
+      "accept": "接受",
+      "reject": "拒绝",
+      "more": "更多"
+    },
+    "messages": {
+      "loading": "加载中...",
+      "no_messages": "暂无消息",
+      "send_failed": "发送失败",
+      "retry": "重试"
+    },
+    "notifications": {
+      "request_sent": "好友申请已发送",
+      "request_accepted": "已接受好友申请",
+      "request_rejected": "已拒绝好友申请",
+      "followed": "已关注",
+      "unfollowed": "已取消关注"
+    }
+  },
+  "time": {
+    "just_now": "刚刚",
+    "minutes_ago": "{{count}} 分钟前",
+    "hours_ago": "{{count}} 小时前",
+    "yesterday": "昨天",
+    "days_ago": "{{count}} 天前",
+    "weeks_ago": "{{count}} 周前",
+    "months_ago": "{{count}} 月前"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "发生错误",
+    "retry": "重试",
+    "cancel": "取消",
+    "confirm": "确认",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑"
+  }
+}

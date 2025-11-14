@@ -1,4 +1,4 @@
-# 学脉 UniPulse Asia - 完整开发者文档
+、# 学脉 UniPulse Asia - 完整开发者文档
 
 > 连接亚太地区大学生的校园社交与学术交流平台 | Vite + React + TypeScript + Django + PostgreSQL
 
@@ -70,7 +70,6 @@ cd xuemai-platform
 ### **2. 启动后端**
 ```powershell
 cd backend
-python -m venv .venv
 .venv\Scripts\activate 
 pip install -r requirements.txt
 

@@ -109,7 +109,7 @@ export default function ExchangeDetailPage() {
             {/* University */}
             <div className="bg-secondary/30 rounded-lg px-4 py-2 inline-block">
               <span className="text-sm font-medium">
-                {currentProgram.host_university_name}
+                {currentProgram.university}
               </span>
             </div>
           </div>
@@ -158,7 +158,7 @@ export default function ExchangeDetailPage() {
           {/* Footer Info */}
           <div className="text-xs text-muted-foreground pt-4 border-t">
             <div className="flex items-center justify-between">
-              <span>发布者：{currentProgram.posted_by_username}</span>
+              <span>发布者：用户 #{currentProgram.posted_by}</span>
               <span>
                 发布时间：{new Date(currentProgram.created_at).toLocaleDateString('zh-CN')}
               </span>

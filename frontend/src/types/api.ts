@@ -203,16 +203,35 @@ export interface ExchangeProgram {
   title: string;
   description: string;
   host_university: number;
-  host_university_name: string;
+  university: string; // 从host_university.name序列化得到的大学名称
   location: string;
   duration: string;
   deadline?: string;
   requirements: string;
   link?: string;
+
+  // 新增字段
+  country?: string;
+  cover_url?: string;
+  tuition?: string;
+  stipend?: string;
+  gpa_min?: string;
+  lang_req?: string;
+  website?: string;
+  is_urgent?: boolean;
+
+  // 统计字段
+  rating_avg: number;
+  rating_count: number;
+  applied_count: number;
+
+  // 用户相关
+  bookmarked: boolean;
+
+  // 元数据
   visibility: string;
   is_published: boolean;
   posted_by: number;
-  posted_by_username: string;
   views_count: number;
   created_at: string;
   updated_at: string;

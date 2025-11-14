@@ -1,6 +1,5 @@
 import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,10 +50,8 @@ export default function FilterBar({
       <div className="flex gap-2 flex-wrap">
         {filters.map((filter) => (
           <DropdownMenu key={filter.label}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="min-w-[120px]">
-                {filter.options.find((opt) => opt.value === filter.value)?.label || filter.label}
-              </Button>
+            <DropdownMenuTrigger className="min-w-[120px] h-9 px-3 text-sm border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md">
+              {filter.options.find((opt) => opt.value === filter.value)?.label || filter.label}
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               {filter.options.map((option) => (

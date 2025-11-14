@@ -11,6 +11,7 @@ from datetime import timedelta
 from .models import Tag, Post, PostLike, Bookmark
 from .serializers import TagSerializer, PostSerializer, PostCreateUpdateSerializer
 from core.pagination import StandardResultsPagination
+from apps.notifications.utils import create_like_notification
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -107,12 +108,18 @@ class PostViewSet(viewsets.ModelViewSet):
         """点赞/取消点赞（幂等）"""
         post = self.get_object()
         like, created = PostLike.objects.get_or_create(user=request.user, post=post)
-        
+
         if created:
             post.likes_count = F('likes_count') + 1
             post.save(update_fields=['likes_count'])
             post.refresh_from_db()
             message = 'liked'
+
+            # 创建点赞通知
+            create_like_notification(
+                sender=request.user,
+                post=post
+            )
         else:
             like.delete()
             post.likes_count = F('likes_count') - 1
