@@ -174,6 +174,10 @@ class AIQueryLog(models.Model):
         indexes = [
             models.Index(fields=['user', '-created_at']),
             models.Index(fields=['university', '-created_at']),
+            models.Index(fields=['-created_at']),  # 按时间排序查询
+            models.Index(fields=['user', 'university', '-created_at']),  # 复合查询
+            models.Index(fields=['response_time_ms']),  # 性能分析
+            models.Index(fields=['is_helpful', '-created_at']),  # 质量监控
         ]
     
     def __str__(self):

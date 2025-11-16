@@ -38,12 +38,18 @@ class PostSerializer(serializers.ModelSerializer):
     def get_is_liked(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
+            # 使用prefetch的数据，避免N+1查询
+            if hasattr(obj, 'user_likes'):
+                return bool(obj.user_likes)
             return PostLike.objects.filter(user=request.user, post=obj).exists()
         return False
-    
+
     def get_is_bookmarked(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
+            # 使用prefetch的数据，避免N+1查询
+            if hasattr(obj, 'user_bookmarks'):
+                return bool(obj.user_bookmarks)
             return Bookmark.objects.filter(user=request.user, post=obj).exists()
         return False
     

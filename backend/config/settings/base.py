@@ -22,7 +22,7 @@ if env_file.exists():
     environ.Env.read_env(str(env_file))
 
 # SECRET_KEY
-SECRET_KEY = env("SECRET_KEY", default="django-insecure-dev-key-change-in-production-123456789")
+SECRET_KEY = env("SECRET_KEY")
 
 # DEBUG (默认从环境变量读取，开发环境会在 development.py 中覆盖)
 DEBUG = env.bool("DEBUG", default=False)

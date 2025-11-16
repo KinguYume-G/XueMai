@@ -70,7 +70,8 @@ cd xuemai-platform
 ### **2. 启动后端**
 ```powershell
 cd backend
-.venv\Scripts\activate 
+#.venv\Scripts\activate  旧虚拟环境
+.\.venv\Scripts\activate   新的虚拟环境
 pip install -r requirements.txt
 
 # 配置环境变量（复制 .env.example 为 .env）

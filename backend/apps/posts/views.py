@@ -30,11 +30,34 @@ class PostViewSet(viewsets.ModelViewSet):
             return [AllowAny()]
         return super().get_permissions()
     
+   
     def get_queryset(self):
-        """返回用户可见的帖子"""
-        return Post.objects.visible_to(self.request.user).select_related(
-            'author', 'target_university', 'target_school'
-        ).prefetch_related('tags')
+        user = self.request.user
+        queryset = Post.objects.visible_to(user).select_related(
+            'author', 
+            'author__profile', 
+            'target_university'
+        ).prefetch_related(
+            'tags'
+        )
+        
+        # 关键优化：预加载点赞和收藏
+        if user.is_authenticated:
+            from django.db.models import Prefetch
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    'post_likes',
+                    queryset=PostLike.objects.filter(user=user),
+                    to_attr='user_likes'
+                ),
+                Prefetch(
+                    'bookmarked_by',
+                    queryset=Bookmark.objects.filter(user=user),
+                    to_attr='user_bookmarks'
+                )
+            )
+        return queryset
+
     
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:

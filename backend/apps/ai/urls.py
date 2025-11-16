@@ -1,14 +1,19 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+"""
+AI应用URL配置
+"""
+
+from django.urls import path
 from . import views
 
-router = DefaultRouter()
-router.register(r'documents', views.AIDocumentViewSet, basename='ai-document')
-router.register(r'chunks', views.AIChunkViewSet, basename='ai-chunk')
-router.register(r'query_logs', views.AIQueryLogViewSet, basename='ai-query-log')
+app_name = 'ai'
 
 urlpatterns = [
-    path('query/', views.ai_query, name='ai-query'),
-    path('', include(router.urls)),
+    # 流式聊天（主要使用）
+    path('chat/stream/', views.ai_chat_stream, name='chat_stream'),
+    
+    # 同步聊天（备用）
+    path('chat/sync/', views.ai_chat_sync, name='chat_sync'),
+    
+    # 健康检查
+    path('health/', views.ai_health, name='health'),
 ]
-

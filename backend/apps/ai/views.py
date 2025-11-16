@@ -1,121 +1,277 @@
-from rest_framework import viewsets, status
+"""
+AI视图 - 提供AI聊天和RAG查询功能
+"""
+
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
+from rest_framework import status
+from django.http import StreamingHttpResponse
+import json
+import logging
+import time
 
-from .models import AIDocument, AIChunk, AIEmbedding, AIQueryLog
-from .serializers import (
-    AIDocumentSerializer,
-    AIChunkSerializer,
-    AIEmbeddingSerializer,
-    AIQueryLogSerializer,
-    AIQueryRequestSerializer,
-    AIQueryResponseSerializer
-)
-from core.pagination import StandardResultsPagination
+from .services.groq_client import GroqClient
+from .services.ollama_client import OllamaClient
+from .services.rag_engine import RAGEngine
 
-
-class AIDocumentViewSet(viewsets.ModelViewSet):
-    """AI文档管理API"""
-    queryset = AIDocument.objects.all()
-    serializer_class = AIDocumentSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    pagination_class = StandardResultsPagination
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['university', 'doc_type', 'is_active']
-    search_fields = ['title', 'content']
-    ordering_fields = ['created_at']
-    ordering = ['-created_at']
-    
-    def perform_create(self, serializer):
-        serializer.save(uploaded_by=self.request.user)
-
-
-class AIChunkViewSet(viewsets.ReadOnlyModelViewSet):
-    """AI文本块API（只读）"""
-    queryset = AIChunk.objects.select_related('document').all()
-    serializer_class = AIChunkSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    pagination_class = StandardResultsPagination
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['document']
-    ordering = ['document', 'chunk_index']
-
-
-class AIQueryLogViewSet(viewsets.ReadOnlyModelViewSet):
-    """AI查询日志API（只读）"""
-    queryset = AIQueryLog.objects.all()
-    serializer_class = AIQueryLogSerializer
-    permission_classes = [IsAuthenticated]
-    pagination_class = StandardResultsPagination
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['user', 'university']
-    ordering = ['-created_at']
-    
-    def get_queryset(self):
-        """用户只能看到自己的查询记录"""
-        if self.request.user.is_staff:
-            return super().get_queryset()
-        return super().get_queryset().filter(user=self.request.user)
+logger = logging.getLogger(__name__)
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticatedOrReadOnly])
-def ai_query(request):
+@permission_classes([IsAuthenticated])
+def ai_chat_stream(request):
     """
-    AI查询接口（Mock实现）
+    流式AI聊天API
     
-    POST /api/ai/query/
+    Request body:
     {
-        "query": "如何申请图书馆卡？",
-        "university_id": 1
+        "question": "用户的问题",
+        "use_rag": true/false,  # 是否使用RAG检索
+        "category": "academic"  # AI类别（预留）
+    }
+    
+    Response: Server-Sent Events (SSE) stream
+    """
+    
+    try:
+        # 获取请求参数
+        question = request.data.get('question')
+        use_rag = request.data.get('use_rag', True)
+        category = request.data.get('category', 'academic')
+        
+        # 验证参数
+        if not question or not question.strip():
+            return Response(
+                {'error': '问题不能为空'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        logger.info(f"AI聊天请求: question='{question[:50]}...', use_rag={use_rag}")
+        
+        # 初始化AI客户端（优先Groq）
+        try:
+            ai_client = GroqClient()
+            logger.info("使用Groq客户端")
+        except Exception as e:
+            logger.warning(f"Groq初始化失败，回退到Ollama: {e}")
+            try:
+                ai_client = OllamaClient()
+                logger.info("使用Ollama客户端")
+            except Exception as e2:
+                logger.error(f"AI客户端初始化失败: {e2}")
+                return Response(
+                    {'error': 'AI服务暂时不可用，请稍后重试'},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE
+                )
+        
+        # 流式生成函数
+        def generate():
+            try:
+                start_time = time.time()
+                
+                # 如果使用RAG，先检索相关文档
+                context = ""
+                if use_rag:
+                    try:
+                        rag = RAGEngine()
+                        docs = rag.retrieve(question, top_k=3)
+                        
+                        if docs:
+                            context = "\n\n".join([
+                                f"[文档{i+1}]: {doc.page_content}"
+                                for i, doc in enumerate(docs)
+                            ])
+                            
+                            # 发送检索到的文档数量
+                            yield f"data: {json.dumps({'type': 'rag_docs', 'count': len(docs)})}\n\n"
+                            
+                            logger.info(f"RAG检索到 {len(docs)} 个相关文档")
+                    except Exception as e:
+                        logger.warning(f"RAG检索失败: {e}")
+                        # RAG失败不影响对话，继续进行
+                
+                # 读取系统Prompt
+                try:
+                    from pathlib import Path
+                    prompt_path = Path(__file__).parent / 'prompts' / 'academic.txt'
+                    with open(prompt_path, 'r', encoding='utf-8') as f:
+                        system_prompt = f.read()
+                except Exception as e:
+                    logger.warning(f"读取系统Prompt失败: {e}")
+                    system_prompt = "你是UniPulse Asia的学业助手，专门帮助大学生解决学业相关问题。"
+                
+                # 构建消息
+                if context:
+                    # 有RAG上下文
+                    messages = [
+                        {"role": "system", "content": system_prompt},
+                        {
+                            "role": "user",
+                            "content": f"""基于以下知识库内容回答问题：
+
+知识库内容：
+{context}
+
+用户问题：{question}
+
+请根据知识库内容提供准确的答案。如果知识库中没有相关信息，请明确说明。"""
+                        }
+                    ]
+                else:
+                    # 普通对话
+                    messages = [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": question}
+                    ]
+                
+                # 流式生成回答
+                for chunk in ai_client.stream_chat(messages):
+                    yield f"data: {json.dumps({'type': 'text', 'content': chunk})}\n\n"
+                
+                # 发送完成信号
+                elapsed_ms = int((time.time() - start_time) * 1000)
+                yield f"data: {json.dumps({'type': 'done', 'elapsed_ms': elapsed_ms})}\n\n"
+                
+                logger.info(f"AI响应完成，耗时: {elapsed_ms}ms")
+                
+            except Exception as e:
+                logger.error(f"流式生成失败: {e}", exc_info=True)
+                yield f"data: {json.dumps({'type': 'error', 'message': '抱歉，生成回答时出错了'})}\n\n"
+        
+        # 返回SSE流
+        response = StreamingHttpResponse(
+            generate(),
+            content_type='text/event-stream'
+        )
+        response['Cache-Control'] = 'no-cache'
+        response['X-Accel-Buffering'] = 'no'
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"AI聊天请求处理失败: {e}", exc_info=True)
+        return Response(
+            {'error': '服务器内部错误'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def ai_chat_sync(request):
+    """
+    同步AI聊天API（用于简单场景）
+    
+    Request body:
+    {
+        "question": "用户的问题",
+        "use_rag": true/false
+    }
+    
+    Response:
+    {
+        "answer": "AI的回答",
+        "elapsed_ms": 325,
+        "sources": [...]  # 如果使用RAG
     }
     """
-    serializer = AIQueryRequestSerializer(data=request.data)
-    if not serializer.is_valid():
+    
+    try:
+        question = request.data.get('question')
+        use_rag = request.data.get('use_rag', True)
+        
+        if not question or not question.strip():
+            return Response(
+                {'error': '问题不能为空'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # 初始化AI客户端
+        try:
+            ai_client = GroqClient()
+        except:
+            ai_client = OllamaClient()
+        
+        # 如果使用RAG
+        if use_rag:
+            try:
+                rag = RAGEngine()
+                answer = rag.rag_query(question, ai_client, top_k=3)
+                
+                return Response({
+                    'answer': answer,
+                    'used_rag': True
+                })
+            except Exception as e:
+                logger.error(f"RAG查询失败: {e}")
+                # 回退到普通对话
+                use_rag = False
+        
+        # 普通对话
+        result = ai_client.chat([{"role": "user", "content": question}])
+        
         return Response({
-            'data': None,
-            'error': {
-                'code': 'validation_error',
-                'message': serializer.errors
-            }
-        }, status=status.HTTP_400_BAD_REQUEST)
+            'answer': result['content'],
+            'elapsed_ms': result['elapsed_ms'],
+            'used_rag': False
+        })
+        
+    except Exception as e:
+        logger.error(f"同步聊天失败: {e}", exc_info=True)
+        return Response(
+            {'error': '服务器内部错误'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def ai_health(request):
+    """
+    健康检查API - 检查AI服务是否可用
     
-    query_text = serializer.validated_data['query']
-    university_id = serializer.validated_data.get('university_id')
+    Response:
+    {
+        "status": "ok",
+        "services": {
+            "groq": true/false,
+            "ollama": true/false,
+            "rag": true/false
+        }
+    }
+    """
     
-    # Mock响应
-    mock_response = (
-        f"这是一个模拟的 RAG 响应。您的问题是：\"{query_text}\"。\n\n"
-        "真实的 RAG 系统将会：\n"
-        "1. 使用向量检索找到相关文档\n"
-        "2. 调用 LLM (Claude/GPT) 生成回答\n"
-        "3. 返回基于校内知识库的准确答案\n\n"
-        "当前系统尚未启用。"
-    )
+    services_status = {
+        "groq": False,
+        "ollama": False,
+        "rag": False
+    }
     
-    # 记录查询日志（如果用户已登录）
-    user = request.user if request.user.is_authenticated else None
-    AIQueryLog.objects.create(
-        user=user,
-        query_text=query_text,
-        response_text=mock_response,
-        university_id=university_id,
-        matched_chunks=[],
-        response_time_ms=50
-    )
+    # 检查Groq
+    try:
+        GroqClient()
+        services_status["groq"] = True
+    except:
+        pass
     
-    response_serializer = AIQueryResponseSerializer({
-        'query': query_text,
-        'response': mock_response,
-        'is_mock': True,
-        'matched_chunks': []
-    })
+    # 检查Ollama
+    try:
+        OllamaClient()
+        services_status["ollama"] = True
+    except:
+        pass
+    
+    # 检查RAG
+    try:
+        RAGEngine()
+        services_status["rag"] = True
+    except:
+        pass
+    
+    overall_status = "ok" if any(services_status.values()) else "error"
     
     return Response({
-        'data': response_serializer.data,
-        'error': None
+        "status": overall_status,
+        "services": services_status
     })
-
