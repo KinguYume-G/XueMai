@@ -1,195 +1,172 @@
-# 学脉 · UniPulse Asia
+# 学脉（UniPulse Asia）
 
-面向高校学生的校园社交与学术资源平台。
+面向高校学生的校园社交与学术资源平台。项目将校园动态、专业论坛、学生社区、交换与实习机会、即时通信和 AI 学业问答整合在一个 Web 应用中。
 
-学脉将校园内容、专业讨论、学生社区、交换与实习机会、站内消息和学业问答集中在同一套产品中。项目采用 React 与 Django REST Framework 构建，覆盖从前端交互、状态管理和身份认证，到关系型数据建模、REST API 与 RAG 问答的完整链路。
+这个仓库包含完整的 React 前端和 Django 后端。项目重点不只是页面实现，也包括 JWT 会话管理、领域化 API、实时消息、异步通知以及 RAG 流式问答等前后端协作链路。
 
-## 功能
+## 核心功能
 
-### 校园内容
+| 模块 | 功能 |
+| --- | --- |
+| 校园动态 | 发布内容、Feed、标签、评论、点赞、收藏、可见范围 |
+| 论坛与社区 | 学院论坛、话题发布、热门标签、社区创建、加入与退出 |
+| 学生关系 | 关注、粉丝、好友申请、用户搜索 |
+| 即时通信 | 私信、群聊、未读统计、已读状态、在线状态、断线重连 |
+| 通知中心 | 点赞、评论、关注及系统通知，支持实时推送 |
+| 机会中心 | 交换项目、实习岗位、创业项目、搜索与筛选 |
+| 校园资料 | 大学、学院及校园资源信息 |
+| AI 助手 | SSE 流式回答、Groq/Ollama、Chroma 向量检索、RAG 回退 |
 
-- 发布和浏览校园动态
-- 帖子标签、评论、点赞与收藏
-- 按最新、热门和关注关系组织 Feed
-- 学院论坛、话题分类与社区
+帖子、论坛话题、社区和实习发布入口均已连接后端 API。论坛概览与热门标签来自数据库聚合；交换项目和实习使用统一收藏模型；消息发送在 WebSocket 不可用时保留 REST 回退路径。
 
-### 学生关系
+## 技术栈
 
-- 关注、粉丝和好友申请
-- 联系人搜索、私信与群组消息
-- 未读消息统计和已读状态
-- 点赞、评论、关注及系统通知
+### Frontend
 
-### 机会与资源
+- React 18、TypeScript、Vite 5
+- React Router、Zustand、Axios
+- Tailwind CSS、Lucide React
+- i18next、React Markdown
+- Fetch API + Server-Sent Events
 
-- 交换项目、实习岗位和创业项目
-- 按学校、地区、类型和截止日期筛选
-- 大学、学院及校园资源信息
-- 多内容类型统一收藏
+### Backend
 
-### AI 学业助手
+- Python、Django 5、Django REST Framework
+- Simple JWT、django-filter、drf-spectacular
+- Django Channels、Redis
+- Celery、Celery Beat
+- PostgreSQL；开发环境可回退到 SQLite
+- Groq、Ollama、LangChain、Chroma
+- 本地媒体存储；可选 Supabase Storage
 
-- 基于 Server-Sent Events 的流式回答
-- Groq 与本地 Ollama 两种推理方式
-- 使用 LangChain 和 Chroma 完成文档切分、向量检索与上下文组装
-- RAG 不可用时退回普通对话，避免检索服务影响基本问答
+## 系统设计
 
-## 技术架构
+```mermaid
+flowchart TB
+    Client[React Client] -->|REST / JWT| API[Django REST API]
+    Client <-->|WebSocket| Channels[Django Channels]
+    Client <-->|SSE| AI[AI Chat API]
 
-```text
-┌─────────────────────────────────────────────────────┐
-│                    React Client                     │
-│  Router · Auth Guard · Zustand · Axios · i18next   │
-└──────────────────────────┬──────────────────────────┘
-                           │ JSON / JWT / SSE / WebSocket
-┌──────────────────────────▼──────────────────────────┐
-│                    Django REST API                  │
-│                                                     │
-│  Auth      Content      Social       Opportunities  │
-│  Campus    Forums       Messages     Notifications  │
-│  Uploads   Bookmarks    OpenAPI      AI Assistant   │
-└───────────────┬─────────────────────────┬───────────┘
-                │                         │
-┌───────────────▼──────────────┐  ┌───────▼───────────┐
-│     PostgreSQL / SQLite      │  │ Groq / Ollama     │
-│   Django ORM · Migrations    │  │ LangChain · Chroma│
-└──────────────────────────────┘  └───────────────────┘
+    API --> DB[(PostgreSQL / SQLite)]
+    Channels <--> Redis[(Redis)]
+    API --> Queue[Celery]
+    Queue <--> Redis
+    Queue --> DB
+
+    AI --> RAG[LangChain + Chroma]
+    AI --> Groq[Groq]
+    AI --> Ollama[Ollama]
 ```
 
-### 前端
-
-| 范围 | 实现 |
-|---|---|
-| 应用框架 | React 18、TypeScript、Vite 5 |
-| 路由 | React Router，受保护路由统一处理登录状态 |
-| 状态 | Zustand 管理认证、聊天、收藏与机会页面状态 |
-| 网络层 | Axios 实例统一处理 API 地址、JWT 注入、Token 刷新和错误响应 |
-| 样式 | Tailwind CSS 与可复用 UI 组件 |
-| 国际化 | i18next、react-i18next |
-| AI 输出 | Fetch + SSE 增量解析 |
-
-### 后端
-
-| 范围 | 实现 |
-|---|---|
-| API | Django 5、Django REST Framework |
-| 认证 | Simple JWT，Access/Refresh Token 轮换 |
-| 数据访问 | Django ORM、过滤、搜索、排序和分页 |
-| 接口文档 | drf-spectacular 生成 OpenAPI Schema 与 Swagger UI |
-| 文件存储 | 本地媒体目录；可选 Supabase Storage |
-| 实时通信 | Django Channels、Redis Channel Layer、JWT WebSocket |
-| 异步任务 | Celery 处理通知创建、实时分发和过期数据清理 |
-| AI/RAG | Groq、Ollama、LangChain、Chroma |
-
-## 关键实现
-
-### JWT 会话管理
-
-前端通过共享 Axios Client 发送请求。请求拦截器自动附加 Access Token；接口返回 `401` 时，客户端只发起一次 Refresh 请求，并让并发失败请求等待同一个刷新结果。刷新失败后统一清理本地会话并返回登录页。
-
-### 实时消息与在线状态
-
-登录用户通过 JWT 建立 WebSocket 连接。Channels Consumer 将连接加入用户和群组 Channel Group，负责私信、群聊、通知和在线状态事件。REST 消息接口与 WebSocket 使用同一套序列化结构，因此断线时仍可通过 HTTP 完成发送，连接恢复后继续接收实时事件。
-
-用户连接和断开时会更新现有 `UserOnlineStatus` 记录；前端同步更新联系人列表与会话标题中的在线状态和最后在线时间。
-
-### 异步通知
-
-点赞、评论和关注事件通过 Django Signals 触发，并在数据库事务提交后交给 Celery。Worker 创建通知后，将事件发送到对应用户的 Channel Group。Celery Beat 每日清理超过保留期限的已读通知。
-
-### 领域拆分
-
-后端按业务域拆分 Django app，而不是把所有接口集中在单一模块中：
+后端按业务域拆分为独立 Django app：
 
 ```text
-authentication   注册、登录和当前用户
+authentication   注册、登录、当前用户
 users            用户与扩展资料
-campus           大学、学院和校园资源
-posts            帖子、标签、点赞和 Feed
+campus           大学、学院、校园资源
+posts            帖子、标签、点赞、Feed
 comments         评论与回复
-forums           学院论坛和话题
-communities      学生社区与成员关系
-social           关注、好友、聊天和群组
-notifications    站内通知与未读状态
+forums           学院论坛与话题
+communities      社区与成员关系
+social           关注、好友、私信、群聊
+notifications    站内通知
 bookmarks        跨内容类型收藏
-opportunities    交换、实习和创业项目
-uploads          媒体上传地址
+opportunities    交换、实习、创业项目
+uploads          媒体上传
 ai               流式问答与 RAG
 ```
 
-各模块分别维护模型、序列化器、视图、路由和迁移，公共权限、分页、节流与异常处理位于 `backend/core`。
+通用权限、分页、节流和异常响应位于 `backend/core`，业务模块分别维护模型、序列化器、视图、路由和迁移。
 
-### 数据关系
+## 关键实现
 
-```text
-User ──1:1── Profile ──> University / School
-  │
-  ├── Post ──> Comment / Tag / PostLike
-  ├── Follow / FriendRequest
-  ├── ChatGroup / ChatMessage
-  ├── Notification
-  ├── CommunityMember ──> Community
-  ├── Topic ──> Forum
-  └── ExchangeProgram / Internship / Startup
+### JWT 会话与请求层
 
-AIDocument ──> AIChunk ──1:1── AIEmbedding
-User ──> AIQueryLog
-```
+前端通过共享 Axios Client 管理认证请求。请求拦截器自动附加 Access Token；遇到 `401` 时，多个失败请求共用同一次 Token 刷新，避免并发触发重复请求。刷新失败后统一清理本地会话并返回登录页。
 
-### RAG 请求流程
+分页响应保留 `data`、`paging` 和 `error` 结构，普通业务响应则由请求层解包，页面与 Store 不需要重复处理 Axios Response。
 
-1. 前端向流式聊天接口提交问题。
-2. 后端使用 Ollama Embeddings 将问题向量化。
-3. Chroma 返回相关文档片段。
-4. 检索结果与学业助手 System Prompt 一起组成模型上下文。
-5. Groq 或 Ollama 生成回答，并通过 SSE 持续返回前端。
-6. 检索失败时记录异常并继续普通对话。
+### 实时消息与在线状态
+
+客户端使用 Access Token 建立 WebSocket 连接。自定义 Channels 中间件负责解析 JWT，Consumer 根据当前用户及群组成员关系加入对应 Channel Group。
+
+消息系统支持：
+
+- 私信与群组消息实时分发
+- 群组成员权限检查
+- 在线状态和最后在线时间同步
+- 未读数量与批量已读
+- 客户端自动重连
+- WebSocket 发送失败时回退到 REST API
+
+### 异步通知
+
+点赞、评论和关注通过 Django Signals 捕获。事务提交后，通知任务交给 Celery：Worker 持久化通知，并通过 Channels 推送给在线用户；Celery Beat 定期清理超过保留期限的已读通知。
+
+Broker 暂时不可用时，通知创建会回退到同步执行，避免核心业务操作因为队列服务中断而丢失通知。
+
+### AI 与 RAG
+
+AI 助手通过 SSE 将模型输出逐段返回前端。请求流程如下：
+
+1. 接收用户问题并判断是否启用知识库检索。
+2. 使用向量模型生成查询向量。
+3. 从 Chroma 中检索相关文档片段。
+4. 将检索内容与系统提示词组成模型上下文。
+5. 优先调用 Groq，无法使用时回退到本地 Ollama。
+6. 通过 SSE 返回文本片段、检索状态和完成事件。
+
+知识库或向量检索不可用时，接口会记录异常并继续普通问答，不让 RAG 依赖阻断基础聊天功能。
 
 ## 项目结构
 
 ```text
 .
 ├── frontend/
-│   ├── public/                 # 图片与静态资源
-│   └── src/
-│       ├── components/         # 业务组件、布局和基础 UI
-│       ├── hooks/              # 可复用交互逻辑
-│       ├── i18n/               # 中英文资源
-│       ├── lib/                # API Client、Token 与通用工具
-│       ├── pages/              # 页面组件
-│       ├── routes/             # 路由与应用布局
-│       ├── services/api/       # API 服务层
-│       ├── store/              # Zustand Store
-│       └── types/              # TypeScript 类型
+│   ├── public/                  # 静态资源
+│   ├── src/
+│   │   ├── components/          # 业务组件与基础 UI
+│   │   ├── hooks/               # SSE 等复用逻辑
+│   │   ├── i18n/                # 国际化资源
+│   │   ├── lib/                 # API Client、Token、WebSocket
+│   │   ├── pages/               # 页面组件
+│   │   ├── routes/              # 路由与应用布局
+│   │   ├── services/api/        # API 服务层
+│   │   ├── store/               # Zustand Store
+│   │   └── types/               # TypeScript 类型
+│   ├── package.json
+│   └── pnpm-lock.yaml
 ├── backend/
-│   ├── apps/                   # Django 业务模块
-│   ├── config/                 # Settings、URL、ASGI、WSGI、Celery
-│   ├── core/                   # 权限、分页、节流和异常处理
+│   ├── apps/                    # Django 业务模块
+│   ├── config/                  # Settings、URL、ASGI、WSGI、Celery
+│   ├── core/                    # 公共权限、分页、节流、异常处理
 │   ├── manage.py
 │   ├── requirements.txt
 │   └── requirements-ai.txt
 └── README.md
 ```
 
-## 本地开发
+## 本地运行
 
-### 环境要求
+### 1. 环境准备
+
+建议使用以下环境：
 
 - Node.js 18+
 - pnpm
 - Python 3.11+
 - PostgreSQL
-- Redis（实时消息、在线状态和异步通知）
+- Redis
 
-Ollama、Groq 和 Supabase 仅在使用对应功能时需要。
+仅浏览普通 REST 功能时可以使用 SQLite。实时消息、在线状态和异步通知需要 Redis；AI 功能还需要 Groq API Key 或本地 Ollama，RAG 需要重新构建 Chroma 索引。
 
-### 后端
+### 2. 启动后端
 
 ```bash
 cd backend
 
 python -m venv .venv
-source .venv/bin/activate       # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 
 pip install -r requirements.txt -r requirements-ai.txt
 cp .env.example .env
@@ -198,20 +175,31 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-服务启动后：
+Windows PowerShell 激活虚拟环境：
 
-- API：`http://127.0.0.1:8000/api/`
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+后端默认地址：
+
+- REST API：`http://127.0.0.1:8000/api/`
 - Swagger UI：`http://127.0.0.1:8000/api/docs/`
 - OpenAPI Schema：`http://127.0.0.1:8000/api/schema/`
 
-实时消息和异步通知还需要启动 Celery Worker 与 Beat：
+### 3. 启动实时与异步服务
+
+确保 Redis 已运行，然后分别启动 Worker 和 Beat：
 
 ```bash
+cd backend
+source .venv/bin/activate
+
 celery -A config worker -l info
 celery -A config beat -l info
 ```
 
-### 前端
+### 4. 启动前端
 
 ```bash
 cd frontend
@@ -223,51 +211,54 @@ pnpm dev
 
 前端默认运行在 `http://localhost:3000`。
 
-## 配置
+## 环境变量
 
-### 后端环境变量
+### Backend
 
-| 变量 | 必需 | 说明 |
-|---|:---:|---|
+| 变量 | 必需 | 用途 |
+| --- | :---: | --- |
 | `SECRET_KEY` | 是 | Django 签名密钥 |
-| `DEBUG` | 否 | 默认为 `False`；开发环境可设为 `True` |
-| `ALLOWED_HOSTS` | 否 | 以逗号分隔的 Host 列表 |
-| `DATABASE_URL` | 否 | 未配置时使用本地 SQLite |
-| `GROQ_API_KEY` | 否 | 启用 Groq 推理 |
-| `REDIS_URL` | 实时功能必需 | Channels、Celery Broker 与 Result Backend |
+| `DEBUG` | 否 | 开发环境调试开关 |
+| `ALLOWED_HOSTS` | 否 | 允许访问的 Host，逗号分隔 |
+| `DATABASE_URL` | 否 | 数据库连接；未配置时使用本地 SQLite |
+| `REDIS_URL` | 实时功能必需 | Channels、Celery 默认连接 |
 | `CELERY_BROKER_URL` | 否 | 单独指定 Celery Broker |
-| `CELERY_RESULT_BACKEND` | 否 | 单独指定结果存储 |
+| `CELERY_RESULT_BACKEND` | 否 | 单独指定 Celery Result Backend |
+| `GROQ_API_KEY` | Groq 模式必需 | Groq 推理服务凭据 |
 | `SUPABASE_URL` | 否 | Supabase 项目地址 |
-| `SUPABASE_SERVICE_ROLE_KEY` | 否 | 服务端存储凭据，不得传入前端 |
-| `SUPABASE_BUCKET` | 否 | 媒体文件 Bucket，默认 `uploads` |
+| `SUPABASE_SERVICE_ROLE_KEY` | 否 | 服务端存储凭据，不应暴露给前端 |
+| `SUPABASE_BUCKET` | 否 | 上传文件所在 Bucket，默认 `uploads` |
 
-### 前端环境变量
+### Frontend
 
-| 变量 | 默认值 | 说明 |
-|---|---|---|
-| `VITE_API_BASE_URL` | `http://127.0.0.1:8000/api` | Django API 根地址 |
+| 变量 | 默认值 | 用途 |
+| --- | --- | --- |
+| `VITE_API_BASE_URL` | `http://127.0.0.1:8000/api` | Django API 根地址，不附加末尾斜杠 |
 
-示例配置位于 `backend/.env.example` 和 `frontend/.env.example`。实际环境文件已通过 `.gitignore` 排除。
+示例配置分别位于 `backend/.env.example` 和 `frontend/.env.example`。真实环境文件已通过 `.gitignore` 排除。
 
-## API 概览
+## 接口入口
 
 | 业务域 | Endpoint |
-|---|---|
-| Authentication | `/api/auth/register/`、`/api/auth/login/`、`/api/auth/me/` |
-| Users & Campus | `/api/users/`、`/api/profiles/`、`/api/universities/`、`/api/schools/` |
-| Content | `/api/posts/`、`/api/feed/`、`/api/comments/`、`/api/tags/` |
-| Forums & Communities | `/api/forums/`、`/api/topics/`、`/api/communities/` |
-| Social & Chat | `/api/follow/`、`/api/follows/`、`/api/chat/*` |
-| Notifications | `/api/notifications/` |
-| Bookmarks | `/api/bookmarks/` |
-| Opportunities | `/api/exchange_programs/`、`/api/internships/`、`/api/startups/` |
+| --- | --- |
+| 认证 | `/api/auth/register/`、`/api/auth/login/`、`/api/auth/me/` |
+| 用户与校园 | `/api/users/`、`/api/profiles/`、`/api/universities/`、`/api/schools/` |
+| 内容 | `/api/posts/`、`/api/feed/`、`/api/comments/`、`/api/tags/` |
+| 论坛与社区 | `/api/forums/`、`/api/topics/`、`/api/communities/` |
+| 社交与聊天 | `/api/follow/`、`/api/follows/`、`/api/chat/messages/`、`/api/chat/groups/` |
+| 通知与收藏 | `/api/notifications/`、`/api/bookmarks/` |
+| 机会 | `/api/exchange_programs/`、`/api/internships/`、`/api/startups/` |
 | AI | `/api/ai/chat/stream/`、`/api/ai/chat/sync/`、`/api/ai/health/` |
 
-WebSocket 入口为 `/ws/chat/?token=<access-token>`，用于消息、在线状态和通知事件。
+WebSocket 入口：
 
-具体请求参数、响应结构和可用操作以 Swagger UI 生成的接口文档为准。
+```text
+/ws/chat/?token=<access-token>
+```
 
-## 代码检查
+完整请求参数和响应结构以 Swagger UI 生成的 OpenAPI 文档为准。
+
+## 代码质量检查
 
 ```bash
 # Frontend
@@ -281,12 +272,6 @@ python manage.py check
 python manage.py test
 ```
 
-## 当前状态
-
-这个仓库保留的是项目开发完成时的代码快照。原远程数据库和第三方服务实例已停止，因此仓库不附带可用的线上数据、模型文件、向量索引或服务凭据。若要重新部署，需要创建新的数据库并重新配置相关服务。
-
-帖子、论坛话题、社区和职位发布入口均已接入对应 API；论坛统计与热门标签来自数据库聚合，交换和实习机会使用统一收藏模型。实时消息、在线状态和通知依赖 Redis、Channels 与 Celery，重新部署时需要同时恢复这些服务。
-
 ## License
 
-本项目未声明开源许可证。代码版权归项目作者所有。
+本项目暂未声明开源许可证。未经许可，不得复制、修改或分发本仓库代码。
