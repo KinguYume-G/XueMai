@@ -1,25 +1,3 @@
-# environments
-.venv
-
-
-# api keys
-.env.local
-.env
-
-# node 
-node_modules
-
-
-# ai
-.claude/
-
-
-#else
-.ruff_cache
-
-
-
-# gpt given
 # --- Python / Django ---
 .venv/
 __pycache__/
@@ -31,7 +9,7 @@ __pycache__/
 db.sqlite3
 celerybeat-schedule
 
-# User uploads & collectstatic 输出
+# User uploads and collected static files
 media/
 staticfiles/
 
@@ -47,8 +25,8 @@ coverage/
 .env
 .env.*
 **/.env*
-frontend/.env.local
-backend/.env
+!.env.example
+!**/.env.example
 
 # --- Tools / IDE / OS ---
 .claude/
@@ -59,16 +37,10 @@ Thumbs.db
 
 
 
-# ignore Windows reserved names
+# Windows reserved names
 backend/nul
 nul
 
-# ignore
-.env
-.env.local
-venv/
-.venv/
-__pycache__/
-*.pyc
-node_modules/
-.next/
+# Local AI vector data
+chroma_db/
+backend/chroma_db/
