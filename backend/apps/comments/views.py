@@ -8,7 +8,6 @@ from django.db.models import F
 from .models import Comment
 from .serializers import CommentSerializer, CommentCreateSerializer, CommentWithRepliesSerializer
 from core.pagination import StandardResultsPagination
-from apps.notifications.utils import create_comment_notification
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -46,13 +45,6 @@ class CommentViewSet(viewsets.ModelViewSet):
         post.comments_count = F('comments_count') + 1
         post.save(update_fields=['comments_count'])
 
-        # 创建评论通知
-        create_comment_notification(
-            sender=self.request.user,
-            post=comment.post if not comment.parent else None,
-            parent_comment=comment.parent,
-            comment=comment
-        )
     
     def perform_destroy(self, instance):
         # 更新帖子评论数

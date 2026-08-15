@@ -15,7 +15,9 @@ class CommunitySerializer(serializers.ModelSerializer):
             'members', 'activity_rate', 'joined',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['created_at', 'updated_at', 'members']
+        read_only_fields = [
+            'slug', 'created_at', 'updated_at', 'members', 'activity_rate'
+        ]
 
     def get_joined(self, obj):
         """Check if current user has joined"""

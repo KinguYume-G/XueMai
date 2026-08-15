@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { notificationsApi } from '@/services/api/notifications'
 import type { Notification, NotificationType, NotificationCountsByType } from '@/types/notification'
 import NotificationItem from '@/components/notifications/NotificationItem'
+import { useNavigate } from 'react-router-dom'
 
 type TabType = 'all' | NotificationType
 
@@ -12,6 +13,7 @@ type TabType = 'all' | NotificationType
  * 使用标准三栏布局：左侧导航 + 中间通知内容 + 右侧侧边栏
  */
 export default function Notifications() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<TabType>('all')
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [counts, setCounts] = useState<NotificationCountsByType>({
@@ -110,8 +112,11 @@ export default function Notifications() {
       }
     }
 
-    // TODO: 跳转到相关页面
-    console.log('Navigate to:', notification.link || notification.related_post)
+    if (notification.link) {
+      navigate(notification.link)
+    } else if (notification.related_post?.id) {
+      navigate(`/posts/${notification.related_post.id}`)
+    }
   }
 
   return (

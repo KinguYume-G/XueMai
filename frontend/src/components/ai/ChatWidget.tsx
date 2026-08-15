@@ -3,11 +3,15 @@ import { Minus, HelpCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { useChatWidgetStore } from '@/store/useChatWidgetStore'
+import { useNavigate } from 'react-router-dom'
+import useChatStore from '@/store/useChatStore'
 
 const CHAT_WIDGET_PANEL_ID = 'chat-widget-panel'
 const CHAT_WIDGET_TITLE_ID = 'chat-widget-title'
 
 export default function ChatWidget() {
+  const navigate = useNavigate()
+  const openChat = useChatStore((state) => state.setOpen)
   const isOpen = useChatWidgetStore((state) => state.isOpen)
   const openWidget = useChatWidgetStore((state) => state.open)
   const closeWidget = useChatWidgetStore((state) => state.close)
@@ -106,7 +110,7 @@ export default function ChatWidget() {
             <div className="grid grid-cols-2 gap-3">
               {/* 卡片1: AI助手 */}
               <button
-                onClick={() => window.location.href = '/ai'}
+                onClick={() => { closeWidget(); navigate('/ai-tools') }}
                 className="flex flex-col items-start gap-2 rounded-xl bg-blue-50 p-4 text-left transition-all hover:bg-blue-100 hover:shadow-md active:scale-[0.98]"
               >
                 <span className="text-2xl">🤖</span>
@@ -118,19 +122,19 @@ export default function ChatWidget() {
 
               {/* 卡片2: 在线客服 */}
               <button
-                onClick={() => alert('客服功能即将开放，敬请期待！')}
-                className="flex flex-col items-start gap-2 rounded-xl bg-green-50 p-4 text-left transition-all hover:bg-green-100 hover:shadow-md active:scale-[0.98] opacity-75"
+                onClick={() => { closeWidget(); openChat(true) }}
+                className="flex flex-col items-start gap-2 rounded-xl bg-green-50 p-4 text-left transition-all hover:bg-green-100 hover:shadow-md active:scale-[0.98]"
               >
                 <span className="text-2xl">💬</span>
                 <div>
                   <p className="font-semibold text-slate-900">在线客服</p>
-                  <p className="text-xs text-slate-600">即将开放</p>
+                  <p className="text-xs text-slate-600">联系同学与好友</p>
                 </div>
               </button>
 
               {/* 卡片3: 帮助文档 */}
               <button
-                onClick={() => alert('帮助文档正在建设中')}
+                onClick={() => { closeWidget(); navigate('/apu') }}
                 className="flex flex-col items-start gap-2 rounded-xl bg-purple-50 p-4 text-left transition-all hover:bg-purple-100 hover:shadow-md active:scale-[0.98]"
               >
                 <span className="text-2xl">📚</span>

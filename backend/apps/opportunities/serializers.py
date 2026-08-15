@@ -2,6 +2,7 @@
 from rest_framework import serializers
 from .models import ExchangeProgram, Internship, Startup
 from apps.users.serializers import UserSerializer
+from apps.bookmarks.models import Bookmark
 
 
 class ExchangeProgramSerializer(serializers.ModelSerializer):
@@ -27,9 +28,11 @@ class ExchangeProgramSerializer(serializers.ModelSerializer):
         """Check if current user has bookmarked"""
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            # TODO: Implement with generic bookmark model
-            # For now, return False
-            return False
+            return Bookmark.objects.filter(
+                user=request.user,
+                content_type='exchange',
+                object_id=obj.pk,
+            ).exists()
         return False
 
 
@@ -55,7 +58,11 @@ class InternshipSerializer(serializers.ModelSerializer):
     def get_bookmarked(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            return False  # TODO: Implement with bookmark model
+            return Bookmark.objects.filter(
+                user=request.user,
+                content_type='internship',
+                object_id=obj.pk,
+            ).exists()
         return False
 
     def get_posted_days(self, obj):

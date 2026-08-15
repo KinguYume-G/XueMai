@@ -42,25 +42,15 @@ let refreshPromise: Promise<string | null> | null = null
 
 const resolveResponseData = <T>(response: AxiosResponse<ApiResponse<T> | T>): T => {
   const payload = response.data
-  console.log('🔍 [resolveResponseData] ========== 开始解析响应 ==========')
-  console.log('🔍 [resolveResponseData] 请求 URL:', response.config.url)
-  console.log('🔍 [resolveResponseData] 原始 payload:', payload)
-  console.log('🔍 [resolveResponseData] payload 类型:', typeof payload)
-  console.log('🔍 [resolveResponseData] payload 是否为数组:', Array.isArray(payload))
-  console.log('🔍 [resolveResponseData] payload 是否有 data 字段:', payload && typeof payload === 'object' && 'data' in payload)
 
   if (payload && typeof payload === 'object' && 'data' in payload) {
+    if ('paging' in payload) {
+      return payload as T
+    }
     const extractedData = (payload as ApiResponse<T>).data
-    console.log('✅ [resolveResponseData] 检测到嵌套 data 字段，提取 payload.data')
-    console.log('✅ [resolveResponseData] extractedData:', extractedData)
-    console.log('✅ [resolveResponseData] extractedData 类型:', typeof extractedData)
-    console.log('✅ [resolveResponseData] extractedData 是否为数组:', Array.isArray(extractedData))
-    console.log('🔍 [resolveResponseData] ========== 返回提取的 data ==========')
     return extractedData
   }
 
-  console.log('✅ [resolveResponseData] 未检测到嵌套 data 字段，直接返回 payload')
-  console.log('🔍 [resolveResponseData] ========== 直接返回 payload ==========')
   return payload as T
 }
 

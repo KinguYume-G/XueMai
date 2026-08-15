@@ -13,4 +13,4 @@ export * from './opportunities'
 export * from './forums'
 export * from './campus'
 export * from './ai'
-
+export * from './communities'

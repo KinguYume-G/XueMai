@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { API_BASE_URL } from '@/lib/api/client'
+import { getAccessToken } from '@/lib/auth/token'
 
 interface Message {
   id: string
@@ -56,14 +58,14 @@ export function useAIStream(): UseAIStreamReturn {
 
     try {
       // 获取token
-      const token = localStorage.getItem('token')
+      const token = getAccessToken()
       if (!token) {
         navigate('/login')
         return
       }
 
       // 发送请求
-      const response = await fetch('/api/ai/chat/stream/', {
+      const response = await fetch(`${API_BASE_URL}/ai/chat/stream/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -94,6 +96,7 @@ export function useAIStream(): UseAIStreamReturn {
 
       const decoder = new TextDecoder()
       let accumulatedText = ''
+      let buffer = ''
 
       while (true) {
         const { done, value } = await reader.read()
@@ -101,8 +104,9 @@ export function useAIStream(): UseAIStreamReturn {
         if (done) break
 
         // 解码chunk
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n')
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
 
         for (const line of lines) {
           if (!line.trim() || !line.startsWith('data: ')) continue
@@ -134,7 +138,7 @@ export function useAIStream(): UseAIStreamReturn {
               setError(parsed.message || '生成回答时出错')
             } else if (parsed.type === 'done') {
               // 完成，可以记录耗时
-              console.log(`AI响应完成，耗时: ${parsed.elapsed_ms}ms`)
+              continue
             }
           } catch (e) {
             console.error('解析SSE数据失败:', e, data)

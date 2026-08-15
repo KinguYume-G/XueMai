@@ -7,6 +7,8 @@ export interface UserBasic {
   avatar?: string;
   school?: string;
   major?: string;
+  is_online?: boolean;
+  last_seen?: string | null;
 }
 
 export interface ChatContact {

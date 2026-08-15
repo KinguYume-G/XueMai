@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import FloatingActions from './FloatingActions';
 import ChatDrawer from './ChatDrawer';
 import ChatView from './ChatView';
 import useChatStore from '@/store/useChatStore';
 import { useAuthStore } from '@/store/authStore';
+import { chatSocket } from '@/lib/websocket/chatSocket';
 
 const ChatSystem: React.FC = () => {
   const { i18n } = useTranslation();
@@ -31,7 +32,25 @@ const ChatSystem: React.FC = () => {
     sendMessage,
     acceptRequest,
     rejectRequest,
+    receiveMessage,
+    updatePresence,
   } = useChatStore();
+
+  useEffect(() => {
+    if (!user) return undefined;
+    chatSocket.connect();
+    const unsubscribe = chatSocket.subscribe((event) => {
+      if (event.type === 'message.created') receiveMessage(event.payload);
+      if (event.type === 'presence.changed') updatePresence(event.payload);
+      if (event.type === 'notification.created') {
+        window.dispatchEvent(new CustomEvent('xuemai:notification', { detail: event.payload }));
+      }
+    });
+    return () => {
+      unsubscribe();
+      chatSocket.disconnect();
+    };
+  }, [user, receiveMessage, updatePresence]);
 
   // 语言切换处理
   const handleLanguageChange = (lang: 'zh' | 'en') => {

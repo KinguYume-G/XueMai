@@ -6,10 +6,9 @@ export interface AIQueryRequest {
 }
 
 export interface AIQueryResponse {
-  query: string;
-  response: string;
-  is_mock: boolean;
-  matched_chunks?: number[];
+  answer: string;
+  used_rag: boolean;
+  elapsed_ms?: number;
 }
 
 export const aiApi = {
@@ -17,8 +16,10 @@ export const aiApi = {
    * AI查询（RAG）
    */
   query: async (data: AIQueryRequest): Promise<AIQueryResponse> => {
-    const response = await apiClient.post<{ data: AIQueryResponse }>('/ai/query/', data);
-    return (response as { data: AIQueryResponse }).data;
+    return await apiClient.post<AIQueryResponse>('/ai/chat/sync/', {
+      question: data.query,
+      use_rag: true,
+      university_id: data.university_id,
+    }) as unknown as AIQueryResponse;
   },
 };
-

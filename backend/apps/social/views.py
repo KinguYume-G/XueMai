@@ -6,6 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from django.db.models import F, Q, Prefetch, Max, Count, Case, When, IntegerField
 from django.utils import timezone
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 from .models import (
     Follow, FriendRequest, ChatGroup, GroupMember,
@@ -19,7 +21,6 @@ from .serializers import (
     UserOnlineStatusSerializer, UserBasicSerializer
 )
 from core.pagination import StandardResultsPagination
-from apps.notifications.utils import create_follow_notification
 
 User = get_user_model()
 
@@ -82,11 +83,6 @@ def follow_user(request):
             target_user.profile.followers_count = F('followers_count') + 1
             target_user.profile.save(update_fields=['followers_count'])
 
-        # 创建关注通知
-        create_follow_notification(
-            sender=request.user,
-            following_user=target_user
-        )
 
     return Response({
         'data': {
@@ -494,6 +490,11 @@ def get_messages(request):
         ).order_by('created_at')
     else:
         # 获取群聊记录
+        if not GroupMember.objects.filter(group_id=group_id, user=user).exists():
+            return Response({
+                'data': None,
+                'error': {'code': 'forbidden', 'message': '你不是该群组成员'}
+            }, status=status.HTTP_403_FORBIDDEN)
         messages = ChatMessage.objects.filter(
             group_id=group_id
         ).select_related(
@@ -513,7 +514,10 @@ def get_messages(request):
 @permission_classes([IsAuthenticated])
 def send_message(request):
     """发送消息（私聊或群聊）"""
-    serializer = ChatMessageCreateSerializer(data=request.data)
+    serializer = ChatMessageCreateSerializer(
+        data=request.data,
+        context={'request': request},
+    )
 
     if not serializer.is_valid():
         return Response({
@@ -537,6 +541,17 @@ def send_message(request):
     )
 
     result_serializer = ChatMessageSerializer(message)
+    channel_layer = get_channel_layer()
+    payload = result_serializer.data
+    target = f'chat_group_{group_id}' if group_id else f'user_{to_user_id}'
+    async_to_sync(channel_layer.group_send)(
+        target,
+        {'type': 'chat.message', 'message': payload},
+    )
+    async_to_sync(channel_layer.group_send)(
+        f'user_{request.user.pk}',
+        {'type': 'chat.message', 'message': payload},
+    )
 
     return Response({
         'data': result_serializer.data,
@@ -569,6 +584,11 @@ def mark_messages_as_read(request):
         ).update(is_read=True)
     else:
         # 标记群聊消息为已读
+        if not GroupMember.objects.filter(group_id=group_id, user=request.user).exists():
+            return Response({
+                'data': None,
+                'error': {'code': 'forbidden', 'message': '你不是该群组成员'}
+            }, status=status.HTTP_403_FORBIDDEN)
         updated = ChatMessage.objects.filter(
             group_id=group_id,
             is_read=False
@@ -580,6 +600,14 @@ def mark_messages_as_read(request):
         },
         'error': None
     })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_presence(request, user_id):
+    """Return the latest presence state for a user."""
+    presence, _ = UserOnlineStatus.objects.get_or_create(user_id=user_id)
+    return Response({'data': UserOnlineStatusSerializer(presence).data, 'error': None})
 
 
 @api_view(['GET'])

@@ -114,6 +114,7 @@ export interface PostCreateRequest {
   target_university?: number;
   target_school?: number;
   tags?: string[];
+  tag_names?: string[];
 }
 
 // ========== 评论相关 ==========
@@ -249,12 +250,19 @@ export interface Internship {
   requirements: string;
   salary_range: string;
   link?: string;
+  city?: string;
+  country?: string;
+  remote?: boolean;
+  skills?: string[];
+  applicants_count?: number;
+  bookmarked?: boolean;
+  posted_days?: number;
+  apply_url?: string;
   visibility: string;
   is_published: boolean;
   posted_by: number;
-  posted_by_username: string;
+  posted_by_username?: string;
   views_count: number;
   created_at: string;
   updated_at: string;
 }
-

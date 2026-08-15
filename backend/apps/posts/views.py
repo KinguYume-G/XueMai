@@ -11,7 +11,6 @@ from datetime import timedelta
 from .models import Tag, Post, PostLike, Bookmark
 from .serializers import TagSerializer, PostSerializer, PostCreateUpdateSerializer
 from core.pagination import StandardResultsPagination
-from apps.notifications.utils import create_like_notification
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -138,11 +137,6 @@ class PostViewSet(viewsets.ModelViewSet):
             post.refresh_from_db()
             message = 'liked'
 
-            # 创建点赞通知
-            create_like_notification(
-                sender=request.user,
-                post=post
-            )
         else:
             like.delete()
             post.likes_count = F('likes_count') - 1

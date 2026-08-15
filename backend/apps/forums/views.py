@@ -4,7 +4,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import F
+from django.db.models import F, Count, Sum
 
 from .models import Forum, Topic, Faculty
 from .serializers import ForumSerializer, TopicSerializer, TopicCreateSerializer, FacultySerializer
@@ -18,13 +18,11 @@ def forum_overview(request):
     论坛概览统计
     GET /api/forums/overview/
     """
-    # TODO: 实现真实统计逻辑
-    # 第一版返回固定值
     data = {
-        "faculty_count": 6,
-        "major_count": 60,
-        "active_posts": 4100,
-        "active_users": 12000
+        "faculty_count": Faculty.objects.count(),
+        "major_count": Faculty.objects.aggregate(total=Sum('major_count'))['total'] or 0,
+        "active_posts": Topic.objects.count(),
+        "active_users": Topic.objects.values('author_id').distinct().count(),
     }
     return Response(data)
 
@@ -37,17 +35,15 @@ def hot_topics(request):
     GET /api/topics/hot/?limit=4&window=7d
     """
     limit = int(request.query_params.get('limit', 4))
-    window = request.query_params.get('window', '7d')
-
-    # TODO: aggregate count from posts_tag within window
-    # 第一版返回固定值
-    data = [
-        {"name": "课程资料", "post_count": 567},
-        {"name": "问答互助", "post_count": 423},
-        {"name": "经验分享", "post_count": 345},
-        {"name": "学术研究", "post_count": 234}
-    ]
-    return Response(data[:limit])
+    tags = (
+        Topic.tags.through.objects.values('tag__name')
+        .annotate(post_count=Count('topic_id'))
+        .order_by('-post_count', 'tag__name')[:limit]
+    )
+    return Response([
+        {'name': item['tag__name'], 'post_count': item['post_count']}
+        for item in tags
+    ])
 
 
 class FacultyViewSet(viewsets.ReadOnlyModelViewSet):

@@ -28,6 +28,7 @@ urlpatterns = [
     path('chat/messages/send/', views.send_message, name='send-message'),
     path('chat/messages/mark-read/', views.mark_messages_as_read, name='mark-messages-read'),
     path('chat/unread-count/', views.get_unread_count, name='unread-count'),
+    path('chat/presence/<int:user_id>/', views.get_user_presence, name='user-presence'),
 
     # 搜索
     path('chat/search/', views.search_users, name='search-users'),

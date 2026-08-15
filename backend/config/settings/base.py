@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     "django_filters",
     "corsheaders",
     "drf_spectacular",
+    "channels",
     # Local apps
     "apps.authentication",
     "apps.campus",
@@ -161,4 +162,27 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Academic social network connecting students across Asia-Pacific universities",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+}
+
+# ========== Channels / Redis ==========
+REDIS_URL = env("REDIS_URL", default="redis://127.0.0.1:6379/0")
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {"hosts": [REDIS_URL]},
+    }
+}
+
+# ========== Celery ==========
+CELERY_BROKER_URL = env("CELERY_BROKER_URL", default=REDIS_URL)
+CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default=REDIS_URL)
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULE = {
+    "delete-expired-read-notifications": {
+        "task": "apps.notifications.tasks.delete_expired_read_notifications",
+        "schedule": 86400.0,
+    },
 }

@@ -8,6 +8,7 @@ from django.utils import timezone
 
 from .models import ExchangeProgram, Internship, Startup
 from .serializers import ExchangeProgramSerializer, InternshipSerializer, StartupSerializer
+from apps.bookmarks.models import Bookmark
 from core.pagination import StandardResultsPagination
 
 
@@ -90,14 +91,16 @@ class ExchangeProgramViewSet(viewsets.ModelViewSet):
         """
         收藏/取消收藏交换项目（Toggle设计）
         POST /api/exchange_programs/{id}/bookmark/
-        TODO: Implement with generic bookmark model
         """
         program = self.get_object()
-        # Placeholder implementation
-        return Response(
-            {"bookmarked": True, "message": "收藏功能将在通用收藏模块实现后启用"},
-            status=status.HTTP_201_CREATED
+        bookmark, created = Bookmark.objects.get_or_create(
+            user=request.user,
+            content_type='exchange',
+            object_id=program.pk,
         )
+        if not created:
+            bookmark.delete()
+        return Response({"bookmarked": created})
 
 
 class InternshipViewSet(viewsets.ModelViewSet):
@@ -134,11 +137,16 @@ class InternshipViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def bookmark(self, request, pk=None):
-        """收藏/取消收藏实习（TODO）"""
-        return Response(
-            {"bookmarked": True, "message": "收藏功能将在通用收藏模块实现后启用"},
-            status=status.HTTP_201_CREATED
+        """收藏或取消收藏实习。"""
+        internship = self.get_object()
+        bookmark, created = Bookmark.objects.get_or_create(
+            user=request.user,
+            content_type='internship',
+            object_id=internship.pk,
         )
+        if not created:
+            bookmark.delete()
+        return Response({"bookmarked": created})
 
 
 class StartupViewSet(viewsets.ModelViewSet):

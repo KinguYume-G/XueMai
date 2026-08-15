@@ -6,6 +6,9 @@ import AIChatInput from '@/components/ai/AIChatInput'
 import AIWelcome from '@/components/ai/AIWelcome'
 import type { AICategoryId } from '@/types/ai'
 import { aiCategories } from '@/types/ai'
+import { useAIStream } from '@/hooks/useAIStream'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 /**
  * 学脉AI助手主页面
@@ -13,6 +16,7 @@ import { aiCategories } from '@/types/ai'
  */
 export default function AIAssistant() {
   const [activeCategory, setActiveCategory] = useState<AICategoryId | null>(null)
+  const { messages, isStreaming, error, sendMessage } = useAIStream()
 
   // 获取当前选中分类的数据
   const currentCategory = activeCategory
@@ -21,13 +25,13 @@ export default function AIAssistant() {
 
   // 处理子功能卡片点击
   const handleFunctionClick = (functionId: string) => {
-    console.log('选择的功能:', functionId)
-    alert('功能开发中：' + functionId)
+    const feature = currentCategory?.functions.find((item) => item.id === functionId)
+    if (feature) sendMessage(`请作为${feature.name}助手帮助我。请先告诉我需要提供哪些信息。`)
   }
 
   // 处理发送消息
   const handleSendMessage = (message: string) => {
-    console.log('发送消息:', message)
+    sendMessage(message)
   }
 
   return (
@@ -44,7 +48,18 @@ export default function AIAssistant() {
       <main className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto pb-6">
           <Card className="min-h-full rounded-xl border shadow-sm p-6">
-            {!currentCategory ? (
+            {messages.length > 0 ? (
+              <div className="space-y-4">
+                {messages.map((message) => (
+                  <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                      {message.role === 'assistant' ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content || '正在生成…'}</ReactMarkdown> : message.content}
+                    </div>
+                  </div>
+                ))}
+                {error && <p className="text-sm text-destructive">{error}</p>}
+              </div>
+            ) : !currentCategory ? (
               // 未选择分类时显示欢迎界面
               <AIWelcome />
             ) : (
@@ -80,7 +95,7 @@ export default function AIAssistant() {
 
         {/* 底部聊天输入框 */}
         <div className="flex-shrink-0 mt-4">
-          <AIChatInput onSend={handleSendMessage} />
+          <AIChatInput onSend={handleSendMessage} disabled={isStreaming} />
         </div>
       </main>
     </div>

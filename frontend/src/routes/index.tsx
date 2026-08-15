@@ -10,8 +10,9 @@ import Opportunities from '@/pages/Opportunities'
 import Bookmarks from '@/pages/Bookmarks'
 import Notifications from '@/pages/Notifications'
 import AboutAPU from '@/pages/AboutAPU'
-import ComingSoon from '@/pages/ComingSoon'
 import AIAssistant from '@/pages/AIAssistant'
+import CreateContent from '@/pages/CreateContent'
+import InternshipDetailPage from '@/pages/Internships/Detail'
 import Protected from '@/components/auth/Protected'
 
 export const router = createBrowserRouter([
@@ -44,6 +45,10 @@ export const router = createBrowserRouter([
         element: <Opportunities />,
       },
       {
+        path: 'internships/:id',
+        element: <InternshipDetailPage />,
+      },
+      {
         path: 'bookmarks',
         element: <Bookmarks />,
       },
@@ -55,22 +60,21 @@ export const router = createBrowserRouter([
         path: 'apu',
         element: <AboutAPU />,
       },
-      // Coming Soon pages
       {
         path: 'create/post',
-        element: <ComingSoon title="发布帖子" message="帖子发布功能正在开发中" />,
+        element: <CreateContent kind="post" />,
       },
       {
         path: 'create/question',
-        element: <ComingSoon title="提出问题" message="问答功能正在开发中" />,
+        element: <CreateContent kind="question" />,
       },
       {
         path: 'create/community',
-        element: <ComingSoon title="创建社区" message="社区创建功能正在开发中" />,
+        element: <CreateContent kind="community" />,
       },
       {
         path: 'create/job',
-        element: <ComingSoon title="发布职位" message="职位发布功能正在开发中" />,
+        element: <CreateContent kind="job" />,
       },
       {
         path: 'ai-tools',
@@ -91,4 +95,3 @@ export const router = createBrowserRouter([
     element: <Navigate to="/" replace />,
   },
 ])
-

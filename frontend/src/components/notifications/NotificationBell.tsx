@@ -35,7 +35,12 @@ export default function NotificationBell() {
   useEffect(() => {
     fetchUnreadCount()
     const interval = setInterval(fetchUnreadCount, 30000)
-    return () => clearInterval(interval)
+    const handleRealtimeNotification = () => setUnreadCount((count) => count + 1)
+    window.addEventListener('xuemai:notification', handleRealtimeNotification)
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('xuemai:notification', handleRealtimeNotification)
+    }
   }, [])
 
   // 点击铃铛打开模态框

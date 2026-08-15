@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { notificationsApi } from '@/services/api/notifications'
 import type { Notification, NotificationType, NotificationCountsByType } from '@/types/notification'
 import NotificationItem from './NotificationItem'
+import { useNavigate } from 'react-router-dom'
 
 interface NotificationPanelProps {
   onClose: () => void
@@ -18,6 +19,7 @@ type TabType = 'all' | NotificationType
  * 显示通知列表、标签页、一键已读等功能
  */
 export default function NotificationPanel({ onClose, onNotificationRead }: NotificationPanelProps) {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<TabType>('all')
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [counts, setCounts] = useState<NotificationCountsByType>({
@@ -152,8 +154,9 @@ export default function NotificationPanel({ onClose, onNotificationRead }: Notif
       }
     }
 
-    // TODO: 跳转到相关页面
-    console.log('Navigate to:', notification.link || notification.related_post)
+    onClose()
+    if (notification.link) navigate(notification.link)
+    else if (notification.related_post?.id) navigate(`/posts/${notification.related_post.id}`)
   }
 
   // 调试日志：渲染时的 state

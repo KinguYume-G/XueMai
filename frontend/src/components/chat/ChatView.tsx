@@ -174,8 +174,12 @@ const ChatView: React.FC<ChatViewProps> = ({
   };
 
   const displayName = recipient?.username || group?.name || '';
-  const isOnline = recipient ? true : false; // TODO: 从实际在线状态获取
-  const lastSeenText = isOnline ? '在线' : '上次在线：2小时前'; // TODO: 从实际数据获取
+  const isOnline = Boolean(recipient?.is_online);
+  const lastSeenText = isOnline
+    ? '在线'
+    : recipient?.last_seen
+      ? `上次在线：${formatMessageTime(recipient.last_seen)}`
+      : '离线';
 
   return (
     <div className="fixed bottom-24 left-6 w-[400px] h-[600px] bg-white rounded-xl shadow-2xl z-50 flex flex-col animate-slide-up">

@@ -17,10 +17,15 @@ class UserBasicSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
     school = serializers.SerializerMethodField()
     major = serializers.SerializerMethodField()
+    is_online = serializers.SerializerMethodField()
+    last_seen = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'avatar', 'school', 'major']
+        fields = [
+            'id', 'username', 'email', 'avatar', 'school', 'major',
+            'is_online', 'last_seen'
+        ]
         read_only_fields = ['id', 'username', 'email']
 
     def get_avatar(self, obj):
@@ -37,6 +42,13 @@ class UserBasicSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'profile'):
             return obj.profile.major
         return None
+
+    def get_is_online(self, obj):
+        return bool(getattr(getattr(obj, 'online_status', None), 'is_online', False))
+
+    def get_last_seen(self, obj):
+        status = getattr(obj, 'online_status', None)
+        return status.last_seen if status else None
 
 
 # ========== 关注系统序列化器 ==========
@@ -185,8 +197,13 @@ class ChatMessageCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError("接收用户不存在")
 
         # 验证群组是否存在
-        if group_id and not ChatGroup.objects.filter(id=group_id).exists():
-            raise serializers.ValidationError("群组不存在")
+        if group_id:
+            if not ChatGroup.objects.filter(id=group_id).exists():
+                raise serializers.ValidationError("群组不存在")
+            request = self.context.get('request')
+            user = self.context.get('user') or getattr(request, 'user', None)
+            if user and not GroupMember.objects.filter(group_id=group_id, user=user).exists():
+                raise serializers.ValidationError("你不是该群组成员")
 
         return attrs
 

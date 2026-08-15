@@ -4,8 +4,10 @@ import {
   UserBasic,
   ChatTab,
   ChatState,
+  ChatMessage,
 } from '@/types/chat';
 import * as chatApi from '@/services/api/chat';
+import { chatSocket, type PresenceEvent } from '@/lib/websocket/chatSocket';
 
 interface ChatActions {
   // 弹窗控制
@@ -29,6 +31,8 @@ interface ChatActions {
   fetchMessages: (userId?: number, groupId?: number) => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
   markAsRead: (userId?: number, groupId?: number) => Promise<void>;
+  receiveMessage: (message: ChatMessage) => void;
+  updatePresence: (presence: PresenceEvent) => void;
 
   // 好友操作
   followUser: (userId: number) => Promise<void>;
@@ -256,21 +260,68 @@ const useChatStore = create<ChatState & ChatActions>((set, get) => ({
 
   sendMessage: async (content) => {
     const { selectedUser, selectedGroup } = get();
-    try {
-      const data = await chatApi.sendMessage({
-        to_user_id: selectedUser?.id,
-        group_id: selectedGroup?.id,
-        content,
-        message_type: 'text',
-      });
+    const payload = {
+      to_user_id: selectedUser?.id,
+      group_id: selectedGroup?.id,
+      content,
+      message_type: 'text' as const,
+    };
 
-      // 添加新消息到列表
+    if (chatSocket.sendMessage(payload)) return;
+
+    try {
+      const message = await chatApi.sendMessage(payload);
+
       set((state) => ({
-        messages: [...state.messages, data.data],
+        messages: state.messages.some((item) => item.id === message.id)
+          ? state.messages
+          : [...state.messages, message],
       }));
     } catch (error: any) {
       set({ error: error.message || '发送消息失败' });
     }
+  },
+
+  receiveMessage: (message) => {
+    const { selectedUser, selectedGroup } = get();
+    const belongsToConversation = selectedGroup
+      ? message.group?.id === selectedGroup.id
+      : selectedUser
+        ? message.from_user.id === selectedUser.id || message.to_user?.id === selectedUser.id
+        : false;
+
+    if (belongsToConversation) {
+      set((state) => ({
+        messages: state.messages.some((item) => item.id === message.id)
+          ? state.messages
+          : [...state.messages, message],
+      }));
+    } else {
+      set((state) => ({ unreadCount: state.unreadCount + 1 }));
+    }
+  },
+
+  updatePresence: ({ user_id, is_online, last_seen }) => {
+    const updateUser = (user: UserBasic) =>
+      user.id === user_id ? { ...user, is_online, last_seen } : user;
+    set((state) => ({
+      selectedUser: state.selectedUser ? updateUser(state.selectedUser) : null,
+      followingList: state.followingList.map((item) => ({
+        ...item,
+        user: updateUser(item.user),
+        is_online: item.user.id === user_id ? is_online : item.is_online,
+      })),
+      followersList: state.followersList.map((item) => ({
+        ...item,
+        user: updateUser(item.user),
+        is_online: item.user.id === user_id ? is_online : item.is_online,
+      })),
+      friendsList: state.friendsList.map((item) => ({
+        ...item,
+        user: updateUser(item.user),
+        is_online: item.user.id === user_id ? is_online : item.is_online,
+      })),
+    }));
   },
 
   markAsRead: async (userId?, groupId?) => {

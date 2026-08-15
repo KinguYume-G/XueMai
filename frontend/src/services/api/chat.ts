@@ -80,7 +80,7 @@ export const sendMessage = async (data: {
   group_id?: number;
   content: string;
   message_type?: 'text' | 'image' | 'file' | 'emoji';
-}): Promise<{ data: ChatMessage; error: null }> => {
+}): Promise<ChatMessage> => {
   return await apiClient.post('/chat/messages/send/', data);
 };
 

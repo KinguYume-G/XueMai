@@ -48,6 +48,12 @@ class CommunityViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    def perform_create(self, serializer):
+        community = serializer.save(created_by=self.request.user)
+        CommunityMember.objects.get_or_create(user=self.request.user, community=community)
+        community.members = community.memberships.count()
+        community.save(update_fields=['members'])
+
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def join(self, request, slug=None):
         """
@@ -80,7 +86,7 @@ class CommunityViewSet(viewsets.ModelViewSet):
                 community.save(update_fields=['members'])
             return Response(
                 {"joined": False, "message": "已退出社区"},
-                status=status.HTTP_204_NO_CONTENT
+                status=status.HTTP_200_OK
             )
 
     @action(detail=True, methods=['delete'], permission_classes=[IsAuthenticated])
@@ -110,4 +116,3 @@ class CommunityViewSet(viewsets.ModelViewSet):
                 {"joined": False, "message": "您未加入此社区"},
                 status=status.HTTP_200_OK
             )
-

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, MapPin, Briefcase, ExternalLink, Clock, Bookmark, DollarSign, Wifi } from 'lucide-react'
+import { ArrowLeft, MapPin, Briefcase, ExternalLink, Clock, DollarSign, Wifi } from 'lucide-react'
 import { useInternshipStore } from '@/store/useInternshipStore'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -58,7 +58,7 @@ export default function InternshipDetailPage() {
       {/* Back Button */}
       <Button
         variant="ghost"
-        onClick={() => navigate('/internships')}
+        onClick={() => navigate('/opportunities')}
         className="gap-2"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -141,10 +141,6 @@ export default function InternshipDetailPage() {
                 申请职位
               </Button>
             )}
-            <Button variant="outline" className="gap-2">
-              <Bookmark className="h-4 w-4" />
-              收藏
-            </Button>
           </div>
 
           {/* Footer Info */}

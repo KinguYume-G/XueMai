@@ -20,13 +20,6 @@ export interface AICategory {
   functions: AIFunction[]
 }
 
-export interface ConversationHistory {
-  id: string
-  title: string
-  timestamp: string
-  category: AICategoryId
-}
-
 // AI 功能分类数据
 export const aiCategories: AICategory[] = [
   {
@@ -188,39 +181,5 @@ export const aiCategories: AICategory[] = [
         icon: '🔮',
       },
     ],
-  },
-]
-
-// 模拟对话历史数据
-export const mockConversationHistory: ConversationHistory[] = [
-  {
-    id: '1',
-    title: 'AI学习路径规划',
-    timestamp: '2小时前',
-    category: 'academic',
-  },
-  {
-    id: '2',
-    title: '简历优化建议',
-    timestamp: '1天前',
-    category: 'career',
-  },
-  {
-    id: '3',
-    title: '模拟面试练习',
-    timestamp: '2天前',
-    category: 'career',
-  },
-  {
-    id: '4',
-    title: '商业计划书撰写',
-    timestamp: '3天前',
-    category: 'startup',
-  },
-  {
-    id: '5',
-    title: '论文语法检查',
-    timestamp: '5天前',
-    category: 'writing',
   },
 ]
