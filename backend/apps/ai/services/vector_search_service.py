@@ -11,12 +11,25 @@ import time
 from typing import Any, Dict, List, Optional
 
 from django.conf import settings
+from django.db import connection
 from django.db.models import QuerySet
 from pgvector.django import CosineDistance
 
 from apps.ai.models import AIChunk, AIDocument, AIEmbedding
 
 logger = logging.getLogger(__name__)
+
+# The ai_aiembedding table has an IVFFlat index built WITH (lists='100').
+# pgvector's IVFFlat only probes `ivfflat.probes` of those 100 clusters per
+# query, and the session default is 1. With probes=1 a query commonly misses
+# the cluster holding the true nearest neighbours entirely -- this was
+# silently degrading every RAG retrieval to near-empty (0-4 rows for a
+# top_k=8 query even with no WHERE filter, and 0 rows once a doc_type filter
+# such as {'doc_type': 'salary'} narrowed the candidate set further). A
+# probes value around sqrt(lists) is the standard pgvector recommendation
+# and was confirmed experimentally to restore real hits (~0.55-0.57
+# similarity on salary-doc queries that previously returned nothing).
+IVFFLAT_PROBES = 10
 
 
 class VectorSearchService:
@@ -92,6 +105,12 @@ class VectorSearchService:
             # 3. 应用过滤条件
             if filters:
                 queryset = self._apply_filters(queryset, filters)
+
+            # Widen the IVFFlat probe scope for this connection so the ANN
+            # index scan actually considers enough clusters to find true
+            # nearest neighbours -- see IVFFLAT_PROBES comment above.
+            with connection.cursor() as cursor:
+                cursor.execute("SET ivfflat.probes = %s", [IVFFLAT_PROBES])
 
             # 4. 计算余弦距离并排序
             # CosineDistance 返回距离值（0-2），距离越小越相似
