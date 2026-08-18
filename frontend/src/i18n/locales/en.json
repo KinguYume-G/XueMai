@@ -121,6 +121,44 @@
       "logout": "Log Out"
     }
   },
+  "feed": {
+    "createBox": {
+      "placeholder": "Share your thoughts... (help/experience/hiring/work)",
+      "addImage": "Add image",
+      "addVideo": "Add video",
+      "addLink": "Add link",
+      "addTopic": "Add topic",
+      "publishing": "Posting...",
+      "publish": "Post"
+    },
+    "tabs": {
+      "hot": "For You",
+      "new": "Latest",
+      "follow": "Following",
+      "autoTranslate": "Auto-translate"
+    },
+    "home": {
+      "loading": "Loading...",
+      "emptyFollow": "No posts from people you follow yet",
+      "emptyDefault": "No posts yet — be the first to share something!",
+      "unnamedUser": "Unnamed user"
+    },
+    "postCard": {
+      "moreOptions": "More options",
+      "visibility": {
+        "followers": "Followers only",
+        "university": "Visible to same university",
+        "private": "Private"
+      },
+      "unknownUser": "Unknown user",
+      "unknownTime": "Unknown time",
+      "justNow": "Just now",
+      "minutesAgo": "{{count}}m ago",
+      "hoursAgo": "{{count}}h ago",
+      "daysAgo": "{{count}}d ago",
+      "imageAlt": "Post image"
+    }
+  },
   "auth": {
     "login": {
       "title": "Log in to UniPulse",

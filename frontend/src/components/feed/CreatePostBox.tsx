@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Image, Video, Link as LinkIcon, Hash } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -12,6 +13,7 @@ interface CreatePostBoxProps {
 }
 
 export default function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
+  const { t } = useTranslation()
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -65,7 +67,7 @@ export default function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="分享你的想法...（荣助/经验/招聘/作品）"
+              placeholder={t('feed.createBox.placeholder')}
               className="w-full resize-none border-0 bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-0 min-h-[60px]"
               disabled={loading}
             />
@@ -80,7 +82,7 @@ export default function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
                   variant="ghost"
                   size="icon"
                   className="h-9 w-9 text-muted-foreground hover:text-primary"
-                  aria-label="添加图片"
+                  aria-label={t('feed.createBox.addImage')}
                   disabled={loading}
                 >
                   <Image className="h-5 w-5" />
@@ -89,7 +91,7 @@ export default function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
                   variant="ghost"
                   size="icon"
                   className="h-9 w-9 text-muted-foreground hover:text-primary"
-                  aria-label="添加视频"
+                  aria-label={t('feed.createBox.addVideo')}
                   disabled={loading}
                 >
                   <Video className="h-5 w-5" />
@@ -98,7 +100,7 @@ export default function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
                   variant="ghost"
                   size="icon"
                   className="h-9 w-9 text-muted-foreground hover:text-primary"
-                  aria-label="添加链接"
+                  aria-label={t('feed.createBox.addLink')}
                   disabled={loading}
                 >
                   <LinkIcon className="h-5 w-5" />
@@ -107,19 +109,19 @@ export default function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
                   variant="ghost"
                   size="icon"
                   className="h-9 w-9 text-muted-foreground hover:text-primary"
-                  aria-label="添加话题"
+                  aria-label={t('feed.createBox.addTopic')}
                   disabled={loading}
                 >
                   <Hash className="h-5 w-5" />
                 </Button>
               </div>
-              
+
               <Button
                 onClick={handlePublish}
                 disabled={!content.trim() || loading}
                 className="rounded-full px-6 h-9 bg-primary hover:bg-primary/90"
               >
-                {loading ? '发布中...' : '发布'}
+                {loading ? t('feed.createBox.publishing') : t('feed.createBox.publish')}
               </Button>
             </div>
           </div>

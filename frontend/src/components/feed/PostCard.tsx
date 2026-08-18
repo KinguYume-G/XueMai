@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Heart, MessageCircle, Share2, MoreHorizontal } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -13,6 +14,7 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post }: PostCardProps) {
+  const { t, i18n } = useTranslation()
   const [isLiked, setIsLiked] = useState(post.is_liked)
   const [likes, setLikes] = useState(post.likes_count)
   const [liking, setLiking] = useState(false)
@@ -42,49 +44,50 @@ export default function PostCard({ post }: PostCardProps) {
 
   // 格式化时间
   const formatTime = (dateString: string) => {
-    if (!dateString) return '未知时间'
-    
+    if (!dateString) return t('feed.postCard.unknownTime')
+
     try {
       const date = new Date(dateString)
       // 检查日期是否有效
       if (isNaN(date.getTime())) {
-        return '未知时间'
+        return t('feed.postCard.unknownTime')
       }
-      
+
       const now = new Date()
       const diffMs = now.getTime() - date.getTime()
-      
+      const locale = i18n.language === 'en' ? 'en-US' : 'zh-CN'
+
       // 避免负数（未来时间）
       if (diffMs < 0) {
-        return new Intl.DateTimeFormat('zh-CN', {
+        return new Intl.DateTimeFormat(locale, {
           year: 'numeric',
           month: 'short',
           day: 'numeric',
         }).format(date)
       }
-      
+
       const diffMins = Math.floor(diffMs / 60000)
       const diffHours = Math.floor(diffMs / 3600000)
       const diffDays = Math.floor(diffMs / 86400000)
-      
-      if (diffMins < 1) return '刚刚'
-      if (diffMins < 60) return `${diffMins}分钟前`
-      if (diffHours < 24) return `${diffHours}小时前`
-      if (diffDays < 7) return `${diffDays}天前`
-      
+
+      if (diffMins < 1) return t('feed.postCard.justNow')
+      if (diffMins < 60) return t('feed.postCard.minutesAgo', { count: diffMins })
+      if (diffHours < 24) return t('feed.postCard.hoursAgo', { count: diffHours })
+      if (diffDays < 7) return t('feed.postCard.daysAgo', { count: diffDays })
+
       // 超过7天，使用 Intl.DateTimeFormat 格式化日期
-      return new Intl.DateTimeFormat('zh-CN', {
+      return new Intl.DateTimeFormat(locale, {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
       }).format(date)
     } catch (error) {
       console.error('Failed to format date:', dateString, error)
-      return '未知时间'
+      return t('feed.postCard.unknownTime')
     }
   }
 
-  const authorName = post.author_username || '未知用户'
+  const authorName = post.author_username || t('feed.postCard.unknownUser')
   const authorAvatar = post.author_avatar
   const authorFallback = authorName.charAt(0).toUpperCase()
 
@@ -103,8 +106,8 @@ export default function PostCard({ post }: PostCardProps) {
                 <span className="font-semibold text-sm">{authorName}</span>
                 {post.visibility !== 'public' && (
                   <Badge variant="secondary" className="text-xs px-2 py-0">
-                    {post.visibility === 'followers' ? '仅关注者' : 
-                     post.visibility === 'university' ? '同校可见' : '私密'}
+                    {post.visibility === 'followers' ? t('feed.postCard.visibility.followers') :
+                     post.visibility === 'university' ? t('feed.postCard.visibility.university') : t('feed.postCard.visibility.private')}
                   </Badge>
                 )}
               </div>
@@ -118,7 +121,7 @@ export default function PostCard({ post }: PostCardProps) {
             variant="ghost"
             size="icon"
             className="h-8 w-8 rounded-full"
-            aria-label="更多选项"
+            aria-label={t('feed.postCard.moreOptions')}
           >
             <MoreHorizontal className="h-4 w-4" />
           </Button>
@@ -157,7 +160,7 @@ export default function PostCard({ post }: PostCardProps) {
         <div className="relative w-full aspect-[2/1] bg-muted">
           <img
             src={post.image_url}
-            alt={post.title || '帖子图片'}
+            alt={post.title || t('feed.postCard.imageAlt')}
             className="w-full h-full object-cover"
           />
         </div>

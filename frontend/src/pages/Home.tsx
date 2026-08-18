@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import CreatePostBox from '@/components/feed/CreatePostBox'
 import FeedTabs from '@/components/feed/FeedTabs'
 import PostCard from '@/components/feed/PostCard'
@@ -7,6 +8,7 @@ import { parseApiError } from '@/lib/api/error'
 import type { Post } from '@/types/api'
 
 export default function Home() {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<'hot' | 'new' | 'follow'>('new')
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
@@ -50,12 +52,12 @@ export default function Home() {
         if (item.author && typeof item.author === 'object') {
           // author 是对象，提取 id 和 username
           authorId = item.author.id || item.author_id || item.author
-          authorUsername = item.author.username || item.author_username || '未命名用户'
+          authorUsername = item.author.username || item.author_username || t('feed.home.unnamedUser')
           authorAvatar = item.author.avatar || item.author.avatar_url || item.author_avatar
         } else {
           // author 可能是 ID（理论上不应该发生，但兼容处理）
           authorId = item.author || item.author_id || 0
-          authorUsername = item.author_username || '未命名用户'
+          authorUsername = item.author_username || t('feed.home.unnamedUser')
           authorAvatar = item.author_avatar
         }
         
@@ -135,21 +137,21 @@ export default function Home() {
         <div className="divide-y">
           {loading ? (
             <div className="p-8 text-center text-muted-foreground">
-              加载中...
+              {t('feed.home.loading')}
             </div>
           ) : error ? (
             <div className="p-8 text-center">
               <p className="text-sm text-destructive mb-2">{error}</p>
-              <button 
+              <button
                 onClick={() => fetchFeed(activeTab, 1)}
                 className="text-sm text-primary hover:underline"
               >
-                重试
+                {t('common.retry')}
               </button>
             </div>
           ) : posts.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
-              {activeTab === 'follow' ? '暂无关注的人发布内容' : '暂无内容，快来发布第一条帖子吧！'}
+              {activeTab === 'follow' ? t('feed.home.emptyFollow') : t('feed.home.emptyDefault')}
             </div>
           ) : (
             posts.map((post) => (
