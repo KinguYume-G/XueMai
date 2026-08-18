@@ -58,6 +58,10 @@ export const router = createBrowserRouter([
         element: <Community />,
       },
       {
+        path: 'communities/:slug/edit',
+        element: <CreateCommunity />,
+      },
+      {
         path: 'community',
         element: <Community />,
       },
@@ -114,8 +118,16 @@ export const router = createBrowserRouter([
         element: <PostDetail />,
       },
       {
+        path: 'posts/:id/edit',
+        element: <CreatePost />,
+      },
+      {
         path: 'forums/topics/:id',
         element: <TopicDetail />,
+      },
+      {
+        path: 'forums/topics/:id/edit',
+        element: <CreateTopic />,
       },
       {
         path: 'startups/:id',

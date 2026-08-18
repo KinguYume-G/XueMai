@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, Calendar, MapPin, Users } from 'lucide-react'
+import { ArrowLeft, Calendar, MapPin, Pencil, Trash2, Users } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import ConfirmDialog from '@/components/common/ConfirmDialog'
 import { parseApiError } from '@/lib/api/error'
+import { useAuthStore } from '@/store/authStore'
 import {
   communitiesApi,
   type CommunityRecord,
@@ -20,10 +22,14 @@ const categoryLabels: Record<string, string> = {
 export default function Community() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
+  const currentUser = useAuthStore((state) => state.user)
   const [community, setCommunity] = useState<CommunityRecord | null>(null)
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!slug) {
@@ -61,6 +67,22 @@ export default function Community() {
     }
   }
 
+  const isOwner = Boolean(community && currentUser && community.created_by === currentUser.id)
+
+  const handleDelete = async () => {
+    if (!community) return
+    setDeleting(true)
+    setDeleteError(null)
+    try {
+      await communitiesApi.deleteCommunity(community.slug)
+      navigate('/communities')
+    } catch (reason) {
+      setDeleteError(parseApiError(reason))
+      setDeleting(false)
+      setShowDeleteConfirm(false)
+    }
+  }
+
   if (loading) return <Card><CardContent className="p-10 text-center text-gray-500">正在加载社区…</CardContent></Card>
 
   if (error || !community) {
@@ -71,7 +93,28 @@ export default function Community() {
 
   return (
     <div className="space-y-5">
-      <Button variant="ghost" onClick={() => navigate('/communities')} className="gap-2"><ArrowLeft className="h-4 w-4" />返回社区列表</Button>
+      <div className="flex items-center justify-between gap-2">
+        <Button variant="ghost" onClick={() => navigate('/communities')} className="gap-2"><ArrowLeft className="h-4 w-4" />返回社区列表</Button>
+        {isOwner && (
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate(`/communities/${community.slug}/edit`)}>
+              <Pencil className="h-4 w-4" />
+              编辑
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 text-red-600 hover:text-red-700"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="h-4 w-4" />
+              删除
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {deleteError && <p className="text-sm text-red-600">{deleteError}</p>}
 
       <Card className="overflow-hidden">
         {community.cover_url ? (
@@ -104,6 +147,17 @@ export default function Community() {
           </div>
         </CardContent>
       </Card>
+
+      {showDeleteConfirm && (
+        <ConfirmDialog
+          title="确定删除这个社区？"
+          description="删除后无法恢复，社区的成员关系和相关内容也会一并移除。"
+          confirmLabel="删除"
+          confirming={deleting}
+          onConfirm={handleDelete}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
     </div>
   )
 }

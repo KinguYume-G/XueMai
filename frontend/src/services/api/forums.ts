@@ -84,4 +84,9 @@ export const forumsApi = {
 
   createTopic: (data: TopicCreateRequest) =>
     apiClient.post<TopicCreateRequest>('/topics/', data),
+
+  updateTopic: (id: number, data: Partial<TopicCreateRequest>) =>
+    apiClient.patch<Topic>(`/topics/${id}/`, data),
+
+  deleteTopic: (id: number): Promise<void> => apiClient.delete(`/topics/${id}/`),
 }

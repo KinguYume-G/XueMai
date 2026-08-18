@@ -18,6 +18,7 @@ export interface CommunityRecord {
   visibility: 'public' | 'university' | 'private'
   is_published: boolean
   joined: boolean
+  created_by: number
   created_at: string
   updated_at: string
 }
@@ -55,6 +56,12 @@ export const communitiesApi = {
 
   createCommunity: (data: CommunityCreateRequest) =>
     apiClient.post<CommunityRecord>('/communities/', data),
+
+  updateCommunity: (slug: string, data: Partial<CommunityCreateRequest>) =>
+    apiClient.patch<CommunityRecord>(`/communities/${encodeURIComponent(slug)}/`, data),
+
+  deleteCommunity: (slug: string): Promise<void> =>
+    apiClient.delete(`/communities/${encodeURIComponent(slug)}/`),
 
   toggleJoin: (slug: string) =>
     apiClient.post<CommunityJoinResponse | undefined>(

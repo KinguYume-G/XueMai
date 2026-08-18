@@ -1,17 +1,22 @@
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useEffect, useState } from 'react'
 import { ArrowLeft, Send } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import ErrorState from '@/components/common/ErrorState'
 import { parseApiError } from '@/lib/api/error'
 import { postsApi } from '@/services/api/posts'
+import { useAuthStore } from '@/store/authStore'
 import type { Visibility } from '@/types/api'
 
 const parseTags = (value: string) => value.split(',').map((tag) => tag.trim()).filter(Boolean)
 
 export default function CreatePost() {
   const navigate = useNavigate()
+  const { id } = useParams<{ id: string }>()
+  const isEditMode = Boolean(id)
+  const currentUser = useAuthStore((state) => state.user)
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [imageUrl, setImageUrl] = useState('')
@@ -19,6 +24,32 @@ export default function CreatePost() {
   const [visibility, setVisibility] = useState<Visibility>('public')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [loadingExisting, setLoadingExisting] = useState(isEditMode)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [forbidden, setForbidden] = useState(false)
+
+  useEffect(() => {
+    if (!isEditMode || !id) return
+    let active = true
+    setLoadingExisting(true)
+    postsApi
+      .getPost(Number(id))
+      .then((post) => {
+        if (!active) return
+        if (currentUser && post.author.id !== currentUser.id) {
+          setForbidden(true)
+          return
+        }
+        setTitle(post.title ?? '')
+        setBody(post.body)
+        setImageUrl(post.image_url ?? '')
+        setTags(post.tags.map((tag) => tag.name).join(', '))
+        setVisibility(post.visibility)
+      })
+      .catch((reason) => active && setLoadError(parseApiError(reason)))
+      .finally(() => active && setLoadingExisting(false))
+    return () => { active = false }
+  }, [id, isEditMode, currentUser])
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
@@ -26,15 +57,21 @@ export default function CreatePost() {
     setSubmitting(true)
     setError(null)
     try {
-      await postsApi.createPost({
+      const payload = {
         title: title.trim(),
         body: body.trim(),
         image_url: imageUrl.trim() || undefined,
         tag_names: parseTags(tags),
         visibility,
         is_published: true,
-      })
-      navigate('/')
+      }
+      if (isEditMode && id) {
+        await postsApi.updatePost(Number(id), payload)
+        navigate(`/posts/${id}`)
+      } else {
+        await postsApi.createPost(payload)
+        navigate('/')
+      }
     } catch (reason) {
       setError(parseApiError(reason))
     } finally {
@@ -42,12 +79,24 @@ export default function CreatePost() {
     }
   }
 
+  if (isEditMode && loadingExisting) {
+    return <Card><CardContent className="p-10 text-center text-gray-500">正在加载帖子…</CardContent></Card>
+  }
+
+  if (isEditMode && (loadError || forbidden)) {
+    return (
+      <Card><CardContent className="p-6">
+        <ErrorState message={loadError || '你没有权限编辑这篇帖子'} onRetry={loadError ? () => navigate(0) : undefined} />
+      </CardContent></Card>
+    )
+  }
+
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2"><ArrowLeft className="h-4 w-4" />返回</Button>
       <Card><CardContent className="p-6">
-        <h1 className="text-2xl font-bold">发布帖子</h1>
-        <p className="mt-2 text-sm text-gray-500">帖子将提交到当前账号并立即进入真实内容流。</p>
+        <h1 className="text-2xl font-bold">{isEditMode ? '编辑帖子' : '发布帖子'}</h1>
+        <p className="mt-2 text-sm text-gray-500">{isEditMode ? '修改后将立即更新到当前帖子。' : '帖子将提交到当前账号并立即进入真实内容流。'}</p>
         <form onSubmit={submit} className="mt-6 space-y-5">
           <label className="block space-y-2"><span className="text-sm font-medium">标题（可选）</span><Input value={title} onChange={(event) => setTitle(event.target.value)} maxLength={200} /></label>
           <label className="block space-y-2"><span className="text-sm font-medium">内容</span><textarea value={body} onChange={(event) => setBody(event.target.value)} required maxLength={5000} rows={10} className="w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></label>
@@ -55,7 +104,7 @@ export default function CreatePost() {
           <label className="block space-y-2"><span className="text-sm font-medium">标签（逗号分隔）</span><Input value={tags} onChange={(event) => setTags(event.target.value)} placeholder="课程, 经验分享" /></label>
           <label className="block space-y-2"><span className="text-sm font-medium">可见范围</span><select value={visibility} onChange={(event) => setVisibility(event.target.value as Visibility)} className="h-10 w-full rounded-md border bg-white px-3 text-sm"><option value="public">公开</option><option value="followers">仅关注者</option><option value="university">同校</option><option value="private">仅自己</option></select></label>
           {error && <p className="text-sm text-red-600">{error}</p>}
-          <Button type="submit" disabled={submitting || !body.trim()} className="w-full gap-2"><Send className="h-4 w-4" />{submitting ? '发布中…' : '发布帖子'}</Button>
+          <Button type="submit" disabled={submitting || !body.trim()} className="w-full gap-2"><Send className="h-4 w-4" />{submitting ? (isEditMode ? '保存中…' : '发布中…') : (isEditMode ? '保存修改' : '发布帖子')}</Button>
         </form>
       </CardContent></Card>
     </div>

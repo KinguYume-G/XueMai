@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, Eye, MessageCircle, Pin, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Eye, MessageCircle, Pin, CheckCircle2, Pencil, Trash2 } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,15 +8,21 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import SkeletonCard from '@/components/common/SkeletonCard'
 import ErrorState from '@/components/common/ErrorState'
+import ConfirmDialog from '@/components/common/ConfirmDialog'
 import { parseApiError } from '@/lib/api/error'
 import { forumsApi, type Topic } from '@/services/api/forums'
+import { useAuthStore } from '@/store/authStore'
 
 export default function TopicDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const currentUser = useAuthStore((state) => state.user)
   const [topic, setTopic] = useState<Topic | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const load = () => {
     if (!id) return
@@ -30,6 +36,22 @@ export default function TopicDetail() {
   }
 
   useEffect(load, [id])
+
+  const isOwner = Boolean(topic && currentUser && topic.author.id === currentUser.id)
+
+  const handleDelete = async () => {
+    if (!topic) return
+    setDeleting(true)
+    setDeleteError(null)
+    try {
+      await forumsApi.deleteTopic(topic.id)
+      navigate('/forums')
+    } catch (reason) {
+      setDeleteError(parseApiError(reason))
+      setDeleting(false)
+      setShowDeleteConfirm(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -53,10 +75,31 @@ export default function TopicDetail() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <Button variant="ghost" onClick={() => navigate('/forums')} className="gap-2">
-        <ArrowLeft className="h-4 w-4" />
-        返回论坛
-      </Button>
+      <div className="flex items-center justify-between gap-2">
+        <Button variant="ghost" onClick={() => navigate('/forums')} className="gap-2">
+          <ArrowLeft className="h-4 w-4" />
+          返回论坛
+        </Button>
+        {isOwner && (
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate(`/forums/topics/${topic.id}/edit`)}>
+              <Pencil className="h-4 w-4" />
+              编辑
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 text-red-600 hover:text-red-700"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="h-4 w-4" />
+              删除
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {deleteError && <p className="text-sm text-red-600">{deleteError}</p>}
 
       <Card className="border shadow-sm">
         <CardContent className="p-6 space-y-4">
@@ -99,6 +142,17 @@ export default function TopicDetail() {
           </div>
         </CardContent>
       </Card>
+
+      {showDeleteConfirm && (
+        <ConfirmDialog
+          title="确定删除这个话题？"
+          description="删除后无法恢复，话题的回复记录也会一并移除。"
+          confirmLabel="删除"
+          confirming={deleting}
+          onConfirm={handleDelete}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
     </div>
   )
 }
