@@ -18,7 +18,10 @@ class SearchService:
     # 触发搜索的关键词
     SEARCH_TRIGGERS = [
         "最新", "现在", "当前", "今年", "今天", "实时",
-        "最近", "latest", "current", "now", "today", "real-time"
+        "最近", "latest", "current", "now", "today", "real-time",
+        # 用户明确要求联网/搜索的表达
+        "搜索", "搜一下", "查一下", "查查", "查一查", "上网", "联网", "全网",
+        "search", "google", "look up", "browse the web", "browse the internet",
     ]
     
     def __init__(self):
@@ -128,8 +131,8 @@ class SearchService:
     def _search_duckduckgo(self, query: str, max_results: int) -> List[Dict[str, Any]]:
         """使用DuckDuckGo搜索（免费但功能有限）"""
         try:
-            from duckduckgo_search import DDGS
-            
+            from ddgs import DDGS
+
             results = []
             with DDGS() as ddgs:
                 for r in ddgs.text(query, max_results=max_results):
@@ -139,12 +142,12 @@ class SearchService:
                         "url": r.get('href', ''),
                         "source": "duckduckgo",
                     })
-            
+
             logger.info(f"[搜索服务] DuckDuckGo搜索成功，返回 {len(results)} 条结果")
             return results
-            
+
         except ImportError:
-            logger.error("[搜索服务] duckduckgo-search未安装")
+            logger.error("[搜索服务] ddgs未安装")
             return []
         except Exception as e:
             logger.error(f"[搜索服务] DuckDuckGo搜索失败: {e}")
