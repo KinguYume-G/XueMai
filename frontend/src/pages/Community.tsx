@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowLeft, Calendar, MapPin, Pencil, Trash2, Users } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -12,14 +13,15 @@ import {
   type CommunityRecord,
 } from '@/services/api/communities'
 
-const categoryLabels: Record<string, string> = {
-  interest: '兴趣爱好',
-  city: '城市',
-  oncampus: '校园',
-  study_group: '学习小组',
+const categoryLabelKeys: Record<string, string> = {
+  interest: 'communities.categories.interest',
+  city: 'communities.categories.city',
+  oncampus: 'communities.categories.oncampus',
+  study_group: 'communities.categories.study_group',
 }
 
 export default function Community() {
+  const { t, i18n } = useTranslation()
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   const currentUser = useAuthStore((state) => state.user)
@@ -33,7 +35,7 @@ export default function Community() {
 
   useEffect(() => {
     if (!slug) {
-      setError('缺少社区标识')
+      setError(t('community.missingSlug'))
       setLoading(false)
       return
     }
@@ -83,10 +85,10 @@ export default function Community() {
     }
   }
 
-  if (loading) return <Card><CardContent className="p-10 text-center text-gray-500">正在加载社区…</CardContent></Card>
+  if (loading) return <Card><CardContent className="p-10 text-center text-gray-500">{t('community.loading')}</CardContent></Card>
 
   if (error || !community) {
-    return <Card><CardContent className="space-y-4 p-10 text-center"><p className="text-red-600">{error || '社区不存在'}</p><Button variant="outline" onClick={() => navigate('/communities')}>返回社区列表</Button></CardContent></Card>
+    return <Card><CardContent className="space-y-4 p-10 text-center"><p className="text-red-600">{error || t('community.notFound')}</p><Button variant="outline" onClick={() => navigate('/communities')}>{t('community.backToList')}</Button></CardContent></Card>
   }
 
   const activity = Math.round(Math.min(100, community.activity_rate <= 1 ? community.activity_rate * 100 : community.activity_rate))
@@ -94,12 +96,12 @@ export default function Community() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-2">
-        <Button variant="ghost" onClick={() => navigate('/communities')} className="gap-2"><ArrowLeft className="h-4 w-4" />返回社区列表</Button>
+        <Button variant="ghost" onClick={() => navigate('/communities')} className="gap-2"><ArrowLeft className="h-4 w-4" />{t('community.backToList')}</Button>
         {isOwner && (
           <div className="flex gap-2">
             <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate(`/communities/${community.slug}/edit`)}>
               <Pencil className="h-4 w-4" />
-              编辑
+              {t('community.edit')}
             </Button>
             <Button
               variant="outline"
@@ -108,7 +110,7 @@ export default function Community() {
               onClick={() => setShowDeleteConfirm(true)}
             >
               <Trash2 className="h-4 w-4" />
-              删除
+              {t('community.delete')}
             </Button>
           </div>
         )}
@@ -127,32 +129,32 @@ export default function Community() {
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-3xl font-bold text-gray-900">{community.name}</h1>
-                <Badge variant="secondary">{categoryLabels[community.category] ?? community.category}</Badge>
+                <Badge variant="secondary">{categoryLabelKeys[community.category] ? t(categoryLabelKeys[community.category]) : community.category}</Badge>
               </div>
               <div className="mt-3 flex flex-wrap gap-4 text-sm text-gray-500">
-                <span className="flex items-center gap-1"><Users className="h-4 w-4" />{community.members} 位成员</span>
-                <span>{activity}% 活跃度</span>
+                <span className="flex items-center gap-1"><Users className="h-4 w-4" />{t('community.membersCount', { count: community.members })}</span>
+                <span>{t('community.activityRate', { percent: activity })}</span>
                 {community.city && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{community.city}</span>}
-                <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />创建于 {new Date(community.created_at).toLocaleDateString('zh-CN')}</span>
+                <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />{t('community.createdOn', { date: new Date(community.created_at).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'zh-CN') })}</span>
               </div>
             </div>
             <Button onClick={toggleJoin} disabled={joining} variant={community.joined ? 'secondary' : 'default'}>
-              {joining ? '处理中…' : community.joined ? '退出社区' : '加入社区'}
+              {joining ? t('common.processing') : community.joined ? t('communities.leave') : t('communities.join')}
             </Button>
           </div>
 
           <div className="mt-8 border-t pt-6">
-            <h2 className="text-lg font-semibold">社区介绍</h2>
-            <p className="mt-3 whitespace-pre-wrap leading-7 text-gray-600">{community.description || '该社区暂未填写介绍。'}</p>
+            <h2 className="text-lg font-semibold">{t('community.aboutTitle')}</h2>
+            <p className="mt-3 whitespace-pre-wrap leading-7 text-gray-600">{community.description || t('community.aboutEmpty')}</p>
           </div>
         </CardContent>
       </Card>
 
       {showDeleteConfirm && (
         <ConfirmDialog
-          title="确定删除这个社区？"
-          description="删除后无法恢复，社区的成员关系和相关内容也会一并移除。"
-          confirmLabel="删除"
+          title={t('community.deleteConfirmTitle')}
+          description={t('community.deleteConfirmDescription')}
+          confirmLabel={t('community.delete')}
           confirming={deleting}
           onConfirm={handleDelete}
           onCancel={() => setShowDeleteConfirm(false)}

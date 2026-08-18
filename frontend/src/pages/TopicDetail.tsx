@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Eye, MessageCircle, Pin, CheckCircle2, Pencil, Trash2 } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
@@ -14,6 +15,7 @@ import { forumsApi, type Topic } from '@/services/api/forums'
 import { useAuthStore } from '@/store/authStore'
 
 export default function TopicDetail() {
+  const { t, i18n } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const currentUser = useAuthStore((state) => state.user)
@@ -66,7 +68,7 @@ export default function TopicDetail() {
       <div className="space-y-4">
         <Card className="border shadow-sm">
           <CardContent className="p-6">
-            <ErrorState message={error || '话题不存在'} onRetry={load} />
+            <ErrorState message={error || t('topicDetail.notFound')} onRetry={load} />
           </CardContent>
         </Card>
       </div>
@@ -78,13 +80,13 @@ export default function TopicDetail() {
       <div className="flex items-center justify-between gap-2">
         <Button variant="ghost" onClick={() => navigate('/forums')} className="gap-2">
           <ArrowLeft className="h-4 w-4" />
-          返回论坛
+          {t('topicDetail.backToForums')}
         </Button>
         {isOwner && (
           <div className="flex gap-2">
             <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate(`/forums/topics/${topic.id}/edit`)}>
               <Pencil className="h-4 w-4" />
-              编辑
+              {t('topicDetail.edit')}
             </Button>
             <Button
               variant="outline"
@@ -93,7 +95,7 @@ export default function TopicDetail() {
               onClick={() => setShowDeleteConfirm(true)}
             >
               <Trash2 className="h-4 w-4" />
-              删除
+              {t('topicDetail.delete')}
             </Button>
           </div>
         )}
@@ -120,7 +122,7 @@ export default function TopicDetail() {
             </Avatar>
             <div>
               <div className="font-medium">{topic.author.username}</div>
-              <div className="text-xs text-muted-foreground">{new Date(topic.created_at).toLocaleString('zh-CN')}</div>
+              <div className="text-xs text-muted-foreground">{new Date(topic.created_at).toLocaleString(i18n.language === 'en' ? 'en-US' : 'zh-CN')}</div>
             </div>
           </Link>
 
@@ -145,9 +147,9 @@ export default function TopicDetail() {
 
       {showDeleteConfirm && (
         <ConfirmDialog
-          title="确定删除这个话题？"
-          description="删除后无法恢复，话题的回复记录也会一并移除。"
-          confirmLabel="删除"
+          title={t('topicDetail.deleteConfirmTitle')}
+          description={t('topicDetail.deleteConfirmDescription')}
+          confirmLabel={t('topicDetail.delete')}
           confirming={deleting}
           onConfirm={handleDelete}
           onCancel={() => setShowDeleteConfirm(false)}

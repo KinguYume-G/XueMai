@@ -239,6 +239,38 @@
       "genericError": "Registration failed, please try again later"
     }
   },
+  "topicDetail": {
+    "notFound": "Topic not found",
+    "backToForums": "Back to Forums",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirmTitle": "Delete this topic?",
+    "deleteConfirmDescription": "This can't be undone — the topic's replies will be removed too."
+  },
+  "postDetail": {
+    "notFound": "Post not found",
+    "back": "Back",
+    "edit": "Edit",
+    "delete": "Delete",
+    "imageAlt": "Post image",
+    "deleteConfirmTitle": "Delete this post?",
+    "deleteConfirmDescription": "This can't be undone — the post's comments and engagement will be removed too."
+  },
+  "community": {
+    "missingSlug": "Missing community identifier",
+    "loading": "Loading community…",
+    "notFound": "Community not found",
+    "backToList": "Back to Communities",
+    "edit": "Edit",
+    "delete": "Delete",
+    "membersCount": "{{count}} members",
+    "activityRate": "{{percent}}% active",
+    "createdOn": "Created {{date}}",
+    "aboutTitle": "About",
+    "aboutEmpty": "This community hasn't added a description yet.",
+    "deleteConfirmTitle": "Delete this community?",
+    "deleteConfirmDescription": "This can't be undone — the community's memberships and related content will be removed too."
+  },
   "rightAside": {
     "schoolZone": {
       "title": "School Zone",

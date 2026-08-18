@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Heart, MessageCircle, Bookmark, Eye, Pencil, Trash2 } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
@@ -15,6 +16,7 @@ import { useAuthStore } from '@/store/authStore'
 import type { PostApiRecord } from '@/types/api'
 
 export default function PostDetail() {
+  const { t, i18n } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const currentUser = useAuthStore((state) => state.user)
@@ -69,7 +71,7 @@ export default function PostDetail() {
       <div className="space-y-4">
         <Card className="border shadow-sm">
           <CardContent className="p-6">
-            <ErrorState message={error || '帖子不存在'} onRetry={load} />
+            <ErrorState message={error || t('postDetail.notFound')} onRetry={load} />
           </CardContent>
         </Card>
       </div>
@@ -81,13 +83,13 @@ export default function PostDetail() {
       <div className="flex items-center justify-between gap-2">
         <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
           <ArrowLeft className="h-4 w-4" />
-          返回
+          {t('postDetail.back')}
         </Button>
         {isOwner && (
           <div className="flex gap-2">
             <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate(`/posts/${post.id}/edit`)}>
               <Pencil className="h-4 w-4" />
-              编辑
+              {t('postDetail.edit')}
             </Button>
             <Button
               variant="outline"
@@ -96,7 +98,7 @@ export default function PostDetail() {
               onClick={() => setShowDeleteConfirm(true)}
             >
               <Trash2 className="h-4 w-4" />
-              删除
+              {t('postDetail.delete')}
             </Button>
           </div>
         )}
@@ -112,14 +114,14 @@ export default function PostDetail() {
             </Avatar>
             <div>
               <div className="font-medium">{post.author.username}</div>
-              <div className="text-xs text-muted-foreground">{new Date(post.created_at).toLocaleString('zh-CN')}</div>
+              <div className="text-xs text-muted-foreground">{new Date(post.created_at).toLocaleString(i18n.language === 'en' ? 'en-US' : 'zh-CN')}</div>
             </div>
           </Link>
 
           {post.title && <h1 className="text-2xl font-bold">{post.title}</h1>}
 
           {post.image_url && (
-            <img src={post.image_url} alt={post.title || '帖子图片'} className="max-h-[480px] w-full rounded-lg object-cover" />
+            <img src={post.image_url} alt={post.title || t('postDetail.imageAlt')} className="max-h-[480px] w-full rounded-lg object-cover" />
           )}
 
           <div className="whitespace-pre-wrap text-sm text-muted-foreground">{post.body}</div>
@@ -145,9 +147,9 @@ export default function PostDetail() {
 
       {showDeleteConfirm && (
         <ConfirmDialog
-          title="确定删除这篇帖子？"
-          description="删除后无法恢复，帖子的评论和互动记录也会一并移除。"
-          confirmLabel="删除"
+          title={t('postDetail.deleteConfirmTitle')}
+          description={t('postDetail.deleteConfirmDescription')}
+          confirmLabel={t('postDetail.delete')}
           confirming={deleting}
           onConfirm={handleDelete}
           onCancel={() => setShowDeleteConfirm(false)}
