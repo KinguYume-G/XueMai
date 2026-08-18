@@ -133,3 +133,38 @@ class PostCreateUpdateSerializer(serializers.ModelSerializer):
         if len(value) > 5000:
             raise serializers.ValidationError("内容不能超过5000字符")
         return value
+
+    def create(self, validated_data):
+        tag_names = validated_data.pop("tag_names", [])
+        post = Post.objects.create(**validated_data)
+
+        for tag_name in tag_names:
+            tag, _ = Tag.objects.get_or_create(name=tag_name.strip())
+            post.tags.add(tag)
+            tag.posts_count = tag.posts.count()
+            tag.save()
+
+        return post
+
+    def update(self, instance, validated_data):
+        tag_names = validated_data.pop("tag_names", None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if tag_names is not None:
+            old_tags = list(instance.tags.all())
+            instance.tags.clear()
+
+            for old_tag in old_tags:
+                old_tag.posts_count = old_tag.posts.count()
+                old_tag.save()
+
+            for tag_name in tag_names:
+                tag, _ = Tag.objects.get_or_create(name=tag_name.strip())
+                instance.tags.add(tag)
+                tag.posts_count = tag.posts.count()
+                tag.save()
+
+        return instance

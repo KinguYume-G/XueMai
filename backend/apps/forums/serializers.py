@@ -109,3 +109,15 @@ class TopicCreateSerializer(serializers.ModelSerializer):
             "visibility",
             "is_published",
         ]
+
+    def create(self, validated_data):
+        tag_names = validated_data.pop("tag_names", [])
+        topic = Topic.objects.create(**validated_data)
+
+        from apps.posts.models import Tag
+
+        for tag_name in tag_names:
+            tag, _ = Tag.objects.get_or_create(name=tag_name.strip())
+            topic.tags.add(tag)
+
+        return topic

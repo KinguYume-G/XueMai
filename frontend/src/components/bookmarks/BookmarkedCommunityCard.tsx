@@ -38,7 +38,7 @@ export function BookmarkedCommunityCard({ community, bookmarkId, bookmarkedAt }:
           </div>
           <div className="flex-1">
             <h3
-              onClick={() => navigate(`/communities/${community.id}`)}
+              onClick={() => navigate(`/communities/${community.slug ?? community.id}`)}
               className="text-lg font-semibold text-gray-900 hover:text-blue-600 cursor-pointer mb-1 pr-6"
             >
               {community.name}
@@ -63,7 +63,7 @@ export function BookmarkedCommunityCard({ community, bookmarkId, bookmarkedAt }:
             收藏于 {format(new Date(bookmarkedAt), 'yyyy-MM-dd')}
           </p>
           <button
-            onClick={() => navigate(`/communities/${community.id}`)}
+            onClick={() => navigate(`/communities/${community.slug ?? community.id}`)}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
           >
             进入社区
