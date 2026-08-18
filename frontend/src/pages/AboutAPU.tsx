@@ -2,6 +2,7 @@ import CampusHero from '@/components/campus/CampusHero'
 import StatsCards from '@/components/campus/StatsCards'
 import DigitalTwinSection from '@/components/campus/DigitalTwinSection'
 import CampusActivityTabs from '@/components/campus/CampusActivityTabs'
+import APUResourcesSection from '@/components/campus/APUResourcesSection'
 import { Users, Globe, TrendingUp } from 'lucide-react'
 
 // Public assets are served from the site root in both development and production.
@@ -150,6 +151,9 @@ export default function AboutAPU() {
 
       {/* Campus Activities */}
       <CampusActivityTabs activities={activities} />
+
+      {/* Real campus.UniversityResource data (programmes, dining, sports, admissions, library, research) */}
+      <APUResourcesSection />
 
       {/* Footer Section */}
       <div className="px-6 py-16 bg-slate-900">
