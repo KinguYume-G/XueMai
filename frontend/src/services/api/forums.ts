@@ -1,59 +1,87 @@
-import { apiClient } from '@/lib/api/client';
-import type { PaginatedResponse } from '@/types/api';
+import { apiClient } from '@/lib/api/client'
+import type { PaginatedResponse, PublicUser, Tag, Visibility } from '@/types/api'
+
+export interface Faculty {
+  id: number
+  name: string
+  slug: string
+  icon_url?: string
+  description: string
+  major_count: number
+  topic_count: number
+  created_at: string
+}
 
 export interface Forum {
-  id: number;
-  name: string;
-  description: string;
-  icon?: string;
-  topics_count: number;
-  created_at: string;
+  id: number
+  name: string
+  description: string
+  icon?: string
+  topics_count: number
+  created_at: string
 }
 
 export interface Topic {
-  id: number;
-  forum: number;
-  forum_name?: string;
-  author: number;
-  author_name?: string;
-  title: string;
-  content: string;
-  tags?: string[];
-  is_pinned: boolean;
-  is_solved: boolean;
-  views_count: number;
-  replies_count: number;
-  created_at: string;
-  updated_at: string;
+  id: number
+  forum: number
+  forum_name: string
+  author: PublicUser
+  title: string
+  content: string
+  tags: Tag[]
+  is_pinned: boolean
+  is_solved: boolean
+  visibility: Exclude<Visibility, 'followers'>
+  is_published: boolean
+  views_count: number
+  replies_count: number
+  created_at: string
+  updated_at: string
+}
+
+export interface ForumOverview {
+  faculty_count: number
+  major_count: number
+  active_posts: number
+  active_users: number
+}
+
+export interface HotTopic {
+  name: string
+  post_count: number
+}
+
+export interface TopicCreateRequest {
+  forum: number
+  title: string
+  content: string
+  tag_names?: string[]
+  visibility?: 'public' | 'university' | 'private'
+  is_published?: boolean
 }
 
 export const forumsApi = {
-  /**
-   * 获取论坛列表
-   */
-  getForums: async (): Promise<Forum[]> => {
-    const response = await apiClient.get<{ data: Forum[] }>('/forums/');
-    return (response as { data: Forum[] }).data;
-  },
+  getForums: (params?: { limit?: number; search?: string }) =>
+    apiClient.get<PaginatedResponse<Forum>>('/forums/', { params }),
 
-  /**
-   * 获取话题列表
-   */
-  getTopics: async (params?: {
-    page?: number;
-    forum?: number;
-    search?: string;
-  }): Promise<PaginatedResponse<Topic>> => {
-    const response = await apiClient.get<PaginatedResponse<Topic>>('/topics/', { params });
-    return response as PaginatedResponse<Topic>;
-  },
+  getFaculties: (params?: { limit?: number; search?: string }) =>
+    apiClient.get<PaginatedResponse<Faculty>>('/faculties/', { params }),
 
-  /**
-   * 获取单个话题
-   */
-  getTopic: async (id: number): Promise<Topic> => {
-    const response = await apiClient.get<{ data: Topic }>(`/topics/${id}/`);
-    return (response as { data: Topic }).data;
-  },
-};
+  getOverview: () => apiClient.get<ForumOverview>('/forums/overview/'),
 
+  getHotTopics: (limit = 6, window = '30d') =>
+    apiClient.get<HotTopic[]>('/topics/hot/', { params: { limit, window } }),
+
+  getTopics: (params?: {
+    page?: number
+    limit?: number
+    forum?: number
+    search?: string
+    ordering?: string
+  }) => apiClient.get<PaginatedResponse<Topic>>('/topics/', { params }),
+
+  getTopic: (id: number) => apiClient.get<Topic>(`/topics/${id}/`),
+
+  createTopic: (data: TopicCreateRequest) =>
+    apiClient.post<TopicCreateRequest>('/topics/', data),
+}

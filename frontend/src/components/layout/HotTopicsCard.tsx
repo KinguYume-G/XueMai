@@ -1,27 +1,28 @@
+import { useEffect, useState } from 'react'
 import { Flame } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { apiClient } from '@/lib/api/client'
 
 interface Topic {
-  id: string
   name: string
-  tag: string
-  postCount: number
+  post_count: number
 }
-
-const topics: Topic[] = [
-  { id: '1', name: 'AI论文写作技巧', tag: '#AI论文写作技巧', postCount: 15 },
-  { id: '2', name: '马来西亚实习指南', tag: '#马来西亚实习指南', postCount: 12 },
-  { id: '3', name: '跨文化交流经验', tag: '#跨文化交流经验', postCount: 8 },
-  { id: '4', name: '2024秋季交换信息', tag: '#2024秋季交换信息', postCount: 6 },
-]
 
 export default function HotTopicsCard() {
   const navigate = useNavigate()
+  const [topics, setTopics] = useState<Topic[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    apiClient.get<Topic[]>('/topics/hot/', { params: { limit: 4, window: 'all' } })
+      .then(setTopics)
+      .catch(() => setTopics([]))
+      .finally(() => setLoading(false))
+  }, [])
 
   const handleTopicClick = (topic: Topic) => {
-    // 跳转到社区页面，并筛选该标签
-    navigate(`/?tag=${encodeURIComponent(topic.tag)}`)
+    navigate(`/search?q=${encodeURIComponent(topic.name)}`)
   }
 
   return (
@@ -33,17 +34,19 @@ export default function HotTopicsCard() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-0 px-2 pb-2">
+        {loading ? <p className="px-3 py-3 text-sm text-muted-foreground">加载中…</p> : null}
+        {!loading && topics.length === 0 ? <p className="px-3 py-3 text-sm text-muted-foreground">暂无热门话题</p> : null}
         {topics.map((topic) => (
           <button
-            key={topic.id}
+            key={topic.name}
             onClick={() => handleTopicClick(topic)}
             className="flex w-full flex-col items-start rounded-lg px-3 py-2.5 text-sm hover:bg-secondary/80 transition-colors text-left"
           >
             <span className="font-medium text-primary hover:underline">
-              {topic.tag}
+              #{topic.name}
             </span>
             <span className="text-xs text-muted-foreground">
-              {topic.postCount} 帖子
+              {topic.post_count} 个话题
             </span>
           </button>
         ))}

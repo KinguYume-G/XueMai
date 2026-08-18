@@ -5,13 +5,20 @@ import AuthLoginPage from '@/pages/AuthLoginPage'
 import AuthRegisterPage from '@/pages/AuthRegisterPage'
 import Forums from '@/pages/Forums'
 import Communities from '@/pages/Communities'
-import ExchangePrograms from '@/pages/ExchangePrograms'
+import Community from '@/pages/Community'
+import ExchangeListPage from '@/pages/Exchange'
+import ExchangeDetailPage from '@/pages/Exchange/Detail'
+import InternshipsListPage from '@/pages/Internships'
+import InternshipDetailPage from '@/pages/Internships/Detail'
 import Opportunities from '@/pages/Opportunities'
 import Bookmarks from '@/pages/Bookmarks'
 import Notifications from '@/pages/Notifications'
 import AboutAPU from '@/pages/AboutAPU'
 import ComingSoon from '@/pages/ComingSoon'
-import AIAssistant from '@/pages/AIAssistant'
+import AITools from '@/pages/AITools'
+import AIChat from '@/pages/AIChat'
+import NotFound from '@/pages/NotFound'
+import SearchResults from '@/pages/SearchResults'
 import Protected from '@/components/auth/Protected'
 
 export const router = createBrowserRouter([
@@ -36,8 +43,40 @@ export const router = createBrowserRouter([
         element: <Communities />,
       },
       {
+        path: 'communities/create',
+        element: <ComingSoon title="创建社区" message="社区创建功能正在开发中" />,
+      },
+      {
+        path: 'communities/:id',
+        element: <Community />,
+      },
+      {
+        path: 'community',
+        element: <Community />,
+      },
+      {
         path: 'exchange',
-        element: <ExchangePrograms />,
+        element: <ExchangeListPage />,
+      },
+      {
+        path: 'exchange/:id',
+        element: <ExchangeDetailPage />,
+      },
+      {
+        path: 'exchange-programs',
+        element: <Navigate to="/exchange" replace />,
+      },
+      {
+        path: 'exchange-programs/:id',
+        element: <ExchangeDetailPage />,
+      },
+      {
+        path: 'internships',
+        element: <InternshipsListPage />,
+      },
+      {
+        path: 'internships/:id',
+        element: <InternshipDetailPage />,
       },
       {
         path: 'opportunities',
@@ -54,6 +93,14 @@ export const router = createBrowserRouter([
       {
         path: 'apu',
         element: <AboutAPU />,
+      },
+      {
+        path: 'search',
+        element: <SearchResults />,
+      },
+      {
+        path: 'schools/apu',
+        element: <Navigate to="/apu" replace />,
       },
       // Coming Soon pages
       {
@@ -74,7 +121,15 @@ export const router = createBrowserRouter([
       },
       {
         path: 'ai-tools',
-        element: <AIAssistant />,
+        element: <AITools />,
+      },
+      {
+        path: 'ai',
+        element: <Navigate to="/ai-tools" replace />,
+      },
+      {
+        path: 'ai-chat/:functionId',
+        element: <AIChat />,
       },
     ],
   },
@@ -88,7 +143,6 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: <Navigate to="/" replace />,
+    element: <NotFound />,
   },
 ])
-

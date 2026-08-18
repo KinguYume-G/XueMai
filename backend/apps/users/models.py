@@ -2,6 +2,8 @@
 # apps/users/models.py
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import Q
+from django.db.models.functions import Lower
 
 
 class User(AbstractUser):
@@ -15,6 +17,13 @@ class User(AbstractUser):
     class Meta:
         db_table = "users"
         ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                Lower("email"),
+                condition=~Q(email=""),
+                name="users_email_ci_unique",
+            )
+        ]
 
     def __str__(self):
         return self.username
@@ -53,9 +62,7 @@ class Profile(models.Model):
     )
     avatar_url = models.URLField(blank=True, verbose_name="头像URL")
     major = models.CharField(max_length=100, blank=True, verbose_name="专业")
-    grade = models.CharField(
-        max_length=20, choices=GRADE_CHOICES, blank=True, verbose_name="年级"
-    )
+    grade = models.CharField(max_length=20, choices=GRADE_CHOICES, blank=True, verbose_name="年级")
 
     # 社交统计
     followers_count = models.PositiveIntegerField(default=0, verbose_name="粉丝数")
@@ -67,6 +74,12 @@ class Profile(models.Model):
     linkedin_url = models.URLField(blank=True, null=True)
     website = models.URLField(blank=True, null=True)
     bio = models.TextField(blank=True, default="", verbose_name="个人简介")
+
+    # 🆕 AI个性化字段
+    preferred_name = models.CharField(max_length=50, blank=True, verbose_name="昵称/preferred称呼")
+    interests = models.TextField(blank=True, verbose_name="兴趣领域（逗号分隔）")
+    career_goals = models.TextField(blank=True, verbose_name="职业目标")
+    learning_preferences = models.JSONField(default=dict, blank=True, verbose_name="学习偏好")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

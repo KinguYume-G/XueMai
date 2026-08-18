@@ -14,7 +14,8 @@ export const authApi = {
    * @returns authenticated user with token pair
    */
   login: async (payload: LoginPayload): Promise<AuthSuccess> => {
-    const credentials = (await apiClient.post<TokenPair>('/auth/login/', payload)) as unknown as TokenPair
+    const { email, password } = payload
+    const credentials = (await apiClient.post<TokenPair>('/auth/login/', { email, password })) as unknown as TokenPair
 
     // 临时设置token以便后续请求能通过interceptor
     setTokens(credentials.access, credentials.refresh)

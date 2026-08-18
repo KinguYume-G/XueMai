@@ -52,11 +52,17 @@ export interface Profile {
 export interface User {
   id: number;
   username: string;
-  email: string;
+  email?: string;
   avatar?: string;
   bio?: string;
   created_at?: string;
   profile?: Profile | null;
+}
+
+export interface PublicUser {
+  id: number;
+  username: string;
+  created_at?: string;
 }
 
 export interface ProfileUpdateRequest {
@@ -78,7 +84,28 @@ export interface Tag {
   name: string;
   slug: string;
   posts_count: number;
+  created_at?: string;
+}
+
+export interface PostApiRecord {
+  id: number;
+  author: PublicUser;
+  title: string;
+  body: string;
+  image_url?: string;
+  visibility: Visibility;
+  is_published: boolean;
+  target_university?: number;
+  target_school?: number;
+  tags: Tag[];
+  likes_count: number;
+  comments_count: number;
+  bookmarks_count: number;
+  views_count: number;
+  is_liked: boolean;
+  is_bookmarked: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 export interface Post {
@@ -113,7 +140,7 @@ export interface PostCreateRequest {
   is_published?: boolean;
   target_university?: number;
   target_school?: number;
-  tags?: string[];
+  tag_names?: string[];
 }
 
 // ========== 评论相关 ==========
@@ -137,6 +164,19 @@ export interface CommentCreateRequest {
   post: number;
   content: string;
   parent?: number;
+}
+
+export interface CommentApiRecord {
+  id: number;
+  post: number;
+  author: PublicUser;
+  content: string;
+  parent?: number;
+  is_reply: boolean;
+  likes_count: number;
+  replies_count: number;
+  replies?: CommentApiRecord[];
+  created_at: string;
 }
 
 // ========== 社交相关 ==========
@@ -252,8 +292,41 @@ export interface Internship {
   visibility: string;
   is_published: boolean;
   posted_by: number;
-  posted_by_username: string;
+  city?: string;
+  country?: string;
+  remote?: boolean;
+  skills?: string[];
+  salary_min?: number;
+  salary_max?: number;
+  applicants_count?: number;
+  apply_url?: string;
+  bookmarked?: boolean;
+  posted_days?: number;
+  posted_by_info?: PublicUser;
+  posted_by_username?: string;
   views_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Startup {
+  id: number;
+  title: string;
+  org_name: string;
+  description: string;
+  description_short: string;
+  city: string;
+  country?: string;
+  tags: string[];
+  equity_min?: number;
+  equity_max?: number;
+  contact_url?: string;
+  followers_count: number;
+  posted_days: number;
+  visibility: string;
+  is_published: boolean;
+  posted_by: number;
+  posted_by_info?: PublicUser;
   created_at: string;
   updated_at: string;
 }

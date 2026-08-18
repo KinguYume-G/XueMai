@@ -2,7 +2,9 @@ import { useState, useRef } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Send, Video, Image as ImageIcon, FileText } from 'lucide-react'
+import { Send, Video, Image as ImageIcon, FileText, Loader2, X } from 'lucide-react'
+import { uploadFile, type UploadFileResponse } from '@/services/api/upload'
+import { toast } from '@/store/useToastStore'
 
 interface AIChatInputProps {
   onSend?: (message: string) => void
@@ -14,19 +16,25 @@ interface AIChatInputProps {
  */
 export default function AIChatInput({ onSend }: AIChatInputProps) {
   const [message, setMessage] = useState('')
-  const videoInputRef = useRef<HTMLInputElement>(null)
-  const imageInputRef = useRef<HTMLInputElement>(null)
-  const documentInputRef = useRef<HTMLInputElement>(null)
+  const [uploadedFiles, setUploadedFiles] = useState<UploadFileResponse[]>([])
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleSend = () => {
     if (message.trim()) {
       console.log('发送消息:', message)
       if (onSend) {
-        onSend(message)
+        // 如果有上传的文件，附加文件信息
+        let messageWithFiles = message
+        if (uploadedFiles.length > 0) {
+          const fileInfo = uploadedFiles.map(f => `[已上传文件: ${f.file_name}]`).join('\n')
+          messageWithFiles = `${message}\n\n${fileInfo}`
+        }
+        onSend(messageWithFiles)
       }
-      // 显示提示
-      alert('AI助手功能正在开发中，敬请期待！\n您的消息：' + message)
       setMessage('')
+      setUploadedFiles([]) // 清空已上传文件
     }
   }
 
@@ -37,14 +45,132 @@ export default function AIChatInput({ onSend }: AIChatInputProps) {
     }
   }
 
+  // 处理文件选择
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (!files || files.length === 0) return
+    
+    const file = files[0]
+    
+    // 验证文件大小（10MB限制）
+    const maxSize = 10 * 1024 * 1024
+    if (file.size > maxSize) {
+      toast.error('文件大小不能超过10MB')
+      return
+    }
+    
+    // 开始上传
+    setUploading(true)
+    setUploadProgress(0)
+    
+    try {
+      // 模拟进度
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 10, 90))
+      }, 200)
+      
+      const result = await uploadFile(file)
+      
+      clearInterval(progressInterval)
+      setUploadProgress(100)
+      
+      // 添加到已上传文件列表
+      setUploadedFiles(prev => [...prev, result])
+      
+      toast.success(`✅ 文件上传成功: ${result.file_name}`)
+      
+      // 自动建议分析
+      setTimeout(() => {
+        setMessage(`请帮我分析这个${result.file_type}文件`)
+      }, 500)
+      
+    } catch (error: unknown) {
+      console.error('文件上传失败:', error)
+      const errorMessage = error instanceof Error ? error.message : '文件上传失败，请重试'
+      toast.error(errorMessage)
+    } finally {
+      setUploading(false)
+      setUploadProgress(0)
+      // 清空input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+  
+  // 删除已上传文件
+  const handleRemoveFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index))
+    toast.success('文件已移除')
+  }
+
   const handleFileUpload = (type: 'video' | 'image' | 'document') => {
-    console.log('上传附件类型:', type)
-    alert(`${type === 'video' ? '视频' : type === 'image' ? '图片' : '文档'}上传功能正在开发中！`)
+    if (!fileInputRef.current) return
+    
+    // 设置接受的文件类型
+    const acceptMap = {
+      video: '.mp4,.mov,.avi',
+      image: '.jpg,.jpeg,.png,.gif',
+      document: '.pdf,.docx,.doc,.txt,.csv'
+    }
+    
+    fileInputRef.current.accept = acceptMap[type]
+    fileInputRef.current.click()
   }
 
   return (
     <Card className="sticky bottom-0 left-0 right-0 bg-white border-t shadow-lg rounded-none">
       <div className="p-4">
+        {/* 已上传文件列表 */}
+        {uploadedFiles.length > 0 && (
+          <div className="mb-3 flex flex-wrap gap-2">
+            {uploadedFiles.map((file, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm"
+              >
+                <FileText className="h-4 w-4 text-blue-600" />
+                <span className="text-blue-900 font-medium">{file.file_name}</span>
+                <span className="text-blue-600 text-xs">
+                  ({(file.file_size / 1024).toFixed(1)}KB)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveFile(index)}
+                  className="ml-1 p-0.5 hover:bg-blue-200 rounded transition-colors"
+                  title="移除文件"
+                >
+                  <X className="h-3 w-3 text-blue-700" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {/* 上传进度条 */}
+        {uploading && (
+          <div className="mb-3 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+            <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
+              <span>上传中...</span>
+              <span>{uploadProgress}%</span>
+            </div>
+            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-600 transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+          </div>
+        )}
+        
+        {/* 隐藏的文件输入 */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          onChange={handleFileSelect}
+        />
+        
         <div className="flex items-end gap-3">
           {/* 附件按钮组 */}
           <div className="flex gap-2">
@@ -54,9 +180,10 @@ export default function AIChatInput({ onSend }: AIChatInputProps) {
               size="icon"
               className="h-10 w-10 rounded-full"
               onClick={() => handleFileUpload('video')}
-              title="上传视频"
+              title="上传视频 (MP4, MOV)"
+              disabled={uploading}
             >
-              <Video className="h-5 w-5" />
+              {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Video className="h-5 w-5" />}
             </Button>
 
             {/* 图片上传 */}
@@ -65,9 +192,10 @@ export default function AIChatInput({ onSend }: AIChatInputProps) {
               size="icon"
               className="h-10 w-10 rounded-full"
               onClick={() => handleFileUpload('image')}
-              title="上传图片"
+              title="上传图片 (JPG, PNG, GIF)"
+              disabled={uploading}
             >
-              <ImageIcon className="h-5 w-5" />
+              {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <ImageIcon className="h-5 w-5" />}
             </Button>
 
             {/* 文档上传 */}
@@ -76,30 +204,11 @@ export default function AIChatInput({ onSend }: AIChatInputProps) {
               size="icon"
               className="h-10 w-10 rounded-full"
               onClick={() => handleFileUpload('document')}
-              title="上传文档"
+              title="上传文档 (PDF, Word, TXT, CSV)"
+              disabled={uploading}
             >
-              <FileText className="h-5 w-5" />
+              {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <FileText className="h-5 w-5" />}
             </Button>
-
-            {/* 隐藏的文件输入框 */}
-            <input
-              ref={videoInputRef}
-              type="file"
-              accept="video/*"
-              className="hidden"
-            />
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-            />
-            <input
-              ref={documentInputRef}
-              type="file"
-              accept=".pdf,.doc,.docx,.txt"
-              className="hidden"
-            />
           </div>
 
           {/* 输入框 */}

@@ -10,7 +10,7 @@ import ExchangeRemindersCard from './ExchangeRemindersCard'
  */
 export default function RightAside() {
   return (
-    <aside className="fixed right-0 top-16 bottom-0 w-80 overflow-y-auto p-6 space-y-4 bg-transparent">
+    <aside className="fixed bottom-0 right-0 top-16 hidden w-80 space-y-4 overflow-y-auto bg-transparent p-6 xl:block">
       <SchoolZoneCard />
       <HotTopicsCard />
       <ExchangeRemindersCard />

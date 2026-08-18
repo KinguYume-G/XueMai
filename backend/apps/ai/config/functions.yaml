@@ -1,0 +1,274 @@
+functions:
+  # 通用对话
+  - id: general
+    name: 智能对话
+    category: academic
+    system_prompt_file: prompts/general.txt
+    enable_rag: false
+    keywords: ["聊天", "你好", "hi", "hello", "对话", "问个问题"]
+    examples:
+      - "你好"
+      - "我想聊聊天"
+      - "你是谁？"
+    fallback_to: ""
+    
+  # 学业助手 (5)
+  - id: course_query
+    name: 课程查询
+    category: academic
+    system_prompt_file: prompts/course_query.txt
+    enable_rag: true
+    rag_query_template: "APU courses programmes modules computer science artificial intelligence {query}"
+    rag_filters:
+      doc_type: course
+    keywords: ["课程", "选课", "学分", "course", "credit", "课表", "syllabus", "教学大纲"]
+    examples:
+      - "APU有什么计算机课程？"
+      - "Database Systems多少学分？"
+      - "这学期有哪些选修课？"
+      - "软件工程课程的教学大纲是什么？"
+    fallback_to: "academic_qa"
+    
+  - id: academic_qa
+    name: 学业问答
+    category: academic
+    system_prompt_file: prompts/academic_qa.txt
+    enable_rag: true
+    rag_query_template: "APU academic courses assignments examinations student handbook {query}"
+    rag_filters:
+      doc_type: course
+    keywords: ["作业", "assignment", "项目", "project", "学习", "考试", "成绩", "deadline", "截止时间"]
+    examples:
+      - "如何完成数据结构作业？"
+      - "项目截止时间是什么时候？"
+      - "期末考试怎么准备？"
+    fallback_to: "general"
+    
+  - id: exam_prep
+    name: 考试准备
+    category: academic
+    system_prompt_file: prompts/exam_prep.txt
+    enable_rag: false
+    keywords: ["考试", "复习", "备考", "exam", "test", "final", "midterm", "quiz", "期中", "期末"]
+    examples:
+      - "如何准备数据库期末考试？"
+      - "考试复习技巧有哪些？"
+      - "怎么高效备考？"
+    fallback_to: "study_method"
+    
+  - id: study_method
+    name: 学习方法
+    category: academic
+    system_prompt_file: prompts/study_method.txt
+    enable_rag: false
+    keywords: ["学习方法", "学习技巧", "如何学", "怎么学", "study", "learning", "效率", "时间管理"]
+    examples:
+      - "如何高效学习编程？"
+      - "有什么好的学习方法？"
+      - "怎样提高学习效率？"
+    fallback_to: "general"
+
+  # 职业发展 (4)
+  - id: resume_optimize
+    name: 简历优化
+    category: career
+    system_prompt_file: prompts/resume_optimize.txt
+    enable_rag: false
+    keywords: ["简历", "CV", "resume", "优化简历", "修改简历", "简历模板"]
+    examples:
+      - "帮我看看简历"
+      - "如何优化我的简历？"
+      - "简历应该怎么写？"
+      - "我的简历有什么问题？"
+    fallback_to: "career_planning"
+    
+  - id: mock_interview
+    name: 模拟面试
+    category: career
+    system_prompt_file: prompts/mock_interview.txt
+    enable_rag: false
+    keywords: ["面试", "interview", "模拟面试", "面试题", "面试准备", "面试技巧"]
+    examples:
+      - "模拟一下软件工程师面试"
+      - "面试常见问题有哪些？"
+      - "如何准备技术面试？"
+    fallback_to: "career_planning"
+    
+  - id: career_planning
+    name: 职业规划
+    category: career
+    system_prompt_file: prompts/career_planning.txt
+    enable_rag: false
+    keywords: ["职业规划", "career", "发展路径", "职业发展", "找工作", "求职", "转行"]
+    examples:
+      - "计算机专业的职业规划"
+      - "毕业后应该做什么工作？"
+      - "如何规划我的职业发展？"
+    fallback_to: "skill_upgrade"
+    
+  - id: skill_upgrade
+    name: 技能提升
+    category: career
+    system_prompt_file: prompts/skill_upgrade.txt
+    enable_rag: false
+    keywords: ["技能", "skill", "学什么", "提升", "培训", "certification", "认证"]
+    examples:
+      - "应该学习哪些技能？"
+      - "数据分析师需要什么技能？"
+      - "有哪些值得考的认证？"
+    fallback_to: "career_planning"
+
+  # 创业助手 (4)
+  - id: business_plan
+    name: 商业计划
+    category: startup
+    system_prompt_file: prompts/business_plan.txt
+    enable_rag: false
+    keywords: ["商业计划", "BP", "business plan", "创业计划", "商业模式", "融资"]
+    examples:
+      - "如何写商业计划书？"
+      - "BP应该包含哪些内容？"
+      - "帮我制定一个创业计划"
+    fallback_to: "idea_validation"
+    
+  - id: idea_validation
+    name: 创意验证
+    category: startup
+    system_prompt_file: prompts/idea_validation.txt
+    enable_rag: true
+    rag_query_template: "市场分析 {query}"
+    keywords: ["创意验证", "idea", "点子", "创业想法", "可行性", "验证"]
+    examples:
+      - "我有个创业想法，帮我分析一下"
+      - "这个点子可行吗？"
+      - "如何验证创业想法？"
+    fallback_to: "market_analysis"
+    
+  - id: market_analysis
+    name: 市场分析
+    category: startup
+    system_prompt_file: prompts/market_analysis.txt
+    enable_rag: true
+    rag_query_template: "行业分析 {query}"
+    keywords: ["市场分析", "market", "行业", "industry", "市场规模", "趋势"]
+    examples:
+      - "分析一下电商行业"
+      - "AI市场规模有多大？"
+      - "教育行业的发展趋势"
+    fallback_to: "competitor_analysis"
+    
+  - id: competitor_analysis
+    name: 竞品分析
+    category: startup
+    system_prompt_file: prompts/competitor_analysis.txt
+    enable_rag: true
+    rag_query_template: "竞争对手 {query}"
+    keywords: ["竞品", "competitor", "竞争对手", "对手分析", "竞争"]
+    examples:
+      - "分析一下美团的竞争对手"
+      - "这个领域有哪些竞品？"
+      - "我的竞争对手是谁？"
+    fallback_to: "market_analysis"
+
+  # 学术写作 (4)
+  - id: paper_polish
+    name: 论文润色
+    category: writing
+    system_prompt_file: prompts/paper_polish.txt
+    enable_rag: false
+    keywords: ["论文", "paper", "润色", "polish", "改写", "学术写作", "修改"]
+    examples:
+      - "帮我润色这段论文"
+      - "这个摘要怎么改进？"
+      - "论文语言不够学术，怎么办？"
+    fallback_to: "grammar_check"
+    
+  - id: citation_format
+    name: 引用规范
+    category: writing
+    system_prompt_file: prompts/citation_format.txt
+    enable_rag: true
+    rag_query_template: "引用格式 {query}"
+    keywords: ["引用", "citation", "参考文献", "reference", "APA", "MLA", "Chicago", "格式"]
+    examples:
+      - "如何使用APA格式？"
+      - "参考文献怎么写？"
+      - "网页引用格式是什么？"
+    fallback_to: "paper_polish"
+    
+  - id: plagiarism_check
+    name: 查重检查
+    category: writing
+    system_prompt_file: prompts/plagiarism_check.txt
+    enable_rag: false
+    keywords: ["查重", "plagiarism", "抄袭", "原创性", "相似度"]
+    examples:
+      - "如何检查论文查重？"
+      - "怎样避免抄袭？"
+      - "查重率多少合格？"
+    fallback_to: "paper_polish"
+    
+  - id: report_generate
+    name: 报告生成
+    category: writing
+    system_prompt_file: prompts/report_generate.txt
+    enable_rag: false
+    keywords: ["报告", "report", "实验报告", "调研报告", "分析报告", "总结"]
+    examples:
+      - "如何写实验报告？"
+      - "帮我生成一个调研报告框架"
+      - "报告应该包含哪些部分？"
+    fallback_to: "paper_polish"
+
+  # 其他工具 (4)
+  - id: contract_template
+    name: 合同模板
+    category: tools
+    system_prompt_file: prompts/contract_template.txt
+    enable_rag: false
+    keywords: ["合同", "contract", "协议", "agreement", "模板", "法律"]
+    examples:
+      - "帮我写一个实习合同"
+      - "劳动合同应该包含什么？"
+      - "兼职协议模板"
+    fallback_to: "general"
+    
+  - id: salary_query
+    name: 薪资查询
+    category: tools
+    system_prompt_file: prompts/salary_query.txt
+    enable_rag: true
+    rag_query_template: "salary compensation pay income Malaysia {query}"
+    rag_filters:
+      doc_type: salary
+    keywords: ["薪资", "salary", "工资", "薪水", "待遇", "收入", "年薪"]
+    examples:
+      - "软件工程师薪资多少？"
+      - "马来西亚程序员工资水平"
+      - "数据分析师的待遇如何？"
+    fallback_to: "career_planning"
+    
+  - id: company_review
+    name: 企业评价
+    category: tools
+    system_prompt_file: prompts/company_review.txt
+    enable_rag: true
+    rag_query_template: "企业评价 {query}"
+    keywords: ["公司", "company", "企业", "评价", "怎么样", "工作环境", "culture"]
+    examples:
+      - "谷歌工作环境怎么样？"
+      - "这家公司评价如何？"
+      - "阿里巴巴的企业文化"
+    fallback_to: "general"
+    
+  - id: grammar_check
+    name: 语法检查
+    category: tools
+    system_prompt_file: prompts/grammar_check.txt
+    enable_rag: false
+    keywords: ["语法", "grammar", "拼写", "spelling", "检查", "纠错", "错误"]
+    examples:
+      - "帮我检查语法错误"
+      - "这句话有语法问题吗？"
+      - "英文拼写检查"
+    fallback_to: "general"

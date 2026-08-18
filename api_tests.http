@@ -1,0 +1,41 @@
+### 测试 1: 健康检查
+GET http://localhost:8000/api/health/
+Content-Type: application/json
+
+###
+
+### 测试 2: 获取用户信息（需要认证）
+GET http://localhost:8000/api/users/me/
+Authorization: Bearer {{token}}
+
+###
+
+### 测试 3: 测试 AI 聊天接口
+POST http://localhost:8000/api/ai/chat/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "message": "测试消息",
+  "conversation_id": null
+}
+
+###
+
+### 测试 4: RAG 搜索测试
+POST http://localhost:8000/api/rag/search/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "query": "APU课程信息",
+  "top_k": 5
+}
+
+###
+
+### 测试 5: 获取帖子列表
+GET http://localhost:8000/api/posts/
+Content-Type: application/json
+
+###

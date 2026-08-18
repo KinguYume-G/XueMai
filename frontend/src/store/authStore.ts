@@ -28,7 +28,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (payload: LoginPayload) => {
     set({ loading: true })
     try {
-      const { user, access, refresh } = await authApi.login(payload)
+      const { email, password } = payload
+      const { user, access, refresh } = await authApi.login({ email, password })
       setTokens(access, refresh)
       set({ user, isAuthenticated: true, isReady: true, loading: false })
     } catch (error) {
@@ -43,7 +44,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const { user, access, refresh } = await authApi.register(payload)
       setTokens(access, refresh)
-      set({ user, isAuthenticated: false, isReady: true, loading: false })
+      set({ user, isAuthenticated: true, isReady: true, loading: false })
       return user
     } catch (error) {
       clearTokens()
@@ -77,5 +78,4 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 }))
-
 

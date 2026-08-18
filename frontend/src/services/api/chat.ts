@@ -80,7 +80,7 @@ export const sendMessage = async (data: {
   group_id?: number;
   content: string;
   message_type?: 'text' | 'image' | 'file' | 'emoji';
-}): Promise<{ data: ChatMessage; error: null }> => {
+}): Promise<ChatMessage> => {
   return await apiClient.post('/chat/messages/send/', data);
 };
 
@@ -92,7 +92,7 @@ export const sendMessage = async (data: {
 export const markAsRead = async (
   userId?: number,
   groupId?: number
-): Promise<{ data: { marked_count: number }; error: null }> => {
+): Promise<{ marked_count: number }> => {
   const data: any = {};
   if (userId) data.user_id = userId;
   if (groupId) data.group_id = groupId;
@@ -118,7 +118,7 @@ export const getUnreadCount = async (): Promise<{ total_unread: number }> => {
  */
 export const followUser = async (
   userId: number
-): Promise<{ data: { action: string; user_id: number }; error: null }> => {
+): Promise<{ action: string; user_id: number }> => {
   return await apiClient.post('/follow/', { user_id: userId });
 };
 
@@ -136,7 +136,7 @@ export const unfollowUser = async (userId: number): Promise<void> => {
  */
 export const sendFriendRequest = async (
   userId: number
-): Promise<{ data: FriendRequest; error: null }> => {
+): Promise<FriendRequest> => {
   return await apiClient.post('/chat/friend-request/', { to_user_id: userId });
 };
 
@@ -146,7 +146,7 @@ export const sendFriendRequest = async (
  */
 export const acceptFriendRequest = async (
   requestId: number
-): Promise<{ data: FriendRequest; error: null }> => {
+): Promise<FriendRequest> => {
   return await apiClient.post(`/chat/friend-request/${requestId}/accept/`);
 };
 
@@ -156,7 +156,7 @@ export const acceptFriendRequest = async (
  */
 export const rejectFriendRequest = async (
   requestId: number
-): Promise<{ data: FriendRequest; error: null }> => {
+): Promise<FriendRequest> => {
   return await apiClient.post(`/chat/friend-request/${requestId}/reject/`);
 };
 

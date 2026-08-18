@@ -38,7 +38,7 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="fixed left-0 top-16 bottom-0 w-64 border-r bg-white overflow-y-auto">
+    <aside className="fixed bottom-0 left-0 top-16 hidden w-64 overflow-y-auto border-r bg-white lg:block">
       <nav className="flex flex-col h-full p-4">
         {/* Navigation Items */}
         <div className="flex-1 space-y-1">

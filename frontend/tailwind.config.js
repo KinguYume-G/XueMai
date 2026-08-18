@@ -51,11 +51,26 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        apu: {
+          dark: {
+            bg: '#0f172a',      // slate-950
+            card: '#1e293b',    // slate-800
+            border: '#334155',  // slate-700
+          },
+          accent: {
+            blue: '#3b82f6',    // tech blue
+            purple: '#a855f7',  // neon purple
+            cyan: '#06b6d4',    // cyan-500
+          },
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      backdropBlur: {
+        'glass': '10px',
       },
       keyframes: {
         "accordion-down": {

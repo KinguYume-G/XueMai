@@ -84,7 +84,7 @@ export default function AuthRegisterPage() {
         password_confirm: form.passwordConfirm, // ✅ 后端要求的字段名
         university: selectedUniversity,
       })
-      navigate('/login', { replace: true })
+      navigate('/', { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : '注册失败，请稍后重试')
     }
@@ -203,5 +203,4 @@ export default function AuthRegisterPage() {
     </div>
   )
 }
-
 

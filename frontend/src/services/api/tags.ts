@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api/client'
-import type { Tag, PaginatedResponse } from '@/types/api'
+import type { Tag } from '@/types/api'
 
 export const tagsApi = {
   /**

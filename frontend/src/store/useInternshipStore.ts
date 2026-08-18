@@ -27,7 +27,7 @@ const defaultFilters: InternshipFilters = {
   remote: undefined,
   search: '',
   page: 1,
-  page_size: 10,
+  limit: 20,
 }
 
 export const useInternshipStore = create<InternshipState>((set, get) => ({

@@ -1,6 +1,6 @@
 # Notifications models
-from django.db import models
 from django.conf import settings
+from django.db import models
 from django.utils import timezone
 
 
@@ -44,7 +44,7 @@ class Notification(models.Model):
 
     # 关联的帖子
     related_post = models.ForeignKey(
-        'posts.Post',
+        "posts.Post",
         on_delete=models.CASCADE,
         related_name="notifications",
         verbose_name="关联帖子",
@@ -54,7 +54,7 @@ class Notification(models.Model):
 
     # 关联的评论
     related_comment = models.ForeignKey(
-        'comments.Comment',
+        "comments.Comment",
         on_delete=models.CASCADE,
         related_name="notifications",
         verbose_name="关联评论",
@@ -85,4 +85,4 @@ class Notification(models.Model):
         if not self.is_read:
             self.is_read = True
             self.read_at = timezone.now()
-            self.save(update_fields=['is_read', 'read_at'])
+            self.save(update_fields=["is_read", "read_at"])

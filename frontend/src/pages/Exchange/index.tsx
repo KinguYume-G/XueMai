@@ -51,7 +51,7 @@ export default function ExchangeListPage() {
     return date.toLocaleDateString('zh-CN')
   }
 
-  const totalPages = Math.ceil(totalCount / (filters.page_size || 10))
+  const totalPages = Math.ceil(totalCount / (filters.limit || 20))
 
   return (
     <div className="space-y-4">

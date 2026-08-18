@@ -1,7 +1,7 @@
 import type { User } from './api'
 
 export interface LoginPayload {
-  username: string
+  email: string
   password: string
 }
 

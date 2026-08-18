@@ -1,83 +1,107 @@
-"""
-Supabase存储服务
-"""
+"""Supabase Storage helpers for browser-direct media uploads."""
+
+from __future__ import annotations
+
+import mimetypes
 import os
 import uuid
-from datetime import datetime, timedelta
+from pathlib import Path
+from urllib.parse import quote, urljoin
+
+import requests
 from django.conf import settings
+from django.utils import timezone
 
 
-def generate_presigned_upload_url(filename, mimetype):
-    """
-    生成Supabase预签名上传URL
-    
-    参数:
-        filename: 原始文件名
-        mimetype: MIME类型
-    
-    返回:
-        {
-            'uploadUrl': str,  # 预签名上传URL
-            'publicUrl': str,  # 公开访问URL
-            'path': str        # 存储路径
-        }
-    """
-    # 验证mimetype
-    allowed_image_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-    allowed_video_types = ['video/mp4', 'video/webm', 'video/quicktime']
-    allowed_types = allowed_image_types + allowed_video_types
-    
-    if mimetype not in allowed_types:
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+ALLOWED_VIDEO_TYPES = {"video/mp4", "video/webm", "video/quicktime"}
+ALLOWED_TYPES = ALLOWED_IMAGE_TYPES | ALLOWED_VIDEO_TYPES
+
+
+def _validate_file(filename: str, mimetype: str, file_size: int | None = None) -> None:
+    if mimetype not in ALLOWED_TYPES:
         raise ValueError(f"不支持的文件类型: {mimetype}")
-    
-    # 生成唯一文件路径: uploads/2025/10/uuid.ext
-    now = datetime.now()
-    ext = os.path.splitext(filename)[1] or '.jpg'
-    unique_filename = f"{uuid.uuid4()}{ext}"
-    file_path = f"uploads/{now.year}/{now.month:02d}/{unique_filename}"
-    
-    # 获取Supabase配置
-    supabase_url = os.environ.get('SUPABASE_URL', '')
-    supabase_key = os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '')
-    bucket_name = os.environ.get('SUPABASE_BUCKET', 'uploads')
-    
-    if not supabase_url or not supabase_key:
-        # 开发环境：返回本地上传路径
-        return {
-            'uploadUrl': f'/api/media/upload/',  # 本地上传端点
-            'publicUrl': f'/media/{file_path}',
-            'path': file_path,
-            'method': 'POST'
-        }
-    
-    try:
-        from supabase import create_client
-        
-        # 创建Supabase客户端
-        supabase = create_client(supabase_url, supabase_key)
-        
-        # 生成签名URL (有效期1小时)
-        signed_url = supabase.storage.from_(bucket_name).create_signed_url(
-            file_path,
-            expires_in=3600
-        )
-        
-        # 公开URL
-        public_url = f"{supabase_url}/storage/v1/object/public/{bucket_name}/{file_path}"
-        
-        return {
-            'uploadUrl': signed_url,
-            'publicUrl': public_url,
-            'path': file_path
-        }
-    
-    except Exception as e:
-        # 如果Supabase不可用，回退到本地
-        return {
-            'uploadUrl': f'/api/media/upload/',
-            'publicUrl': f'/media/{file_path}',
-            'path': file_path,
-            'method': 'POST',
-            'error': str(e)
-        }
 
+    guessed_type, _ = mimetypes.guess_type(filename)
+    if guessed_type and guessed_type != mimetype:
+        jpeg_aliases = {guessed_type, mimetype} <= {"image/jpeg", "image/jpg"}
+        if not jpeg_aliases:
+            raise ValueError("文件扩展名与 MIME 类型不匹配")
+
+    if file_size is not None:
+        if file_size < 1:
+            raise ValueError("文件不能为空")
+        max_image_mb = int(getattr(settings, "MAX_IMAGE_MB", 10))
+        max_video_mb = int(getattr(settings, "MAX_VIDEO_MB", 50))
+        max_bytes = (max_image_mb if mimetype in ALLOWED_IMAGE_TYPES else max_video_mb) * 1024 * 1024
+        if file_size > max_bytes:
+            raise ValueError(f"文件超过 {max_bytes // 1024 // 1024}MB 限制")
+
+
+def generate_presigned_upload_url(
+    filename: str,
+    mimetype: str,
+    file_size: int | None = None,
+) -> dict[str, object]:
+    """Create a two-hour Supabase signed upload URL.
+
+    The service-role key is used only server-side to mint the short-lived
+    upload token.  It is never returned to the browser.
+    """
+
+    _validate_file(filename, mimetype, file_size)
+
+    suffix = Path(filename).suffix.lower() or mimetypes.guess_extension(mimetype) or ".bin"
+    now = timezone.now()
+    file_path = f"uploads/{now.year}/{now.month:02d}/{uuid.uuid4().hex}{suffix}"
+
+    supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
+    service_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+    bucket = (
+        os.environ.get("SUPABASE_STORAGE_BUCKET")
+        or os.environ.get("SUPABASE_BUCKET")
+        or "media"
+    )
+
+    if not supabase_url or not service_key:
+        raise RuntimeError("Supabase Storage 未配置")
+
+    encoded_target = f"{quote(bucket, safe='')}/{quote(file_path, safe='/')}"
+    endpoint = f"{supabase_url}/storage/v1/object/upload/sign/{encoded_target}"
+    response = requests.post(
+        endpoint,
+        json={},
+        headers={
+            "apikey": service_key,
+            "Authorization": f"Bearer {service_key}",
+            "Content-Type": "application/json",
+        },
+        timeout=10,
+    )
+
+    try:
+        response.raise_for_status()
+        payload = response.json()
+    except (requests.RequestException, ValueError) as exc:
+        raise RuntimeError("无法创建 Supabase 上传地址") from exc
+
+    relative_url = payload.get("url") or payload.get("signedURL") or payload.get("signedUrl")
+    if not relative_url:
+        raise RuntimeError("Supabase 未返回上传地址")
+
+    storage_base = f"{supabase_url}/storage/v1/"
+    upload_url = (
+        relative_url
+        if str(relative_url).startswith(("http://", "https://"))
+        else urljoin(storage_base, str(relative_url).lstrip("/"))
+    )
+    public_url = f"{supabase_url}/storage/v1/object/public/{encoded_target}"
+
+    return {
+        "uploadUrl": upload_url,
+        "publicUrl": public_url,
+        "path": file_path,
+        "method": "PUT",
+        "headers": {"Content-Type": mimetype, "x-upsert": "false"},
+        "expiresIn": 7200,
+    }

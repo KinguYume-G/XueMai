@@ -58,6 +58,38 @@
   }
 }
 
+/* APU Dark Mode Theme */
+@layer base {
+  :root {
+    /* APU Dark Mode Colors */
+    --apu-dark-bg: 15 23 42; /* slate-950 */
+    --apu-dark-card: 30 41 59; /* slate-800 */
+    --apu-dark-border: 51 65 85; /* slate-700 */
+    --apu-tech-blue: 59 130 246; /* blue-500 */
+    --apu-neon-purple: 168 85 247; /* purple-500 */
+    --apu-cyan: 6 182 212; /* cyan-500 */
+    --apu-glass-bg: rgba(255, 255, 255, 0.1);
+    --apu-glass-border: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Glassmorphism Effect */
+.glass-card {
+  background: var(--apu-glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--apu-glass-border);
+}
+
+/* Gradient Text Effect */
+.gradient-text {
+  background: linear-gradient(135deg, #3b82f6 0%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}
+
 /* 聊天系统动画 */
 @keyframes slide-up {
   from {
@@ -72,5 +104,12 @@
 
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
+}
+
+/* Smooth transitions for all interactive elements */
+@layer utilities {
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
 

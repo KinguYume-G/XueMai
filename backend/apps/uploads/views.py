@@ -7,18 +7,18 @@ from rest_framework.response import Response
 from .services import generate_presigned_upload_url
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def presign_upload(request):
     """
     获取预签名上传URL
-    
+
     请求:
         {
             "filename": "photo.jpg",
             "mimetype": "image/jpeg"
         }
-    
+
     响应:
         {
             "data": {
@@ -29,38 +29,36 @@ def presign_upload(request):
             "error": null
         }
     """
-    filename = request.data.get('filename')
-    mimetype = request.data.get('mimetype')
-    
-    if not filename or not mimetype:
-        return Response({
-            'data': None,
-            'error': {
-                'code': 'missing_params',
-                'message': '缺少filename或mimetype参数'
-            }
-        }, status=status.HTTP_400_BAD_REQUEST)
-    
-    try:
-        result = generate_presigned_upload_url(filename, mimetype)
-        return Response({
-            'data': result,
-            'error': None
-        })
-    except ValueError as e:
-        return Response({
-            'data': None,
-            'error': {
-                'code': 'invalid_file_type',
-                'message': str(e)
-            }
-        }, status=status.HTTP_400_BAD_REQUEST)
-    except Exception as e:
-        return Response({
-            'data': None,
-            'error': {
-                'code': 'upload_error',
-                'message': str(e)
-            }
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    filename = request.data.get("filename")
+    mimetype = request.data.get("mimetype")
+    raw_file_size = request.data.get("file_size")
 
+    if not filename or not mimetype:
+        return Response(
+            {
+                "data": None,
+                "error": {"code": "missing_params", "message": "缺少filename或mimetype参数"},
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        file_size = int(raw_file_size) if raw_file_size is not None else None
+        result = generate_presigned_upload_url(filename, mimetype, file_size)
+        return Response({"data": result, "error": None})
+    except (TypeError, ValueError) as e:
+        return Response(
+            {"data": None, "error": {"code": "invalid_file_type", "message": str(e)}},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    except RuntimeError:
+        return Response(
+            {
+                "data": None,
+                "error": {
+                    "code": "storage_unavailable",
+                    "message": "暂时无法创建上传地址，请稍后重试",
+                },
+            },
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )

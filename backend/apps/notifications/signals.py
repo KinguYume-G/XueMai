@@ -1,11 +1,14 @@
 """
 通知信号处理器
 """
+
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from apps.posts.models import PostLike
+
 from apps.comments.models import Comment
+from apps.posts.models import PostLike
 from apps.social.models import Follow, Like
+
 from .models import Notification
 
 
@@ -15,10 +18,10 @@ def notify_post_like(sender, instance, created, **kwargs):
     if created and instance.user != instance.post.author:
         Notification.objects.create(
             user=instance.post.author,
-            type='like',
-            title=f'{instance.user.username} 点赞了你的帖子',
+            type="like",
+            title=f"{instance.user.username} 点赞了你的帖子",
             content=instance.post.title[:50] if instance.post.title else instance.post.body[:50],
-            link=f'/posts/{instance.post.id}'
+            link=f"/posts/{instance.post.id}",
         )
 
 
@@ -31,20 +34,20 @@ def notify_post_comment(sender, instance, created, **kwargs):
             if instance.author != instance.parent.author:
                 Notification.objects.create(
                     user=instance.parent.author,
-                    type='comment',
-                    title=f'{instance.author.username} 回复了你的评论',
+                    type="comment",
+                    title=f"{instance.author.username} 回复了你的评论",
                     content=instance.content[:50],
-                    link=f'/posts/{instance.post.id}#comment-{instance.id}'
+                    link=f"/posts/{instance.post.id}#comment-{instance.id}",
                 )
         else:
             # 新评论 - 通知帖子作者
             if instance.author != instance.post.author:
                 Notification.objects.create(
                     user=instance.post.author,
-                    type='comment',
-                    title=f'{instance.author.username} 评论了你的帖子',
+                    type="comment",
+                    title=f"{instance.author.username} 评论了你的帖子",
                     content=instance.content[:50],
-                    link=f'/posts/{instance.post.id}#comment-{instance.id}'
+                    link=f"/posts/{instance.post.id}#comment-{instance.id}",
                 )
 
 
@@ -54,10 +57,10 @@ def notify_new_follower(sender, instance, created, **kwargs):
     if created:
         Notification.objects.create(
             user=instance.following,
-            type='follow',
-            title=f'{instance.follower.username} 关注了你',
-            content='',
-            link=f'/users/{instance.follower.id}'
+            type="follow",
+            title=f"{instance.follower.username} 关注了你",
+            content="",
+            link=f"/users/{instance.follower.id}",
         )
 
 
@@ -68,17 +71,16 @@ def notify_like(sender, instance, created, **kwargs):
         if instance.post and instance.user != instance.post.author:
             Notification.objects.create(
                 user=instance.post.author,
-                type='like',
-                title=f'{instance.user.username} 点赞了你的帖子',
-                content='',
-                link=f'/posts/{instance.post.id}'
+                type="like",
+                title=f"{instance.user.username} 点赞了你的帖子",
+                content="",
+                link=f"/posts/{instance.post.id}",
             )
         elif instance.comment and instance.user != instance.comment.author:
             Notification.objects.create(
                 user=instance.comment.author,
-                type='like',
-                title=f'{instance.user.username} 点赞了你的评论',
+                type="like",
+                title=f"{instance.user.username} 点赞了你的评论",
                 content=instance.comment.content[:50],
-                link=f'/posts/{instance.comment.post.id}#comment-{instance.comment.id}'
+                link=f"/posts/{instance.comment.post.id}#comment-{instance.comment.id}",
             )
-

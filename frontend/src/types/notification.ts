@@ -62,5 +62,5 @@ export interface NotificationListResponse {
 }
 
 export interface MarkReadResponse {
-  marked_count: number
+  updated_count: number
 }

@@ -1,9 +1,11 @@
 """
 用户相关信号处理器
 """
+
+from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.contrib.auth import get_user_model
+
 from .models import Profile
 
 User = get_user_model()
@@ -19,5 +21,5 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     """保存用户时同步保存Profile"""
-    if hasattr(instance, 'profile'):
+    if hasattr(instance, "profile"):
         instance.profile.save()

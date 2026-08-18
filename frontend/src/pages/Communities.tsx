@@ -1,224 +1,150 @@
-import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { type FormEvent, useCallback, useEffect, useState } from 'react'
+import { MapPin, Plus, Search, Users } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { parseApiError } from '@/lib/api/error'
+import {
+  communitiesApi,
+  type CommunityCategory,
+  type CommunityRecord,
+} from '@/services/api/communities'
 
-interface Community {
-  id: string
-  name: string
-  memberCount: number
-  description: string
-  icon: string
-  activeRate: number
-  isJoined: boolean
-  category: string
-}
-
-const communities: Community[] = [
-  {
-    id: '1',
-    name: '游戏爱好者社区',
-    memberCount: 512,
-    description: '分享游戏心得、组队开黑、电竞交流',
-    icon: '🎮',
-    activeRate: 87,
-    isJoined: true,
-    category: 'hobby',
-  },
-  {
-    id: '2',
-    name: 'APU篮球社',
-    memberCount: 234,
-    description: '校内篮球爱好者聚集地，组织球赛和训练',
-    icon: '🏀',
-    activeRate: 92,
-    isJoined: true,
-    category: 'campus',
-  },
-  {
-    id: '3',
-    name: '音乐创作交流',
-    memberCount: 167,
-    description: '分享原创音乐、编曲技巧、乐器教学',
-    icon: '🎵',
-    activeRate: 78,
-    isJoined: false,
-    category: 'hobby',
-  },
-  {
-    id: '4',
-    name: 'KL留学生互助',
-    memberCount: 892,
-    description: '吉隆坡留学生生活互助、资源分享',
-    icon: '🌍',
-    activeRate: 85,
-    isJoined: false,
-    category: 'city',
-  },
-  {
-    id: '5',
-    name: 'APU摄影社',
-    memberCount: 325,
-    description: '摄影技术交流、作品分享、外拍活动',
-    icon: '📷',
-    activeRate: 73,
-    isJoined: false,
-    category: 'campus',
-  },
-  {
-    id: '6',
-    name: '编程学习小组',
-    memberCount: 456,
-    description: '代码分享、技术讨论、项目协作',
-    icon: '💻',
-    activeRate: 89,
-    isJoined: false,
-    category: 'study',
-  },
+const categories: Array<{ value: CommunityCategory | 'all'; label: string }> = [
+  { value: 'all', label: '全部' },
+  { value: 'interest', label: '兴趣爱好' },
+  { value: 'city', label: '城市' },
+  { value: 'oncampus', label: '校园' },
+  { value: 'study_group', label: '学习小组' },
 ]
 
-type CategoryType = 'all' | 'hobby' | 'city' | 'campus' | 'study'
-
-const categories = [
-  { key: 'all', label: '全部' },
-  { key: 'hobby', label: '兴趣爱好' },
-  { key: 'city', label: '城市同乡' },
-  { key: 'campus', label: '校内社团' },
-  { key: 'study', label: '学习小组' },
-] as const
+const activityPercent = (value: number) =>
+  Math.round(Math.max(0, Math.min(value <= 1 ? value * 100 : value, 100)))
 
 export default function Communities() {
   const navigate = useNavigate()
-  const [activeCategory, setActiveCategory] = useState<CategoryType>('all')
-  const [communityList, setCommunityList] = useState(communities)
+  const [communities, setCommunities] = useState<CommunityRecord[]>([])
+  const [category, setCategory] = useState<CommunityCategory | 'all'>('all')
+  const [draft, setDraft] = useState('')
+  const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [joining, setJoining] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleCreateCommunity = () => {
-    navigate('/communities/create')
+  const loadCommunities = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await communitiesApi.getCommunities({
+        limit: 100,
+        category: category === 'all' ? undefined : category,
+        search: search || undefined,
+      })
+      setCommunities(response.data)
+    } catch (reason) {
+      setError(parseApiError(reason))
+    } finally {
+      setLoading(false)
+    }
+  }, [category, search])
+
+  useEffect(() => { void loadCommunities() }, [loadCommunities])
+
+  const submitSearch = (event: FormEvent) => {
+    event.preventDefault()
+    setSearch(draft.trim())
   }
 
-  const handleJoinCommunity = (communityId: string) => {
-    setCommunityList((prev) =>
-      prev.map((c) =>
-        c.id === communityId ? { ...c, isJoined: !c.isJoined } : c
-      )
-    )
+  const toggleJoin = async (community: CommunityRecord) => {
+    setJoining(community.slug)
+    setError(null)
+    try {
+      const result = await communitiesApi.toggleJoin(community.slug)
+      const joined = result?.joined ?? !community.joined
+      setCommunities((previous) => previous.map((item) => item.slug === community.slug
+        ? {
+            ...item,
+            joined,
+            members: Math.max(0, item.members + (joined ? 1 : -1)),
+          }
+        : item))
+    } catch (reason) {
+      setError(parseApiError(reason))
+    } finally {
+      setJoining(null)
+    }
   }
-
-  const handleCommunityClick = (communityId: string) => {
-    navigate(`/communities/${communityId}`)
-  }
-
-  const filteredCommunities =
-    activeCategory === 'all'
-      ? communityList
-      : communityList.filter((c) => c.category === activeCategory)
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-[32px] font-bold leading-tight text-gray-900">社区</h1>
-          <p className="mt-2 text-base text-gray-600">
-            发现志同道合的伙伴
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900">社区</h1>
+          <p className="mt-2 text-gray-600">发现并加入真实的校园与兴趣社区。</p>
         </div>
-        <Button
-          onClick={handleCreateCommunity}
-          className="gap-2 bg-primary hover:bg-primary/90 h-10 px-6 rounded-lg"
-        >
-          <Plus className="h-4 w-4" />
-          创建社区
+        <Button onClick={() => navigate('/communities/create')} className="gap-2">
+          <Plus className="h-4 w-4" />创建社区
         </Button>
       </div>
 
-      {/* Category Tabs */}
-      <div className="flex items-center gap-0 border-b">
-        {categories.map((category) => (
-          <button
-            key={category.key}
-            onClick={() => setActiveCategory(category.key as CategoryType)}
-            className={`
-              px-4 py-3 text-sm font-medium transition-colors relative
-              ${
-                activeCategory === category.key
-                  ? 'text-primary'
-                  : 'text-gray-600 hover:text-gray-900'
-              }
-            `}
-          >
-            {category.label}
-            {activeCategory === category.key && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-            )}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          {categories.map((item) => (
+            <Button key={item.value} size="sm" variant={category === item.value ? 'default' : 'outline'} onClick={() => setCategory(item.value)}>
+              {item.label}
+            </Button>
+          ))}
+        </div>
+        <form onSubmit={submitSearch} className="flex w-full gap-2 sm:w-auto">
+          <div className="relative min-w-64 flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="搜索社区" className="pl-9" />
+          </div>
+          <Button type="submit" variant="outline">搜索</Button>
+        </form>
       </div>
 
-      {/* Community Cards Grid */}
-      <div className="grid grid-cols-3 gap-4">
-        {filteredCommunities.length === 0 ? (
-          <div className="col-span-3 text-center py-12 text-gray-600">
-            暂无社区
-          </div>
-        ) : (
-          filteredCommunities.map((community) => (
-            <Card
-              key={community.id}
-              className="rounded-xl border shadow-sm hover:shadow-md transition-shadow"
-            >
-              <CardContent className="p-5 flex flex-col items-center text-center min-h-[280px]">
-                {/* Icon */}
-                <div
-                  className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-3xl mb-4 cursor-pointer"
-                  onClick={() => handleCommunityClick(community.id)}
-                >
-                  {community.icon}
+      {error && <Card><CardContent className="p-4 text-sm text-red-600">{error}</CardContent></Card>}
+
+      {loading ? (
+        <Card><CardContent className="p-10 text-center text-gray-500">正在加载社区…</CardContent></Card>
+      ) : communities.length === 0 ? (
+        <Card><CardContent className="p-10 text-center text-gray-500">没有符合条件的社区</CardContent></Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {communities.map((community) => (
+            <Card key={community.id} className="overflow-hidden transition-shadow hover:shadow-md">
+              {community.cover_url && (
+                <button type="button" className="block h-32 w-full" onClick={() => navigate(`/communities/${community.slug}`)}>
+                  <img src={community.cover_url} alt="" className="h-full w-full object-cover" />
+                </button>
+              )}
+              <CardContent className="flex min-h-64 flex-col p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <button type="button" className="text-left" onClick={() => navigate(`/communities/${community.slug}`)}>
+                    <h2 className="text-lg font-semibold hover:text-blue-600">{community.name}</h2>
+                  </button>
+                  <Badge variant="secondary">{categories.find((item) => item.value === community.category)?.label ?? community.category}</Badge>
                 </div>
-
-                {/* Name */}
-                <h3
-                  className="text-lg font-semibold mb-1 cursor-pointer hover:text-primary"
-                  onClick={() => handleCommunityClick(community.id)}
-                >
-                  {community.name}
-                </h3>
-
-                {/* Member Count */}
-                <p className="text-sm text-gray-600 mb-3">
-                  {community.memberCount}成员
-                </p>
-
-                {/* Description */}
-                <p className="text-sm text-gray-600 line-clamp-2 mb-4 flex-1">
-                  {community.description}
-                </p>
-
-                {/* Stats */}
-                <div className="flex items-center gap-1 text-sm text-gray-600 mb-4">
-                  <span>{community.memberCount}成员</span>
-                  <span>●</span>
-                  <span>{community.activeRate}%活跃</span>
+                <p className="mt-3 line-clamp-3 flex-1 text-sm leading-6 text-gray-600">{community.description || '暂无社区介绍'}</p>
+                <div className="mt-4 flex flex-wrap gap-3 text-xs text-gray-500">
+                  <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" />{community.members} 位成员</span>
+                  <span>{activityPercent(community.activity_rate)}% 活跃度</span>
+                  {community.city && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{community.city}</span>}
                 </div>
-
-                {/* Join Button */}
-                <Button
-                  onClick={() => handleJoinCommunity(community.id)}
-                  variant={community.isJoined ? 'outline' : 'default'}
-                  className={`w-full h-10 rounded-lg ${
-                    community.isJoined
-                      ? 'border-gray-300 text-gray-600 hover:bg-gray-50'
-                      : 'bg-primary hover:bg-primary/90 text-white'
-                  }`}
-                >
-                  {community.isJoined ? '已加入' : '加入社区'}
-                </Button>
+                <div className="mt-5 flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => navigate(`/communities/${community.slug}`)}>查看详情</Button>
+                  <Button className="flex-1" variant={community.joined ? 'secondary' : 'default'} disabled={joining === community.slug} onClick={() => toggleJoin(community)}>
+                    {joining === community.slug ? '处理中…' : community.joined ? '退出社区' : '加入社区'}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

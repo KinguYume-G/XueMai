@@ -1,35 +1,54 @@
 import axios, {
   type AxiosError,
   type AxiosInstance,
+  type AxiosRequestConfig,
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from 'axios'
 import { clearTokens, getAccessToken, getRefreshToken, setTokens } from '@/lib/auth/token'
+import {
+  buildApiUrl,
+  DEFAULT_API_BASE_URL,
+  extractApiErrorMessage,
+  resolveApiPayload,
+} from '@/lib/api/contracts'
 import type { ApiError, ApiResponse } from '@/types/api'
 import type { TokenPair } from '@/types/auth'
 
 export const REFRESH_HEADER = 'X-Skip-Auth-Refresh'
 
-const resolveBaseUrl = (): string => {
-  if (typeof import.meta !== 'undefined') {
-    const env = (import.meta as unknown as { env?: Record<string, string | undefined> }).env ?? {}
-    if (env.VITE_API_BASE) {
-      return env.VITE_API_BASE
-    }
-    if (env.VITE_API_BASE_URL) {
-      return env.VITE_API_BASE_URL
-    }
-  }
-  // 默认值（仅作为 fallback，实际应从 .env.local 读取）
-  return 'http://127.0.0.1:8000/api'
+/**
+ * The response interceptor removes Axios' transport wrapper. This interface
+ * keeps the public client type aligned with that runtime behaviour.
+ */
+export interface ApiClient {
+  request<T = unknown, D = unknown>(config: AxiosRequestConfig<D>): Promise<T>
+  get<T = unknown, D = unknown>(url: string, config?: AxiosRequestConfig<D>): Promise<T>
+  delete<T = unknown, D = unknown>(url: string, config?: AxiosRequestConfig<D>): Promise<T>
+  post<T = unknown, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D>,
+  ): Promise<T>
+  put<T = unknown, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D>,
+  ): Promise<T>
+  patch<T = unknown, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D>,
+  ): Promise<T>
 }
 
 /**
- * Resolved backend API base URL, configurable via environment variables.
+ * Browser requests always use the same-origin API path. During development,
+ * Vite proxies this path to Django; production can route it at the web server.
  */
-export const API_BASE_URL = resolveBaseUrl()
+export const API_BASE_URL = DEFAULT_API_BASE_URL
 
-const apiClient: AxiosInstance = axios.create({
+const axiosClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
   timeout: 10000,
@@ -40,28 +59,40 @@ const apiClient: AxiosInstance = axios.create({
 
 let refreshPromise: Promise<string | null> | null = null
 
-const resolveResponseData = <T>(response: AxiosResponse<ApiResponse<T> | T>): T => {
-  const payload = response.data
-  console.log('🔍 [resolveResponseData] ========== 开始解析响应 ==========')
-  console.log('🔍 [resolveResponseData] 请求 URL:', response.config.url)
-  console.log('🔍 [resolveResponseData] 原始 payload:', payload)
-  console.log('🔍 [resolveResponseData] payload 类型:', typeof payload)
-  console.log('🔍 [resolveResponseData] payload 是否为数组:', Array.isArray(payload))
-  console.log('🔍 [resolveResponseData] payload 是否有 data 字段:', payload && typeof payload === 'object' && 'data' in payload)
+const resolveResponseData = <T>(
+  response: AxiosResponse<ApiResponse<T> | T>,
+): ApiResponse<T> | T => {
+  return resolveApiPayload(response.data) as ApiResponse<T> | T
+}
 
-  if (payload && typeof payload === 'object' && 'data' in payload) {
-    const extractedData = (payload as ApiResponse<T>).data
-    console.log('✅ [resolveResponseData] 检测到嵌套 data 字段，提取 payload.data')
-    console.log('✅ [resolveResponseData] extractedData:', extractedData)
-    console.log('✅ [resolveResponseData] extractedData 类型:', typeof extractedData)
-    console.log('✅ [resolveResponseData] extractedData 是否为数组:', Array.isArray(extractedData))
-    console.log('🔍 [resolveResponseData] ========== 返回提取的 data ==========')
-    return extractedData
+export const apiFetch = (path: string, init: RequestInit = {}): Promise<Response> => {
+  const headers = new Headers(init.headers)
+  const token = getAccessToken()
+
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`)
   }
 
-  console.log('✅ [resolveResponseData] 未检测到嵌套 data 字段，直接返回 payload')
-  console.log('🔍 [resolveResponseData] ========== 直接返回 payload ==========')
-  return payload as T
+  return fetch(buildApiUrl(path, API_BASE_URL), {
+    ...init,
+    headers,
+  })
+}
+
+export const readApiErrorMessage = async (
+  response: Response,
+  fallback = `请求失败 (${response.status})`,
+): Promise<string> => {
+  try {
+    return extractApiErrorMessage(await response.clone().json(), fallback)
+  } catch {
+    try {
+      const text = await response.clone().text()
+      return text.trim() || fallback
+    } catch {
+      return fallback
+    }
+  }
 }
 
 const refreshAccessToken = async (): Promise<string | null> => {
@@ -89,12 +120,12 @@ const refreshAccessToken = async (): Promise<string | null> => {
 
     setTokens(payload.access, payload.refresh ?? refreshToken)
     return payload.access
-  } catch (error) {
+  } catch {
     return null
   }
 }
 
-apiClient.interceptors.request.use((config) => {
+axiosClient.interceptors.request.use((config) => {
   const mutableConfig = config
   const token = getAccessToken()
 
@@ -106,7 +137,7 @@ apiClient.interceptors.request.use((config) => {
   return mutableConfig
 })
 
-apiClient.interceptors.response.use(
+axiosClient.interceptors.response.use(
   (response) => resolveResponseData(response),
   async (error: AxiosError<ApiResponse<ApiError>>) => {
     const { response, config } = error
@@ -131,7 +162,7 @@ apiClient.interceptors.response.use(
       if (newAccessToken) {
         originalRequest.headers = originalRequest.headers ?? {}
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
-        return apiClient(originalRequest)
+        return axiosClient(originalRequest)
       }
 
       clearTokens()
@@ -140,9 +171,10 @@ apiClient.interceptors.response.use(
       }
     }
 
-    const apiError = response?.data?.error
-    if (apiError) {
-      return Promise.reject(new Error(apiError.message))
+    if (response?.data) {
+      return Promise.reject(
+        new Error(extractApiErrorMessage(response.data, error.message)),
+      )
     }
 
     return Promise.reject(error)
@@ -152,6 +184,6 @@ apiClient.interceptors.response.use(
 /**
  * Shared Axios client configured with authentication interceptors.
  */
-export { apiClient }
+export const apiClient = axiosClient as unknown as ApiClient
 
 export default apiClient

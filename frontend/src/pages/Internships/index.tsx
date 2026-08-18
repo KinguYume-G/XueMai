@@ -48,7 +48,7 @@ export default function InternshipsListPage() {
     return labels[type] || type
   }
 
-  const totalPages = Math.ceil(totalCount / (filters.page_size || 10))
+  const totalPages = Math.ceil(totalCount / (filters.limit || 20))
 
   return (
     <div className="space-y-4">

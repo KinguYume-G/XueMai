@@ -1,25 +1,52 @@
 # User views
 # apps/users/views.py
-from rest_framework import viewsets, status, filters
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import User, Profile
-from .serializers import UserSerializer, ProfileSerializer, ProfileUpdateSerializer
+from rest_framework import filters, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
+
+from core.permissions import IsOwnerOrStaff
+
+from .models import Profile, User
+from .serializers import (
+    ProfileSerializer,
+    ProfileUpdateSerializer,
+    UserPrivateSerializer,
+    UserPublicSerializer,
+)
 
 
 class UserViewSet(viewsets.ModelViewSet):
     """用户API视图集"""
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    # ✅ 优化：预加载 profile，避免 N+1 查询
+    queryset = User.objects.select_related("profile").all()
+    serializer_class = UserPrivateSerializer  # Default for authenticated users
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrStaff]
+    owner_fields = ()
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["username", "email", "bio"]
     ordering_fields = ["created_at", "username"]
     ordering = ["-created_at"]
-    
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+
+    def get_serializer_class(self):
+        """根据认证状态返回不同的序列化器"""
+        if self.request.user.is_authenticated:
+            return UserPrivateSerializer
+        return UserPublicSerializer
+
+    def get_search_fields(self):
+        """未认证用户不能通过 email/bio 搜索"""
+        if self.request.user.is_authenticated:
+            return ["username", "email", "bio"]
+        return ["username"]  # 仅允许搜索用户名
+
+    @property
+    def search_fields(self):
+        """动态返回搜索字段"""
+        return self.get_search_fields()
+
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def me(self, request):
         """获取当前用户信息"""
         serializer = self.get_serializer(request.user)
@@ -28,29 +55,34 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class ProfileViewSet(viewsets.ModelViewSet):
     """用户资料API"""
+
     queryset = Profile.objects.select_related("user", "university", "school").all()
     serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrStaff]
+    owner_fields = ("user",)
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["university", "school", "grade"]
-    search_fields = ["user__username", "user__email", "major"]
     ordering_fields = ["followers_count", "posts_count", "created_at"]
     ordering = ["-created_at"]
+
+    def get_search_fields(self):
+        """未认证用户不能通过 email 搜索"""
+        if self.request.user.is_authenticated:
+            return ["user__username", "user__email", "major"]
+        return ["user__username", "major"]  # 移除 email 搜索
+
+    @property
+    def search_fields(self):
+        """动态返回搜索字段"""
+        return self.get_search_fields()
 
     def get_serializer_class(self):
         if self.action in ["update", "partial_update"]:
             return ProfileUpdateSerializer
         return ProfileSerializer
 
-    def get_permissions(self):
-        if self.action in ["update", "partial_update", "destroy"]:
-            return [IsAuthenticated()]
-        return super().get_permissions()
-
     def perform_update(self, serializer):
-        # 只允许更新自己的资料
-        if self.request.user == serializer.instance.user:
-            serializer.save()
+        serializer.save()
 
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def me(self, request):

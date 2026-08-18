@@ -17,8 +17,14 @@ export const aiApi = {
    * AI查询（RAG）
    */
   query: async (data: AIQueryRequest): Promise<AIQueryResponse> => {
-    const response = await apiClient.post<{ data: AIQueryResponse }>('/ai/query/', data);
-    return (response as { data: AIQueryResponse }).data;
+    const result = await apiClient.post<{ answer: string; used_rag: boolean }>(
+      '/ai/chat/sync/',
+      { question: data.query, use_rag: true, university_id: data.university_id }
+    );
+    return {
+      query: data.query,
+      response: result.answer,
+      is_mock: false,
+    };
   },
 };
-

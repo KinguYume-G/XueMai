@@ -2,20 +2,22 @@
 生成MVP测试数据（幂等）
 运行：python manage.py seed_mvp [--clear]
 """
-from django.core.management.base import BaseCommand
-from django.contrib.auth import get_user_model
-from faker import Faker
+
 import random
 from datetime import timedelta
-from django.utils import timezone
 
-from apps.campus.models import University, School
-from apps.users.models import Profile
-from apps.posts.models import Post, Tag, PostLike, Bookmark, Visibility
+from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
+from django.utils import timezone
+from faker import Faker
+
+from apps.campus.models import School, University
 from apps.comments.models import Comment
-from apps.social.models import Follow
 from apps.notifications.models import Notification
 from apps.opportunities.models import ExchangeProgram, Internship
+from apps.posts.models import Bookmark, Post, PostLike, Tag, Visibility
+from apps.social.models import Follow
+from apps.users.models import Profile
 
 User = get_user_model()
 fake = Faker(["zh_CN", "en_US"])
@@ -38,7 +40,9 @@ class Command(BaseCommand):
         # 1) 大学与学院
         universities = self.create_universities()
         schools = self.create_schools(universities)
-        self.stdout.write(self.style.SUCCESS(f"✅ 大学 {len(universities)} 所，学院 {len(schools)} 个"))
+        self.stdout.write(
+            self.style.SUCCESS(f"✅ 大学 {len(universities)} 所，学院 {len(schools)} 个")
+        )
 
         # 2) 标签
         tags = self.create_tags()
@@ -68,7 +72,9 @@ class Command(BaseCommand):
         # 8) 机会
         exchanges_count = self.create_exchange_programs(users, universities)
         internships_count = self.create_internships(users)
-        self.stdout.write(self.style.SUCCESS(f"✅ 交换 {exchanges_count}，实习 {internships_count}"))
+        self.stdout.write(
+            self.style.SUCCESS(f"✅ 交换 {exchanges_count}，实习 {internships_count}")
+        )
 
         self.stdout.write(self.style.SUCCESS("\n🎉 种子数据生成完成！"))
         self.stdout.write(self.style.SUCCESS("\n可使用以下测试账号登录："))
@@ -90,13 +96,13 @@ class Command(BaseCommand):
         Profile.objects.all().delete()
         School.objects.all().delete()
         University.objects.all().delete()
-        
+
         # 清理可能残留的空 slug 记录
-        Tag.objects.filter(slug='').delete()
-        University.objects.filter(slug='').delete()
-        School.objects.filter(slug='').delete()
-        
-        self.stdout.write('🧹 已清理空 slug 记录')
+        Tag.objects.filter(slug="").delete()
+        University.objects.filter(slug="").delete()
+        School.objects.filter(slug="").delete()
+
+        self.stdout.write("🧹 已清理空 slug 记录")
 
     # ---------------------- 数据创建 ----------------------
     def _universities_dataset(self):
@@ -164,9 +170,13 @@ class Command(BaseCommand):
                     defaults={"students_count": random.randint(1000, 5000)},
                 )
                 if created:
-                    self.stdout.write(self.style.SUCCESS(f"✅ 学院创建: {uni.name} - {school.name}"))
+                    self.stdout.write(
+                        self.style.SUCCESS(f"✅ 学院创建: {uni.name} - {school.name}")
+                    )
                 else:
-                    self.stdout.write(self.style.WARNING(f"ℹ️  学院已存在: {uni.name} - {school.name}"))
+                    self.stdout.write(
+                        self.style.WARNING(f"ℹ️  学院已存在: {uni.name} - {school.name}")
+                    )
                 created_schools.append(school)
         return created_schools
 
@@ -237,12 +247,18 @@ class Command(BaseCommand):
 
             # 资料
             university = random.choice(universities)
-            school = random.choice(list(university.schools.all())) if university.schools.exists() else None
+            school = (
+                random.choice(list(university.schools.all()))
+                if university.schools.exists()
+                else None
+            )
             profile_defaults = {
                 "university": university,
                 "school": school,
                 "major": random.choice(["计算机科学", "经济学", "法学", "工程", "商业管理"]),
-                "grade": random.choice(["freshman", "sophomore", "junior", "senior", "master", "phd"]),
+                "grade": random.choice(
+                    ["freshman", "sophomore", "junior", "senior", "master", "phd"]
+                ),
                 "github_url": f"https://github.com/{username}",
             }
             Profile.objects.update_or_create(user=user, defaults=profile_defaults)
@@ -262,7 +278,9 @@ class Command(BaseCommand):
         for user in users:
             num_following = 4  # 固定一些，提升幂等性
             potential = [u for u in users if u != user]
-            following_users = potential[:num_following] if len(potential) >= num_following else potential
+            following_users = (
+                potential[:num_following] if len(potential) >= num_following else potential
+            )
             for target in following_users:
                 _, created = Follow.objects.get_or_create(follower=user, following=target)
                 if created:
@@ -288,7 +306,9 @@ class Command(BaseCommand):
                         "body": fake.text(max_nb_chars=500),
                         "visibility": random.choice([v[0] for v in Visibility.choices]),
                         "is_published": True,
-                        "target_university": user.profile.university if random.random() < 0.5 else None,
+                        "target_university": (
+                            user.profile.university if random.random() < 0.5 else None
+                        ),
                         "views_count": random.randint(10, 1000),
                     },
                 )
@@ -415,4 +435,3 @@ class Command(BaseCommand):
             if created:
                 count += 1
         return count
-

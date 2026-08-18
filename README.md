@@ -84,7 +84,7 @@ python manage.py runserver
 ### **3. 启动前端**
 ```powershell
 cd frontend
-pnpm install
+#pnpm install
 pnpm dev
 
 

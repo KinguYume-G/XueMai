@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api/client';
-import type { Comment, CommentCreateRequest, PaginatedResponse } from '@/types/api';
+import type { CommentApiRecord, CommentCreateRequest, PaginatedResponse } from '@/types/api';
 
 export const commentsApi = {
   /**
@@ -9,17 +9,15 @@ export const commentsApi = {
     post?: number;
     page?: number;
     with_replies?: boolean;
-  }): Promise<PaginatedResponse<Comment>> => {
-    const response = await apiClient.get<PaginatedResponse<Comment>>('/comments/', { params });
-    return response as PaginatedResponse<Comment>;
+  }): Promise<PaginatedResponse<CommentApiRecord>> => {
+    return apiClient.get<PaginatedResponse<CommentApiRecord>>('/comments/', { params });
   },
 
   /**
    * 创建评论
    */
-  createComment: async (data: CommentCreateRequest): Promise<Comment> => {
-    const response = await apiClient.post<Comment>('/comments/', data);
-    return response as Comment;
+  createComment: async (data: CommentCreateRequest): Promise<CommentCreateRequest> => {
+    return apiClient.post<CommentCreateRequest>('/comments/', data);
   },
 
   /**
@@ -29,4 +27,3 @@ export const commentsApi = {
     await apiClient.delete(`/comments/${id}/`);
   },
 };
-

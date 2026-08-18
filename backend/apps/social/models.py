@@ -1,21 +1,22 @@
 # Social models
-from django.db import models
 from django.conf import settings
+from django.db import models
 
 
 class Follow(models.Model):
     """关注关系"""
+
     follower = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="following_set",
-        verbose_name="关注者"
+        verbose_name="关注者",
     )
     following = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="followers_set",
-        verbose_name="被关注者"
+        verbose_name="被关注者",
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -41,27 +42,28 @@ class Follow(models.Model):
 
 class Like(models.Model):
     """点赞（帖子或评论）"""
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="likes",
-        verbose_name="用户"
+        verbose_name="用户",
     )
     post = models.ForeignKey(
-        'posts.Post',
+        "posts.Post",
         null=True,
         blank=True,
         on_delete=models.CASCADE,
         related_name="likes",
-        verbose_name="帖子"
+        verbose_name="帖子",
     )
     comment = models.ForeignKey(
-        'comments.Comment',
+        "comments.Comment",
         null=True,
         blank=True,
         on_delete=models.CASCADE,
         related_name="likes",
-        verbose_name="评论"
+        verbose_name="评论",
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -75,18 +77,18 @@ class Like(models.Model):
         ]
         constraints = [
             models.CheckConstraint(
-                check=models.Q(post__isnull=False) | models.Q(comment__isnull=False),
-                name='like_post_or_comment'
+                condition=models.Q(post__isnull=False) | models.Q(comment__isnull=False),
+                name="like_post_or_comment",
             ),
             models.UniqueConstraint(
-                fields=['user', 'post'],
+                fields=["user", "post"],
                 condition=models.Q(post__isnull=False),
-                name='unique_user_post_like'
+                name="unique_user_post_like",
             ),
             models.UniqueConstraint(
-                fields=['user', 'comment'],
+                fields=["user", "comment"],
                 condition=models.Q(comment__isnull=False),
-                name='unique_user_comment_like'
+                name="unique_user_comment_like",
             ),
         ]
 
@@ -98,29 +100,27 @@ class Like(models.Model):
 
 class FriendRequest(models.Model):
     """好友申请"""
+
     STATUS_CHOICES = [
-        ('pending', '待处理'),
-        ('accepted', '已接受'),
-        ('rejected', '已拒绝'),
+        ("pending", "待处理"),
+        ("accepted", "已接受"),
+        ("rejected", "已拒绝"),
     ]
 
     from_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="sent_friend_requests",
-        verbose_name="发送者"
+        verbose_name="发送者",
     )
     to_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="received_friend_requests",
-        verbose_name="接收者"
+        verbose_name="接收者",
     )
     status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='pending',
-        verbose_name="状态"
+        max_length=20, choices=STATUS_CHOICES, default="pending", verbose_name="状态"
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="申请时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
@@ -139,7 +139,7 @@ class FriendRequest(models.Model):
 
     def accept(self):
         """接受好友申请，创建双向关注关系"""
-        self.status = 'accepted'
+        self.status = "accepted"
         self.save()
 
         # 创建双向关注关系
@@ -148,12 +148,13 @@ class FriendRequest(models.Model):
 
     def reject(self):
         """拒绝好友申请"""
-        self.status = 'rejected'
+        self.status = "rejected"
         self.save()
 
 
 class ChatGroup(models.Model):
     """群组"""
+
     name = models.CharField(max_length=200, verbose_name="群组名称")
     description = models.TextField(blank=True, verbose_name="群组描述")
     avatar_url = models.URLField(blank=True, null=True, verbose_name="群组头像")
@@ -161,7 +162,7 @@ class ChatGroup(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="created_groups",
-        verbose_name="创建者"
+        verbose_name="创建者",
     )
     member_count = models.IntegerField(default=0, verbose_name="成员数量")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
@@ -181,14 +182,12 @@ class ChatGroup(models.Model):
     def update_member_count(self):
         """更新成员数量"""
         self.member_count = self.members.count()
-        self.save(update_fields=['member_count'])
+        self.save(update_fields=["member_count"])
 
-    def add_member(self, user, role='member'):
+    def add_member(self, user, role="member"):
         """添加成员"""
         member, created = GroupMember.objects.get_or_create(
-            group=self,
-            user=user,
-            defaults={'role': role}
+            group=self, user=user, defaults={"role": role}
         )
         if created:
             self.update_member_count()
@@ -203,29 +202,24 @@ class ChatGroup(models.Model):
 
 class GroupMember(models.Model):
     """群组成员"""
+
     ROLE_CHOICES = [
-        ('owner', '群主'),
-        ('admin', '管理员'),
-        ('member', '普通成员'),
+        ("owner", "群主"),
+        ("admin", "管理员"),
+        ("member", "普通成员"),
     ]
 
     group = models.ForeignKey(
-        ChatGroup,
-        on_delete=models.CASCADE,
-        related_name="members",
-        verbose_name="群组"
+        ChatGroup, on_delete=models.CASCADE, related_name="members", verbose_name="群组"
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="group_memberships",
-        verbose_name="用户"
+        verbose_name="用户",
     )
     role = models.CharField(
-        max_length=20,
-        choices=ROLE_CHOICES,
-        default='member',
-        verbose_name="角色"
+        max_length=20, choices=ROLE_CHOICES, default="member", verbose_name="角色"
     )
     joined_at = models.DateTimeField(auto_now_add=True, verbose_name="加入时间")
 
@@ -245,18 +239,19 @@ class GroupMember(models.Model):
 
 class ChatMessage(models.Model):
     """聊天消息"""
+
     MESSAGE_TYPE_CHOICES = [
-        ('text', '文本'),
-        ('image', '图片'),
-        ('file', '文件'),
-        ('emoji', '表情'),
+        ("text", "文本"),
+        ("image", "图片"),
+        ("file", "文件"),
+        ("emoji", "表情"),
     ]
 
     from_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="sent_messages",
-        verbose_name="发送者"
+        verbose_name="发送者",
     )
     to_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -264,7 +259,7 @@ class ChatMessage(models.Model):
         related_name="received_messages",
         null=True,
         blank=True,
-        verbose_name="接收者"
+        verbose_name="接收者",
     )
     group = models.ForeignKey(
         ChatGroup,
@@ -272,14 +267,11 @@ class ChatMessage(models.Model):
         related_name="messages",
         null=True,
         blank=True,
-        verbose_name="群组"
+        verbose_name="群组",
     )
     content = models.TextField(verbose_name="消息内容")
     message_type = models.CharField(
-        max_length=20,
-        choices=MESSAGE_TYPE_CHOICES,
-        default='text',
-        verbose_name="消息类型"
+        max_length=20, choices=MESSAGE_TYPE_CHOICES, default="text", verbose_name="消息类型"
     )
     is_read = models.BooleanField(default=False, verbose_name="是否已读")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="发送时间")
@@ -295,8 +287,8 @@ class ChatMessage(models.Model):
         ]
         constraints = [
             models.CheckConstraint(
-                check=models.Q(to_user__isnull=False) | models.Q(group__isnull=False),
-                name='message_has_recipient'
+                condition=models.Q(to_user__isnull=False) | models.Q(group__isnull=False),
+                name="message_has_recipient",
             ),
         ]
 
@@ -309,24 +301,21 @@ class ChatMessage(models.Model):
         """标记为已读"""
         if not self.is_read:
             self.is_read = True
-            self.save(update_fields=['is_read'])
+            self.save(update_fields=["is_read"])
 
 
 class UserOnlineStatus(models.Model):
     """用户在线状态"""
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="online_status",
-        verbose_name="用户"
+        verbose_name="用户",
     )
     is_online = models.BooleanField(default=False, verbose_name="是否在线")
     last_seen = models.DateTimeField(auto_now=True, verbose_name="最后在线时间")
-    status_text = models.CharField(
-        max_length=100,
-        blank=True,
-        verbose_name="状态文字"
-    )
+    status_text = models.CharField(max_length=100, blank=True, verbose_name="状态文字")
 
     class Meta:
         verbose_name = "用户在线状态"
@@ -339,9 +328,9 @@ class UserOnlineStatus(models.Model):
     def set_online(self):
         """设置为在线"""
         self.is_online = True
-        self.save(update_fields=['is_online', 'last_seen'])
+        self.save(update_fields=["is_online", "last_seen"])
 
     def set_offline(self):
         """设置为离线"""
         self.is_online = False
-        self.save(update_fields=['is_online', 'last_seen'])
+        self.save(update_fields=["is_online", "last_seen"])

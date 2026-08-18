@@ -8,7 +8,7 @@ export interface InternshipFilters {
   remote?: boolean
   search?: string
   page?: number
-  page_size?: number
+  limit?: number
 }
 
 export const internshipsApi = {
@@ -24,7 +24,7 @@ export const internshipsApi = {
     if (filters.remote !== undefined) params.append('remote', filters.remote.toString())
     if (filters.search) params.append('search', filters.search)
     if (filters.page) params.append('page', filters.page.toString())
-    if (filters.page_size) params.append('page_size', filters.page_size.toString())
+    if (filters.limit) params.append('limit', filters.limit.toString())
 
     const queryString = params.toString()
     const url = `/internships/${queryString ? `?${queryString}` : ''}`

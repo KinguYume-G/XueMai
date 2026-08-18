@@ -7,7 +7,7 @@ export interface ExchangeProgramFilters {
   deadline_before?: string
   search?: string
   page?: number
-  page_size?: number
+  limit?: number
 }
 
 export const exchangeApi = {
@@ -25,15 +25,13 @@ export const exchangeApi = {
     if (filters.deadline_before) params.append('deadline_before', filters.deadline_before)
     if (filters.search) params.append('search', filters.search)
     if (filters.page) params.append('page', filters.page.toString())
-    if (filters.page_size) params.append('page_size', filters.page_size.toString())
+    if (filters.limit) params.append('limit', filters.limit.toString())
 
     const queryString = params.toString()
     const url = `/exchange_programs/${queryString ? `?${queryString}` : ''}`
 
     console.log('🌐 请求 URL:', url)
-    console.log('🔗 完整路径:', `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api'}${url}`)
-
-    const response = await apiClient.get(url)
+    const response = await apiClient.get<PaginatedResponse<ExchangeProgram>>(url)
     console.log('✅ 收到响应:', response)
 
     return response

@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import University, School, UniversityResource
+
+from .models import School, University, UniversityResource
 
 
 @admin.register(University)
@@ -26,9 +27,8 @@ class UniversityResourceAdmin(admin.ModelAdmin):
     list_filter = ["university", "category", "is_active"]
     search_fields = ["title", "content", "university__name"]
     readonly_fields = ["created_by", "created_at", "updated_at"]
-    
+
     def save_model(self, request, obj, form, change):
         if not change:
             obj.created_by = request.user
         super().save_model(request, obj, form, change)
-

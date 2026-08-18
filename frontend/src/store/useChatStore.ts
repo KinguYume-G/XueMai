@@ -257,7 +257,7 @@ const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   sendMessage: async (content) => {
     const { selectedUser, selectedGroup } = get();
     try {
-      const data = await chatApi.sendMessage({
+      const message = await chatApi.sendMessage({
         to_user_id: selectedUser?.id,
         group_id: selectedGroup?.id,
         content,
@@ -266,7 +266,7 @@ const useChatStore = create<ChatState & ChatActions>((set, get) => ({
 
       // 添加新消息到列表
       set((state) => ({
-        messages: [...state.messages, data.data],
+        messages: [...state.messages, message],
       }));
     } catch (error: any) {
       set({ error: error.message || '发送消息失败' });

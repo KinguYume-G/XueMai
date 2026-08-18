@@ -27,7 +27,7 @@ const defaultFilters: ExchangeProgramFilters = {
   deadline_before: '',
   search: '',
   page: 1,
-  page_size: 10,
+  limit: 20,
 }
 
 export const useExchangeStore = create<ExchangeState>((set, get) => ({

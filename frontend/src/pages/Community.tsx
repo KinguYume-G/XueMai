@@ -1,227 +1,109 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Users } from 'lucide-react'
-import CreatePostBox from '@/components/feed/CreatePostBox'
-import FeedTabs from '@/components/feed/FeedTabs'
-import PostCard from '@/components/feed/PostCard'
-import { postsApi } from '@/services/api/posts'
-import { tagsApi } from '@/services/api/tags'
-import { parseApiError } from '@/lib/api/error'
+import { useEffect, useState } from 'react'
+import { ArrowLeft, Calendar, MapPin, Users } from 'lucide-react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
-import type { Post, Tag } from '@/types/api'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { parseApiError } from '@/lib/api/error'
+import {
+  communitiesApi,
+  type CommunityRecord,
+} from '@/services/api/communities'
+
+const categoryLabels: Record<string, string> = {
+  interest: '兴趣爱好',
+  city: '城市',
+  oncampus: '校园',
+  study_group: '学习小组',
+}
 
 export default function Community() {
-  const [activeTab, setActiveTab] = useState<'hot' | 'new' | 'follow'>('new')
-  const [posts, setPosts] = useState<Post[]>([])
+  const { slug } = useParams<{ slug: string }>()
+  const navigate = useNavigate()
+  const [community, setCommunity] = useState<CommunityRecord | null>(null)
   const [loading, setLoading] = useState(true)
+  const [joining, setJoining] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [tags, setTags] = useState<Tag[]>([])
-  const [selectedTag, setSelectedTag] = useState<string | null>(null)
 
-  // 加载所有标签
   useEffect(() => {
-    const loadTags = async () => {
-      try {
-        const allTags = await tagsApi.getAllTags()
-        setTags(allTags)
-      } catch (err) {
-        console.error('Failed to load tags:', err)
-      }
-    }
-    loadTags()
-  }, [])
-
-  const fetchFeed = useCallback(async (tab: 'hot' | 'new' | 'follow', page: number, tagFilter?: string | null) => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      // 使用 Feed API 获取数据，支持标签筛选
-      const params: any = { tab, page }
-      if (tagFilter) {
-        params.tags = tagFilter
-      }
-
-      const response = await postsApi.getFeed(params)
-
-      // apiClient interceptor 已解包，response 可能是 Post[] 或 { data: Post[], paging: {...} }
-      let postsData: any[] = []
-      if (Array.isArray(response)) {
-        postsData = response
-      } else if (response && typeof response === 'object') {
-        postsData = (response as any).data || (response as any).results || []
-      }
-
-      // 映射数据格式（与 Home 页面相同的逻辑）
-      const mappedPosts = postsData.map((item: any) => {
-        // 处理 author
-        let authorId: number
-        let authorUsername: string
-        let authorAvatar: string | undefined
-
-        if (item.author && typeof item.author === 'object') {
-          authorId = item.author.id || item.author_id || item.author
-          authorUsername = item.author.username || item.author_username || '未命名用户'
-          authorAvatar = item.author.avatar || item.author.avatar_url || item.author_avatar
-        } else {
-          authorId = item.author || item.author_id || 0
-          authorUsername = item.author_username || '未命名用户'
-          authorAvatar = item.author_avatar
-        }
-
-        // 处理 tags
-        const tagsArray = Array.isArray(item.tags) ? item.tags : []
-        const tagIds = tagsArray.map((tag: any) =>
-          typeof tag === 'object' ? tag.id : tag
-        )
-        const tagsData = tagsArray.map((tag: any) => {
-          if (typeof tag === 'object') {
-            return {
-              id: tag.id,
-              name: tag.name || '',
-              slug: tag.slug || '',
-              posts_count: tag.posts_count || 0,
-              created_at: tag.created_at || '',
-            }
-          }
-          return null
-        }).filter(Boolean) as any[]
-
-        return {
-          id: item.id,
-          author: authorId,
-          author_username: authorUsername,
-          author_avatar: authorAvatar,
-          title: item.title || '',
-          body: item.body || item.content || '',
-          image_url: item.image_url,
-          video_url: item.video_url,
-          visibility: item.visibility || 'public',
-          is_published: item.is_published !== undefined ? item.is_published : true,
-          target_university: item.target_university,
-          target_school: item.target_school,
-          tags: tagIds,
-          tags_data: tagsData,
-          likes_count: item.likes_count || 0,
-          comments_count: item.comments_count || 0,
-          bookmarks_count: item.bookmarks_count || 0,
-          views_count: item.views_count || 0,
-          is_liked: item.is_liked || false,
-          is_bookmarked: item.is_bookmarked || false,
-          created_at: item.created_at,
-          updated_at: item.updated_at || item.created_at,
-        }
-      }) as Post[]
-
-      setPosts(mappedPosts)
-    } catch (err) {
-      console.error('Failed to load posts:', err)
-      setError(parseApiError(err))
-    } finally {
+    if (!slug) {
+      setError('缺少社区标识')
       setLoading(false)
+      return
     }
-  }, [])
 
-  useEffect(() => {
-    fetchFeed(activeTab, 1, selectedTag)
-  }, [activeTab, selectedTag, fetchFeed])
+    let active = true
+    setLoading(true)
+    setError(null)
+    communitiesApi.getCommunity(slug)
+      .then((data) => active && setCommunity(data))
+      .catch((reason) => active && setError(parseApiError(reason)))
+      .finally(() => active && setLoading(false))
+    return () => { active = false }
+  }, [slug])
 
-  const handlePostCreated = useCallback(() => {
-    setActiveTab('new')
-    setSelectedTag(null)
-    fetchFeed('new', 1, null)
-  }, [fetchFeed])
-
-  const handleTagClick = (tagSlug: string) => {
-    if (selectedTag === tagSlug) {
-      setSelectedTag(null)
-    } else {
-      setSelectedTag(tagSlug)
+  const toggleJoin = async () => {
+    if (!community) return
+    setJoining(true)
+    setError(null)
+    try {
+      const response = await communitiesApi.toggleJoin(community.slug)
+      const joined = response?.joined ?? !community.joined
+      setCommunity({
+        ...community,
+        joined,
+        members: Math.max(0, community.members + (joined ? 1 : -1)),
+      })
+    } catch (reason) {
+      setError(parseApiError(reason))
+    } finally {
+      setJoining(false)
     }
   }
 
+  if (loading) return <Card><CardContent className="p-10 text-center text-gray-500">正在加载社区…</CardContent></Card>
+
+  if (error || !community) {
+    return <Card><CardContent className="space-y-4 p-10 text-center"><p className="text-red-600">{error || '社区不存在'}</p><Button variant="outline" onClick={() => navigate('/communities')}>返回社区列表</Button></CardContent></Card>
+  }
+
+  const activity = Math.round(Math.min(100, community.activity_rate <= 1 ? community.activity_rate * 100 : community.activity_rate))
+
   return (
-    <div className="space-y-4">
-      {/* Page Header */}
-      <div className="bg-white rounded-2xl border shadow-sm p-6">
-        <div className="flex items-center gap-3">
-          <div className="rounded-full bg-primary/10 p-2">
-            <Users className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">社区</h1>
-            <p className="text-sm text-muted-foreground">
-              分享见解，交流想法
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-5">
+      <Button variant="ghost" onClick={() => navigate('/communities')} className="gap-2"><ArrowLeft className="h-4 w-4" />返回社区列表</Button>
 
-      {/* Create Post Box */}
-      <CreatePostBox onPostCreated={handlePostCreated} />
-
-      {/* Tag Filter Pills */}
-      {tags.length > 0 && (
-        <div className="bg-white rounded-2xl border shadow-sm p-4">
-          <div className="flex items-center gap-2 overflow-x-auto pb-2">
-            <span className="text-sm text-muted-foreground shrink-0">标签筛选:</span>
-            <Badge
-              variant={selectedTag === null ? 'default' : 'outline'}
-              className="cursor-pointer shrink-0"
-              onClick={() => setSelectedTag(null)}
-            >
-              全部
-            </Badge>
-            {tags.map((tag) => (
-              <Badge
-                key={tag.id}
-                variant={selectedTag === tag.slug ? 'default' : 'outline'}
-                className="cursor-pointer shrink-0"
-                onClick={() => handleTagClick(tag.slug)}
-              >
-                #{tag.name}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Feed Section */}
-      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
-        <FeedTabs activeTab={activeTab} onTabChange={setActiveTab as (tab: string) => void} />
-
-        {/* Posts List */}
-        <div className="divide-y">
-          {loading ? (
-            <div className="p-8 text-center text-muted-foreground">
-              加载中...
-            </div>
-          ) : error ? (
-            <div className="p-8 text-center">
-              <p className="text-sm text-destructive mb-2">{error}</p>
-              <button
-                onClick={() => fetchFeed(activeTab, 1, selectedTag)}
-                className="text-sm text-primary hover:underline"
-              >
-                重试
-              </button>
-            </div>
-          ) : posts.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">
-              {selectedTag
-                ? '该标签下暂无内容'
-                : activeTab === 'follow'
-                ? '暂无关注的人发布内容'
-                : '暂无内容，快来发布第一条帖子吧！'}
-            </div>
-          ) : (
-            posts.map((post) => (
-              <div key={post.id} className="p-0">
-                <PostCard post={post} />
+      <Card className="overflow-hidden">
+        {community.cover_url ? (
+          <img src={community.cover_url} alt={community.name} className="h-56 w-full object-cover" />
+        ) : (
+          <div className="h-40 bg-gradient-to-br from-blue-600 to-cyan-500" />
+        )}
+        <CardContent className="p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-3xl font-bold text-gray-900">{community.name}</h1>
+                <Badge variant="secondary">{categoryLabels[community.category] ?? community.category}</Badge>
               </div>
-            ))
-          )}
-        </div>
-      </div>
+              <div className="mt-3 flex flex-wrap gap-4 text-sm text-gray-500">
+                <span className="flex items-center gap-1"><Users className="h-4 w-4" />{community.members} 位成员</span>
+                <span>{activity}% 活跃度</span>
+                {community.city && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{community.city}</span>}
+                <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />创建于 {new Date(community.created_at).toLocaleDateString('zh-CN')}</span>
+              </div>
+            </div>
+            <Button onClick={toggleJoin} disabled={joining} variant={community.joined ? 'secondary' : 'default'}>
+              {joining ? '处理中…' : community.joined ? '退出社区' : '加入社区'}
+            </Button>
+          </div>
+
+          <div className="mt-8 border-t pt-6">
+            <h2 className="text-lg font-semibold">社区介绍</h2>
+            <p className="mt-3 whitespace-pre-wrap leading-7 text-gray-600">{community.description || '该社区暂未填写介绍。'}</p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

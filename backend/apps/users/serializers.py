@@ -1,6 +1,7 @@
 # Users serializers
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from rest_framework import serializers
+
 from .models import Profile
 
 GRADE_MAP = {
@@ -14,8 +15,17 @@ GRADE_REVERSE_MAP = {v: k for k, v in GRADE_MAP.items()}
 User = get_user_model()
 
 
-class UserSerializer(serializers.ModelSerializer):
-    """基础用户序列化器"""
+class UserPublicSerializer(serializers.ModelSerializer):
+    """公开用户信息 - 未认证用户可见"""
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "created_at"]
+        read_only_fields = ["id", "created_at"]
+
+
+class UserPrivateSerializer(serializers.ModelSerializer):
+    """完整用户信息 - 仅认证用户可见"""
 
     class Meta:
         model = User
@@ -67,7 +77,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
-    """详细用户序列化器（含profile）"""
+    """详细用户序列化器（含profile）- 仅认证用户可见"""
 
     profile = ProfileSerializer(read_only=True)
 

@@ -1,6 +1,7 @@
 """
 通知创建工具函数
 """
+
 from .models import Notification
 
 
@@ -33,7 +34,7 @@ def create_like_notification(sender, post=None, comment=None):
     notification = Notification.objects.create(
         user=recipient,
         sender=sender,
-        type='like',
+        type="like",
         title=title,
         content=content,
         related_post=post,
@@ -74,7 +75,7 @@ def create_comment_notification(sender, post=None, parent_comment=None, comment=
     notification = Notification.objects.create(
         user=recipient,
         sender=sender,
-        type='comment',
+        type="comment",
         title=title,
         content=content,
         related_post=post,
@@ -99,7 +100,7 @@ def create_follow_notification(sender, following_user):
     notification = Notification.objects.create(
         user=following_user,
         sender=sender,
-        type='follow',
+        type="follow",
         title="新的关注",
         content=f"{sender.username} 关注了你",
     )
@@ -120,10 +121,10 @@ def create_system_notification(user, title, content, link=None):
     notification = Notification.objects.create(
         user=user,
         sender=None,  # 系统通知无发送者
-        type='system',
+        type="system",
         title=title,
         content=content,
-        link=link or '',
+        link=link or "",
     )
 
     return notification

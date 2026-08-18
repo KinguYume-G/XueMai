@@ -2,6 +2,9 @@ import { apiClient } from '@/lib/api/client';
 import type { User, Profile, ProfileUpdateRequest } from '@/types/api';
 
 export const usersApi = {
+  /** 获取指定用户的公开/登录可见资料 */
+  getUser: (id: number): Promise<User> => apiClient.get(`/users/${id}/`),
+
   /**
    * 获取当前用户信息
    */

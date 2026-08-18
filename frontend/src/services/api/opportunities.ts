@@ -1,5 +1,41 @@
 import { apiClient } from '@/lib/api/client';
-import type { PaginatedResponse, ExchangeProgram, Internship } from '@/types/api';
+import type { PaginatedResponse, ExchangeProgram, Internship, Startup } from '@/types/api';
+
+export interface InternshipCreateRequest {
+  title: string;
+  company: string;
+  description: string;
+  location: string;
+  type: Internship['type'];
+  duration?: string;
+  deadline?: string;
+  requirements?: string;
+  salary_range?: string;
+  link?: string;
+  city?: string;
+  country?: string;
+  remote?: boolean;
+  skills?: string[];
+  salary_min?: number;
+  salary_max?: number;
+  visibility?: 'public' | 'university' | 'private';
+  is_published?: boolean;
+}
+
+export interface StartupCreateRequest {
+  title: string;
+  org_name: string;
+  description: string;
+  description_short?: string;
+  city: string;
+  country?: string;
+  tags?: string[];
+  equity_min?: number;
+  equity_max?: number;
+  contact_url?: string;
+  visibility?: 'public' | 'university' | 'private';
+  is_published?: boolean;
+}
 
 export const opportunitiesApi = {
   /**
@@ -7,6 +43,7 @@ export const opportunitiesApi = {
    */
   getExchangePrograms: async (params?: {
     page?: number;
+    limit?: number;
     host_university?: number;
     search?: string;
   }): Promise<PaginatedResponse<ExchangeProgram>> => {
@@ -30,6 +67,7 @@ export const opportunitiesApi = {
    */
   getInternships: async (params?: {
     page?: number;
+    limit?: number;
     type?: string;
     company?: string;
     search?: string;
@@ -48,5 +86,24 @@ export const opportunitiesApi = {
     const response = await apiClient.get<Internship>(`/internships/${id}/`);
     return response as Internship;
   },
-};
 
+  createInternship: (data: InternshipCreateRequest): Promise<Internship> =>
+    apiClient.post('/internships/', data),
+
+  getStartups: (params?: {
+    page?: number;
+    limit?: number;
+    city?: string;
+    country?: string;
+    tag?: string;
+    search?: string;
+    ordering?: string;
+  }): Promise<PaginatedResponse<Startup>> =>
+    apiClient.get('/startups/', { params }),
+
+  getStartup: (id: number): Promise<Startup> =>
+    apiClient.get(`/startups/${id}/`),
+
+  createStartup: (data: StartupCreateRequest): Promise<Startup> =>
+    apiClient.post('/startups/', data),
+};

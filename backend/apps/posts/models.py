@@ -1,6 +1,6 @@
 # Posts models
-from django.db import models
 from django.conf import settings
+from django.db import models
 from django.utils.text import slugify
 from unidecode import unidecode  # type: ignore[import-not-found]
 
@@ -56,9 +56,7 @@ class PostQuerySet(models.QuerySet):
         from apps.social.models import Follow
 
         # 获取用户关注的人的ID列表
-        following_ids = Follow.objects.filter(follower=user).values_list(
-            "following_id", flat=True
-        )
+        following_ids = Follow.objects.filter(follower=user).values_list("following_id", flat=True)
 
         # 获取用户的大学ID
         user_university_id = None
@@ -122,9 +120,7 @@ class Post(models.Model):
         verbose_name="目标学院",
     )
 
-    tags = models.ManyToManyField(
-        Tag, blank=True, related_name="posts", verbose_name="标签"
-    )
+    tags = models.ManyToManyField(Tag, blank=True, related_name="posts", verbose_name="标签")
 
     # 统计字段
     likes_count = models.PositiveIntegerField(default=0, verbose_name="点赞数")

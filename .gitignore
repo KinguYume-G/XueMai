@@ -34,6 +34,15 @@ celerybeat-schedule
 # User uploads & collectstatic 输出
 media/
 staticfiles/
+backups/
+
+# RAG data / vector store (large, not source code)
+backend/data/
+backend/chroma_db/
+backend/backend/
+
+# MCP sidecar (local tool state)
+.mcp-sidecar/
 
 # --- Node / Frontend ---
 node_modules/
@@ -42,11 +51,14 @@ build/
 .vite/
 *.tsbuildinfo
 coverage/
+*.log
+*.pid
 
 # --- Env / Secrets ---
 .env
 .env.*
 **/.env*
+**/.jwt_token
 frontend/.env.local
 backend/.env
 
@@ -68,6 +80,7 @@ nul
 .env.local
 venv/
 .venv/
+.venv*/
 __pycache__/
 *.pyc
 node_modules/

@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api/client';
-import type { Post, PostCreateRequest, PaginatedResponse } from '@/types/api';
+import type { PostApiRecord, PostCreateRequest, PaginatedResponse } from '@/types/api';
 
 export const postsApi = {
   /**
@@ -10,10 +10,10 @@ export const postsApi = {
     visibility?: string;
     search?: string;
     ordering?: string;
-  }): Promise<PaginatedResponse<Post>> => {
+    author?: number;
+  }): Promise<PaginatedResponse<PostApiRecord>> => {
     // apiClient 的 interceptor 会自动解包 data
-    const response = await apiClient.get<PaginatedResponse<Post>>('/posts/', { params });
-    return response as PaginatedResponse<Post>;
+    return apiClient.get<PaginatedResponse<PostApiRecord>>('/posts/', { params });
   },
   
   /**
@@ -22,33 +22,29 @@ export const postsApi = {
   getFeed: async (params?: {
     tab?: 'hot' | 'new' | 'follow';
     page?: number;
-  }): Promise<PaginatedResponse<Post>> => {
-    const response = await apiClient.get<PaginatedResponse<Post>>('/posts/feed/', { params });
-    return response as PaginatedResponse<Post>;
+  }): Promise<PaginatedResponse<PostApiRecord>> => {
+    return apiClient.get<PaginatedResponse<PostApiRecord>>('/posts/feed/', { params });
   },
 
   /**
    * 获取单个帖子
    */
-  getPost: async (id: number): Promise<Post> => {
-    const response = await apiClient.get<Post>(`/posts/${id}/`);
-    return response as Post;
+  getPost: async (id: number): Promise<PostApiRecord> => {
+    return apiClient.get<PostApiRecord>(`/posts/${id}/`);
   },
 
   /**
    * 创建帖子
    */
-  createPost: async (data: PostCreateRequest): Promise<Post> => {
-    const response = await apiClient.post<Post>('/posts/', data);
-    return response as Post;
+  createPost: async (data: PostCreateRequest): Promise<PostCreateRequest> => {
+    return apiClient.post<PostCreateRequest>('/posts/', data);
   },
 
   /**
    * 更新帖子
    */
-  updatePost: async (id: number, data: Partial<PostCreateRequest>): Promise<Post> => {
-    const response = await apiClient.patch<Post>(`/posts/${id}/`, data);
-    return response as Post;
+  updatePost: async (id: number, data: Partial<PostCreateRequest>): Promise<PostCreateRequest> => {
+    return apiClient.patch<PostCreateRequest>(`/posts/${id}/`, data);
   },
 
   /**
@@ -93,9 +89,7 @@ export const postsApi = {
   /**
    * 获取我的收藏
    */
-  getMyBookmarks: async (): Promise<Post[]> => {
-    const response = await apiClient.get<Post[]>('/posts/my_bookmarks/');
-    return response as Post[];
+  getMyBookmarks: async (): Promise<PaginatedResponse<PostApiRecord>> => {
+    return apiClient.get<PaginatedResponse<PostApiRecord>>('/posts/my_bookmarks/');
   },
 };
-
