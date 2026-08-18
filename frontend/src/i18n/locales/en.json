@@ -327,6 +327,77 @@
       "genericError": "Registration failed, please try again later"
     }
   },
+  "search": {
+    "title": "Search",
+    "subtitle": "Find people, posts, forum topics, communities, and opportunities.",
+    "inputAriaLabel": "Search keywords",
+    "inputPlaceholder": "Enter at least 2 characters",
+    "submit": "Search",
+    "searching": "Searching…",
+    "minChars": "Enter at least 2 characters to start searching.",
+    "noResults": "No results found for “{{query}}”.",
+    "sections": {
+      "users": "People",
+      "posts": "Posts",
+      "topics": "Forum Topics",
+      "communities": "Communities",
+      "opportunities": "Opportunities"
+    },
+    "studentUser": "Student",
+    "communitySubtitle": "{{members}} members · {{description}}"
+  },
+  "bookmarks": {
+    "title": "My Bookmarks",
+    "totalCount": "{{count}} items bookmarked",
+    "tabs": {
+      "post": "Posts",
+      "exchange": "Exchange Programs",
+      "internship": "Internships",
+      "community": "Communities"
+    },
+    "tabCount": "{{label}} ({{count}})",
+    "loading": "Loading...",
+    "retry": "Retry",
+    "empty": "No bookmarks yet",
+    "emptyHint": "Start exploring and bookmark things you're interested in",
+    "bookmarkedOn": "Bookmarked {{date}}",
+    "unbookmarkConfirm": {
+      "title": "Remove this bookmark?",
+      "description": "This removes the item from your bookmarks. You can always bookmark it again later.",
+      "cancel": "Cancel",
+      "confirm": "Remove"
+    },
+    "exchangeCard": {
+      "deadline": "Deadline: {{date}}",
+      "tuition": "Cost: {{tuition}}",
+      "requirements": "Requirements: {{requirements}}",
+      "viewDetails": "View Details"
+    },
+    "internshipCard": {
+      "remote": "Remote friendly",
+      "viewDetails": "View Details",
+      "applyNow": "Apply Now"
+    },
+    "communityCard": {
+      "membersCount": "{{count}} members",
+      "enterCommunity": "Enter Community"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "tabs": {
+      "all": "All",
+      "like": "Likes",
+      "comment": "Comments",
+      "follow": "Follows",
+      "system": "System"
+    },
+    "tabCount": "{{label}} ({{count}})",
+    "loading": "Loading...",
+    "empty": "No notifications yet",
+    "systemFallback": "S"
+  },
   "userProfile": {
     "notFound": "User not found",
     "back": "Back",

@@ -327,6 +327,77 @@
       "genericError": "注册失败，请稍后重试"
     }
   },
+  "search": {
+    "title": "全站搜索",
+    "subtitle": "查找同学、帖子、论坛话题、社区和机会。",
+    "inputAriaLabel": "搜索关键词",
+    "inputPlaceholder": "输入至少两个字符",
+    "submit": "搜索",
+    "searching": "正在搜索…",
+    "minChars": "请输入至少两个字符开始搜索。",
+    "noResults": "没有找到“{{query}}”相关结果。",
+    "sections": {
+      "users": "同学",
+      "posts": "帖子",
+      "topics": "论坛话题",
+      "communities": "社区",
+      "opportunities": "机会"
+    },
+    "studentUser": "学生用户",
+    "communitySubtitle": "{{members}} 位成员 · {{description}}"
+  },
+  "bookmarks": {
+    "title": "我的收藏",
+    "totalCount": "共收藏了 {{count}} 项内容",
+    "tabs": {
+      "post": "帖子",
+      "exchange": "交换项目",
+      "internship": "实习机会",
+      "community": "社区"
+    },
+    "tabCount": "{{label}} ({{count}})",
+    "loading": "加载中...",
+    "retry": "重试",
+    "empty": "暂无收藏",
+    "emptyHint": "开始探索并收藏你感兴趣的内容吧",
+    "bookmarkedOn": "收藏于 {{date}}",
+    "unbookmarkConfirm": {
+      "title": "确定取消收藏？",
+      "description": "此操作将从收藏列表中移除该项目。您可以随时重新收藏。",
+      "cancel": "取消",
+      "confirm": "确定"
+    },
+    "exchangeCard": {
+      "deadline": "申请截止: {{date}}",
+      "tuition": "费用: {{tuition}}",
+      "requirements": "要求: {{requirements}}",
+      "viewDetails": "查看详情"
+    },
+    "internshipCard": {
+      "remote": "支持远程",
+      "viewDetails": "查看详情",
+      "applyNow": "投递简历"
+    },
+    "communityCard": {
+      "membersCount": "{{count}} 成员",
+      "enterCommunity": "进入社区"
+    }
+  },
+  "notifications": {
+    "title": "通知",
+    "markAllRead": "一键已读",
+    "tabs": {
+      "all": "全部",
+      "like": "点赞",
+      "comment": "评论",
+      "follow": "关注",
+      "system": "系统"
+    },
+    "tabCount": "{{label}}({{count}})",
+    "loading": "加载中...",
+    "empty": "暂无通知",
+    "systemFallback": "系"
+  },
   "userProfile": {
     "notFound": "用户不存在",
     "back": "返回",

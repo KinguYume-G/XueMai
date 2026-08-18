@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Bell } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { notificationsApi } from '@/services/api/notifications'
 import type { Notification, NotificationType, NotificationCountsByType } from '@/types/notification'
@@ -12,6 +14,8 @@ type TabType = 'all' | NotificationType
  * 使用标准三栏布局：左侧导航 + 中间通知内容 + 右侧侧边栏
  */
 export default function Notifications() {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<TabType>('all')
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [counts, setCounts] = useState<NotificationCountsByType>({
@@ -110,8 +114,11 @@ export default function Notifications() {
       }
     }
 
-    // TODO: 跳转到相关页面
-    console.log('Navigate to:', notification.link || notification.related_post)
+    // 跳转到相关页面
+    const target = notification.link
+      || (notification.related_post ? `/posts/${notification.related_post.id}` : '')
+      || (notification.sender ? `/users/${notification.sender.id}` : '')
+    if (target) navigate(target)
   }
 
   return (
@@ -121,7 +128,7 @@ export default function Notifications() {
         {/* 顶部标题栏 */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold text-gray-900">通知</h1>
+            <h1 className="text-xl font-bold text-gray-900">{t('notifications.title')}</h1>
             {unreadCount > 0 && (
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-semibold text-white">
                 {unreadCount}
@@ -135,18 +142,18 @@ export default function Notifications() {
             className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
             onClick={handleMarkAllAsRead}
           >
-            一键已读
+            {t('notifications.markAllRead')}
           </Button>
         </div>
 
         {/* 标签页导航 */}
         <div className="flex items-center gap-1 px-6 py-3 border-b overflow-x-auto">
           {[
-            { key: 'all', label: '全部', count: notifications.length },
-            { key: 'like', label: '点赞', count: counts.like },
-            { key: 'comment', label: '评论', count: counts.comment },
-            { key: 'follow', label: '关注', count: counts.follow },
-            { key: 'system', label: '系统', count: counts.system },
+            { key: 'all', label: t('notifications.tabs.all'), count: notifications.length },
+            { key: 'like', label: t('notifications.tabs.like'), count: counts.like },
+            { key: 'comment', label: t('notifications.tabs.comment'), count: counts.comment },
+            { key: 'follow', label: t('notifications.tabs.follow'), count: counts.follow },
+            { key: 'system', label: t('notifications.tabs.system'), count: counts.system },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -159,7 +166,7 @@ export default function Notifications() {
                 }
               `}
             >
-              {tab.label}({tab.count})
+              {t('notifications.tabCount', { label: tab.label, count: tab.count })}
               {activeTab === tab.key && (
                 <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
               )}
@@ -171,12 +178,12 @@ export default function Notifications() {
         <div>
           {loading ? (
             <div className="flex items-center justify-center py-12 text-gray-500">
-              加载中...
+              {t('notifications.loading')}
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-gray-400">
               <Bell className="h-12 w-12 mb-3 opacity-50" />
-              <p>暂无通知</p>
+              <p>{t('notifications.empty')}</p>
             </div>
           ) : (
             <div className="divide-y">

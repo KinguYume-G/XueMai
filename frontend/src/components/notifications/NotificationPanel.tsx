@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { X, Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { notificationsApi } from '@/services/api/notifications'
@@ -18,6 +20,8 @@ type TabType = 'all' | NotificationType
  * 显示通知列表、标签页、一键已读等功能
  */
 export default function NotificationPanel({ onClose, onNotificationRead }: NotificationPanelProps) {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<TabType>('all')
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [counts, setCounts] = useState<NotificationCountsByType>({
@@ -152,8 +156,14 @@ export default function NotificationPanel({ onClose, onNotificationRead }: Notif
       }
     }
 
-    // TODO: 跳转到相关页面
-    console.log('Navigate to:', notification.link || notification.related_post)
+    // 跳转到相关页面，并关闭面板
+    const target = notification.link
+      || (notification.related_post ? `/posts/${notification.related_post.id}` : '')
+      || (notification.sender ? `/users/${notification.sender.id}` : '')
+    if (target) {
+      onClose()
+      navigate(target)
+    }
   }
 
   // 调试日志：渲染时的 state
@@ -184,7 +194,7 @@ export default function NotificationPanel({ onClose, onNotificationRead }: Notif
           {/* 顶部标题栏 */}
           <div className="flex items-center justify-between px-6 py-4 border-b">
             <div className="flex items-center gap-3">
-              <span className="text-lg font-bold">通知</span>
+              <span className="text-lg font-bold">{t('notifications.title')}</span>
               {unreadCount > 0 && (
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-semibold text-white">
                   {unreadCount}
@@ -199,7 +209,7 @@ export default function NotificationPanel({ onClose, onNotificationRead }: Notif
                 className="text-blue-600 hover:text-blue-700"
                 onClick={handleMarkAllAsRead}
               >
-                一键已读
+                {t('notifications.markAllRead')}
               </Button>
               <Button
                 variant="ghost"
@@ -215,11 +225,11 @@ export default function NotificationPanel({ onClose, onNotificationRead }: Notif
           {/* 标签页导航 */}
           <div className="flex items-center gap-1 px-6 py-3 border-b overflow-x-auto">
             {[
-              { key: 'all', label: '全部', count: notifications.length },
-              { key: 'like', label: '点赞', count: counts.like },
-              { key: 'comment', label: '评论', count: counts.comment },
-              { key: 'follow', label: '关注', count: counts.follow },
-              { key: 'system', label: '系统', count: counts.system },
+              { key: 'all', label: t('notifications.tabs.all'), count: notifications.length },
+              { key: 'like', label: t('notifications.tabs.like'), count: counts.like },
+              { key: 'comment', label: t('notifications.tabs.comment'), count: counts.comment },
+              { key: 'follow', label: t('notifications.tabs.follow'), count: counts.follow },
+              { key: 'system', label: t('notifications.tabs.system'), count: counts.system },
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -232,7 +242,7 @@ export default function NotificationPanel({ onClose, onNotificationRead }: Notif
                   }
                 `}
               >
-                {tab.label}({tab.count})
+                {t('notifications.tabCount', { label: tab.label, count: tab.count })}
                 {activeTab === tab.key && (
                   <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
                 )}
@@ -244,12 +254,12 @@ export default function NotificationPanel({ onClose, onNotificationRead }: Notif
           <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(80vh - 140px)' }}>
             {loading ? (
               <div className="flex items-center justify-center py-12 text-gray-500">
-                加载中...
+                {t('notifications.loading')}
               </div>
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                 <Bell className="h-12 w-12 mb-3 opacity-50" />
-                <p>暂无通知</p>
+                <p>{t('notifications.empty')}</p>
               </div>
             ) : (
               <div className="divide-y">

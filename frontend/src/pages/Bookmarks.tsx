@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useBookmarkStore } from '@/store/useBookmarkStore'
 import PostCard from '@/components/feed/PostCard'
 import { BookmarkedExchangeCard } from '@/components/bookmarks/BookmarkedExchangeCard'
@@ -8,6 +9,7 @@ import { BookmarkedCommunityCard } from '@/components/bookmarks/BookmarkedCommun
 type TabType = 'post' | 'exchange' | 'internship' | 'community'
 
 export default function Bookmarks() {
+  const { t, i18n } = useTranslation()
   const { bookmarks, loading, error, fetchBookmarks } = useBookmarkStore()
   const [activeTab, setActiveTab] = useState<TabType>('post')
 
@@ -33,10 +35,10 @@ export default function Bookmarks() {
   const communityBookmarks = safeBookmarks.filter(b => b.content_type === 'community')
 
   const tabs = [
-    { key: 'post' as TabType, label: '帖子', count: postBookmarks.length },
-    { key: 'exchange' as TabType, label: '交换项目', count: exchangeBookmarks.length },
-    { key: 'internship' as TabType, label: '实习机会', count: internshipBookmarks.length },
-    { key: 'community' as TabType, label: '社区', count: communityBookmarks.length },
+    { key: 'post' as TabType, label: t('bookmarks.tabs.post'), count: postBookmarks.length },
+    { key: 'exchange' as TabType, label: t('bookmarks.tabs.exchange'), count: exchangeBookmarks.length },
+    { key: 'internship' as TabType, label: t('bookmarks.tabs.internship'), count: internshipBookmarks.length },
+    { key: 'community' as TabType, label: t('bookmarks.tabs.community'), count: communityBookmarks.length },
   ]
 
   const getCurrentBookmarks = () => {
@@ -58,9 +60,9 @@ export default function Bookmarks() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-[32px] font-bold leading-tight text-gray-900">我的收藏</h1>
+        <h1 className="text-[32px] font-bold leading-tight text-gray-900">{t('bookmarks.title')}</h1>
         <p className="mt-2 text-base text-gray-600">
-          共收藏了 {totalCount} 项内容
+          {t('bookmarks.totalCount', { count: totalCount })}
         </p>
       </div>
 
@@ -75,7 +77,7 @@ export default function Bookmarks() {
               ${activeTab === tab.key ? 'text-primary' : 'text-gray-600 hover:text-gray-900'}
             `}
           >
-            {tab.label} ({tab.count})
+            {t('bookmarks.tabCount', { label: tab.label, count: tab.count })}
             {activeTab === tab.key && (
               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
             )}
@@ -88,7 +90,7 @@ export default function Bookmarks() {
         {loading && (
           <div className="text-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-500">加载中...</p>
+            <p className="text-gray-500">{t('bookmarks.loading')}</p>
           </div>
         )}
 
@@ -99,15 +101,15 @@ export default function Bookmarks() {
               onClick={() => fetchBookmarks()}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
-              重试
+              {t('bookmarks.retry')}
             </button>
           </div>
         )}
 
         {!loading && !error && getCurrentBookmarks().length === 0 && (
           <div className="text-center py-20">
-            <p className="text-gray-500 mb-2">暂无收藏</p>
-            <p className="text-sm text-gray-400">开始探索并收藏你感兴趣的内容吧</p>
+            <p className="text-gray-500 mb-2">{t('bookmarks.empty')}</p>
+            <p className="text-sm text-gray-400">{t('bookmarks.emptyHint')}</p>
           </div>
         )}
 
@@ -132,7 +134,7 @@ export default function Bookmarks() {
                       <PostCard post={bookmark.item} />
                       {/* 在 PostCard 上层显示收藏时间 */}
                       <div className="mt-2 text-xs text-gray-400 px-4">
-                        收藏于 {new Date(bookmark.created_at).toLocaleDateString('zh-CN')}
+                        {t('bookmarks.bookmarkedOn', { date: new Date(bookmark.created_at).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'zh-CN') })}
                       </div>
                     </div>
                   )}

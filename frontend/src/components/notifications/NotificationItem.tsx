@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { Notification } from '@/types/notification'
 
 interface NotificationItemProps {
@@ -10,6 +11,7 @@ interface NotificationItemProps {
  * 显示通知的头像、内容、时间、未读状态
  */
 export default function NotificationItem({ notification, onClick }: NotificationItemProps) {
+  const { t } = useTranslation()
   const { sender, message, time_ago, is_read } = notification
 
   // 获取用户头像或首字母
@@ -17,7 +19,7 @@ export default function NotificationItem({ notification, onClick }: Notification
     <img src={sender.avatar} alt={sender.username} className="w-full h-full object-cover" />
   ) : (
     <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white text-lg font-bold">
-      {sender?.username?.charAt(0).toUpperCase() || '系'}
+      {sender?.username?.charAt(0).toUpperCase() || t('notifications.systemFallback')}
     </div>
   )
 
