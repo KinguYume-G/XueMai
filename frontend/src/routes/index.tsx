@@ -14,12 +14,19 @@ import Opportunities from '@/pages/Opportunities'
 import Bookmarks from '@/pages/Bookmarks'
 import Notifications from '@/pages/Notifications'
 import AboutAPU from '@/pages/AboutAPU'
-import ComingSoon from '@/pages/ComingSoon'
 import AITools from '@/pages/AITools'
 import AIChat from '@/pages/AIChat'
 import NotFound from '@/pages/NotFound'
 import SearchResults from '@/pages/SearchResults'
 import Protected from '@/components/auth/Protected'
+import CreatePost from '@/pages/CreatePost'
+import CreateTopic from '@/pages/CreateTopic'
+import CreateCommunity from '@/pages/CreateCommunity'
+import CreateJob from '@/pages/CreateJob'
+import UserProfile from '@/pages/UserProfile'
+import PostDetail from '@/pages/PostDetail'
+import TopicDetail from '@/pages/TopicDetail'
+import StartupDetail from '@/pages/StartupDetail'
 
 export const router = createBrowserRouter([
   {
@@ -44,7 +51,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'communities/create',
-        element: <ComingSoon title="创建社区" message="社区创建功能正在开发中" />,
+        element: <CreateCommunity />,
       },
       {
         path: 'communities/:id',
@@ -99,25 +106,40 @@ export const router = createBrowserRouter([
         element: <SearchResults />,
       },
       {
+        path: 'users/:id',
+        element: <UserProfile />,
+      },
+      {
+        path: 'posts/:id',
+        element: <PostDetail />,
+      },
+      {
+        path: 'forums/topics/:id',
+        element: <TopicDetail />,
+      },
+      {
+        path: 'startups/:id',
+        element: <StartupDetail />,
+      },
+      {
         path: 'schools/apu',
         element: <Navigate to="/apu" replace />,
       },
-      // Coming Soon pages
       {
         path: 'create/post',
-        element: <ComingSoon title="发布帖子" message="帖子发布功能正在开发中" />,
+        element: <CreatePost />,
       },
       {
         path: 'create/question',
-        element: <ComingSoon title="提出问题" message="问答功能正在开发中" />,
+        element: <CreateTopic />,
       },
       {
         path: 'create/community',
-        element: <ComingSoon title="创建社区" message="社区创建功能正在开发中" />,
+        element: <CreateCommunity />,
       },
       {
         path: 'create/job',
-        element: <ComingSoon title="发布职位" message="职位发布功能正在开发中" />,
+        element: <CreateJob />,
       },
       {
         path: 'ai-tools',
