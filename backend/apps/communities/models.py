@@ -66,7 +66,26 @@ class Community(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            import time
+
+            from unidecode import unidecode
+
+            # slugify() alone drops non-ASCII characters entirely, so a
+            # purely Chinese/CJK community name (e.g. "游戏爱好者社区")
+            # silently produced an empty slug — and since this ViewSet
+            # looks communities up by slug, that community became
+            # permanently unreachable (dead link). Transliterate first,
+            # matching University.save()/School.save().
+            base_slug = slugify(unidecode(self.name)) if self.name else ""
+            if not base_slug:
+                base_slug = f"community-{int(time.time())}"
+
+            slug = base_slug
+            counter = 2
+            while Community.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
         super().save(*args, **kwargs)
 
 

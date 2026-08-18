@@ -27,7 +27,23 @@ class Faculty(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            import time
+
+            from unidecode import unidecode
+
+            # See Community.save() for why unidecode() runs first: plain
+            # slugify() drops non-ASCII characters and can silently produce
+            # an empty (and non-unique) slug for CJK-only names.
+            base_slug = slugify(unidecode(self.name)) if self.name else ""
+            if not base_slug:
+                base_slug = f"faculty-{int(time.time())}"
+
+            slug = base_slug
+            counter = 2
+            while Faculty.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
         super().save(*args, **kwargs)
 
 
