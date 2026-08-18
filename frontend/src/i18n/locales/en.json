@@ -121,6 +121,40 @@
       "logout": "Log Out"
     }
   },
+  "auth": {
+    "login": {
+      "title": "Log in to UniPulse",
+      "subtitle": "Sign in with your account to keep exploring campus life.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Enter your email",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "submit": "Log In",
+      "submitting": "Logging in...",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Sign up now",
+      "genericError": "Login failed, please try again later"
+    },
+    "register": {
+      "title": "Create your UniPulse account",
+      "subtitle": "Join the Pan-Asia university network and grow together with fellow students.",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "Enter a username",
+      "emailLabel": "Email",
+      "universityLabel": "University (optional)",
+      "universityPlaceholder": "Not selected",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "passwordConfirmLabel": "Confirm Password",
+      "passwordConfirmPlaceholder": "Re-enter your password",
+      "passwordMismatch": "Passwords do not match",
+      "submit": "Sign Up",
+      "submitting": "Signing up...",
+      "haveAccount": "Already have an account?",
+      "loginLink": "Log in now",
+      "genericError": "Registration failed, please try again later"
+    }
+  },
   "rightAside": {
     "schoolZone": {
       "title": "School Zone",

@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuthStore } from '@/store/authStore'
@@ -23,6 +24,7 @@ const initialForm: FormState = {
 
 export default function AuthRegisterPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   // ✅ 分别选择，避免创建新对象
   const register = useAuthStore((state) => state.register)
   const loading = useAuthStore((state) => state.loading)
@@ -72,7 +74,7 @@ export default function AuthRegisterPage() {
     setError(null)
 
     if (form.password !== form.passwordConfirm) {
-      setError('两次输入的密码不一致')
+      setError(t('auth.register.passwordMismatch'))
       return
     }
 
@@ -86,27 +88,27 @@ export default function AuthRegisterPage() {
       })
       navigate('/', { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : '注册失败，请稍后重试')
+      setError(err instanceof Error ? err.message : t('auth.register.genericError'))
     }
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
       <div className="w-full max-w-xl rounded-2xl border bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-semibold">注册学脉账号</h1>
-        <p className="mt-2 text-sm text-muted-foreground">加入泛亚高校网络，和同学们一起交流成长。</p>
+        <h1 className="text-2xl font-semibold">{t('auth.register.title')}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{t('auth.register.subtitle')}</p>
 
         <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <label className="text-sm font-medium" htmlFor="username">
-              用户名
+              {t('auth.register.usernameLabel')}
             </label>
             <Input
               id="username"
               name="username"
               value={form.username}
               onChange={handleChange}
-              placeholder="请输入用户名"
+              placeholder={t('auth.register.usernamePlaceholder')}
               autoComplete="username"
               required
             />
@@ -115,7 +117,7 @@ export default function AuthRegisterPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="email">
-                邮箱
+                {t('auth.register.emailLabel')}
               </label>
               <Input
                 id="email"
@@ -131,7 +133,7 @@ export default function AuthRegisterPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="university">
-                所属院校（可选）
+                {t('auth.register.universityLabel')}
               </label>
               <select
                 id="university"
@@ -140,7 +142,7 @@ export default function AuthRegisterPage() {
                 onChange={handleUniversityChange}
                 className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <option value="">暂不选择</option>
+                <option value="">{t('auth.register.universityPlaceholder')}</option>
                 {universities.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.name}
@@ -153,7 +155,7 @@ export default function AuthRegisterPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="password">
-                密码
+                {t('auth.register.passwordLabel')}
               </label>
               <Input
                 id="password"
@@ -161,14 +163,14 @@ export default function AuthRegisterPage() {
                 type="password"
                 value={form.password}
                 onChange={handleChange}
-                placeholder="至少 8 位"
+                placeholder={t('auth.register.passwordPlaceholder')}
                 autoComplete="new-password"
                 required
               />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="passwordConfirm">
-                确认密码
+                {t('auth.register.passwordConfirmLabel')}
               </label>
               <Input
                 id="passwordConfirm"
@@ -176,12 +178,12 @@ export default function AuthRegisterPage() {
                 type="password"
                 value={form.passwordConfirm}
                 onChange={handleChange}
-                placeholder="再次输入密码"
+                placeholder={t('auth.register.passwordConfirmPlaceholder')}
                 autoComplete="new-password"
                 required
               />
               {form.passwordConfirm && !passwordsMatch ? (
-                <p className="text-xs text-destructive">两次输入的密码不一致</p>
+                <p className="text-xs text-destructive">{t('auth.register.passwordMismatch')}</p>
               ) : null}
             </div>
           </div>
@@ -189,14 +191,14 @@ export default function AuthRegisterPage() {
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? '注册中...' : '注册'}
+            {loading ? t('auth.register.submitting') : t('auth.register.submit')}
           </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          已有账号？
+          {t('auth.register.haveAccount')}
           <Link to="/login" className="ml-1 font-medium text-primary hover:underline">
-            立即登录
+            {t('auth.register.loginLink')}
           </Link>
         </p>
       </div>

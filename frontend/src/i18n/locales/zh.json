@@ -121,6 +121,40 @@
       "logout": "退出登录"
     }
   },
+  "auth": {
+    "login": {
+      "title": "登录学脉",
+      "subtitle": "使用账号密码登录，继续探索校园动态。",
+      "emailLabel": "邮箱",
+      "emailPlaceholder": "请输入邮箱",
+      "passwordLabel": "密码",
+      "passwordPlaceholder": "请输入密码",
+      "submit": "登录",
+      "submitting": "登录中...",
+      "noAccount": "还没有账号？",
+      "registerLink": "立即注册",
+      "genericError": "登录失败，请稍后重试"
+    },
+    "register": {
+      "title": "注册学脉账号",
+      "subtitle": "加入泛亚高校网络，和同学们一起交流成长。",
+      "usernameLabel": "用户名",
+      "usernamePlaceholder": "请输入用户名",
+      "emailLabel": "邮箱",
+      "universityLabel": "所属院校（可选）",
+      "universityPlaceholder": "暂不选择",
+      "passwordLabel": "密码",
+      "passwordPlaceholder": "至少 8 位",
+      "passwordConfirmLabel": "确认密码",
+      "passwordConfirmPlaceholder": "再次输入密码",
+      "passwordMismatch": "两次输入的密码不一致",
+      "submit": "注册",
+      "submitting": "注册中...",
+      "haveAccount": "已有账号？",
+      "loginLink": "立即登录",
+      "genericError": "注册失败，请稍后重试"
+    }
+  },
   "rightAside": {
     "schoolZone": {
       "title": "学校专区",
