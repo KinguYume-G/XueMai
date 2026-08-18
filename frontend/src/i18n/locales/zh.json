@@ -80,7 +80,53 @@
     "ok": "确定",
     "guest": "访客",
     "submit": "提交",
-    "send": "发送"
+    "send": "发送",
+    "search": "搜索"
+  },
+  "forums": {
+    "title": "专业论坛",
+    "subtitle": "浏览真实学院与论坛数据，参与最新讨论。",
+    "postTopic": "发布话题",
+    "stats": {
+      "faculty": "学院",
+      "major": "专业",
+      "topic": "话题",
+      "activeUsers": "参与用户"
+    },
+    "facultiesTitle": "学院",
+    "facultiesEmpty": "暂无学院数据",
+    "facultyDescriptionEmpty": "暂无学院介绍",
+    "facultyStats": "{{majorCount}} 个专业 · {{topicCount}} 个话题",
+    "hotTagsTitle": "热门标签",
+    "allForums": "全部论坛",
+    "searchPlaceholder": "搜索话题",
+    "loadingTopics": "正在加载话题…",
+    "noTopics": "没有符合条件的话题",
+    "pinned": "置顶",
+    "solved": "已解决",
+    "viewsCount": "{{count}} 浏览",
+    "repliesCount": "{{count}} 回复"
+  },
+  "communities": {
+    "title": "社区",
+    "subtitle": "发现并加入真实的校园与兴趣社区。",
+    "create": "创建社区",
+    "categories": {
+      "all": "全部",
+      "interest": "兴趣爱好",
+      "city": "城市",
+      "oncampus": "校园",
+      "study_group": "学习小组"
+    },
+    "searchPlaceholder": "搜索社区",
+    "loading": "正在加载社区…",
+    "empty": "没有符合条件的社区",
+    "descriptionEmpty": "暂无社区介绍",
+    "membersCount": "{{count}} 位成员",
+    "activityRate": "{{percent}}% 活跃度",
+    "viewDetails": "查看详情",
+    "leave": "退出社区",
+    "join": "加入社区"
   },
   "sidebar": {
     "nav": {

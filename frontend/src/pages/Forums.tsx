@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useState } from 'react'
 import { BookOpen, GraduationCap, MessageCircle, Search, Users } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -23,6 +24,7 @@ const emptyOverview: ForumOverview = {
 }
 
 export default function Forums() {
+  const { t, i18n } = useTranslation()
   const [params, setParams] = useSearchParams()
   const search = params.get('search') ?? ''
   const selectedForum = Number(params.get('forum') ?? 0) || undefined
@@ -86,20 +88,20 @@ export default function Forums() {
   }
 
   const statCards = [
-    { label: '学院', value: overview.faculty_count, icon: GraduationCap },
-    { label: '专业', value: overview.major_count, icon: BookOpen },
-    { label: '话题', value: overview.active_posts, icon: MessageCircle },
-    { label: '参与用户', value: overview.active_users, icon: Users },
+    { label: t('forums.stats.faculty'), value: overview.faculty_count, icon: GraduationCap },
+    { label: t('forums.stats.major'), value: overview.major_count, icon: BookOpen },
+    { label: t('forums.stats.topic'), value: overview.active_posts, icon: MessageCircle },
+    { label: t('forums.stats.activeUsers'), value: overview.active_users, icon: Users },
   ]
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">专业论坛</h1>
-          <p className="mt-2 text-gray-600">浏览真实学院与论坛数据，参与最新讨论。</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('forums.title')}</h1>
+          <p className="mt-2 text-gray-600">{t('forums.subtitle')}</p>
         </div>
-        <Link to="/create/question" className={buttonVariants()}>发布话题</Link>
+        <Link to="/create/question" className={buttonVariants()}>{t('forums.postTopic')}</Link>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -112,9 +114,9 @@ export default function Forums() {
       </div>
 
       <section>
-        <h2 className="mb-3 text-xl font-semibold">学院</h2>
+        <h2 className="mb-3 text-xl font-semibold">{t('forums.facultiesTitle')}</h2>
         {faculties.length === 0 ? (
-          <Card><CardContent className="p-6 text-center text-gray-500">暂无学院数据</CardContent></Card>
+          <Card><CardContent className="p-6 text-center text-gray-500">{t('forums.facultiesEmpty')}</CardContent></Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {faculties.map((faculty) => (
@@ -123,8 +125,8 @@ export default function Forums() {
                   <div className="rounded-lg bg-blue-50 p-2"><GraduationCap className="h-6 w-6 text-blue-600" /></div>
                   <div className="min-w-0">
                     <h3 className="font-semibold">{faculty.name}</h3>
-                    <p className="mt-1 line-clamp-2 text-sm text-gray-500">{faculty.description || '暂无学院介绍'}</p>
-                    <p className="mt-3 text-xs text-gray-500">{faculty.major_count} 个专业 · {faculty.topic_count} 个话题</p>
+                    <p className="mt-1 line-clamp-2 text-sm text-gray-500">{faculty.description || t('forums.facultyDescriptionEmpty')}</p>
+                    <p className="mt-3 text-xs text-gray-500">{t('forums.facultyStats', { majorCount: faculty.major_count, topicCount: faculty.topic_count })}</p>
                   </div>
                 </div>
               </CardContent></Card>
@@ -135,7 +137,7 @@ export default function Forums() {
 
       {hotTopics.length > 0 && (
         <section>
-          <h2 className="mb-3 text-xl font-semibold">热门标签</h2>
+          <h2 className="mb-3 text-xl font-semibold">{t('forums.hotTagsTitle')}</h2>
           <div className="flex flex-wrap gap-2">
             {hotTopics.map((topic) => (
               <button
@@ -153,7 +155,7 @@ export default function Forums() {
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant={!selectedForum ? 'default' : 'outline'} onClick={() => selectForum()}>全部论坛</Button>
+            <Button size="sm" variant={!selectedForum ? 'default' : 'outline'} onClick={() => selectForum()}>{t('forums.allForums')}</Button>
             {forums.map((forum) => (
               <Button key={forum.id} size="sm" variant={selectedForum === forum.id ? 'default' : 'outline'} onClick={() => selectForum(forum.id)}>
                 {forum.name} ({forum.topics_count})
@@ -163,18 +165,18 @@ export default function Forums() {
           <form onSubmit={submitSearch} className="flex w-full gap-2 sm:w-auto">
             <div className="relative min-w-64 flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="搜索话题" className="pl-9" />
+              <Input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={t('forums.searchPlaceholder')} className="pl-9" />
             </div>
-            <Button type="submit" variant="outline">搜索</Button>
+            <Button type="submit" variant="outline">{t('common.search')}</Button>
           </form>
         </div>
 
         {loading ? (
-          <Card><CardContent className="p-8 text-center text-gray-500">正在加载话题…</CardContent></Card>
+          <Card><CardContent className="p-8 text-center text-gray-500">{t('forums.loadingTopics')}</CardContent></Card>
         ) : error ? (
           <Card><CardContent className="p-8 text-center text-red-600">{error}</CardContent></Card>
         ) : topics.length === 0 ? (
-          <Card><CardContent className="p-8 text-center text-gray-500">没有符合条件的话题</CardContent></Card>
+          <Card><CardContent className="p-8 text-center text-gray-500">{t('forums.noTopics')}</CardContent></Card>
         ) : (
           <div className="space-y-3">
             {topics.map((topic) => (
@@ -183,15 +185,15 @@ export default function Forums() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        {topic.is_pinned && <Badge>置顶</Badge>}
-                        {topic.is_solved && <Badge variant="secondary">已解决</Badge>}
+                        {topic.is_pinned && <Badge>{t('forums.pinned')}</Badge>}
+                        {topic.is_solved && <Badge variant="secondary">{t('forums.solved')}</Badge>}
                         <h3 className="font-semibold text-gray-900">{topic.title}</h3>
                       </div>
                       <p className="mt-2 line-clamp-2 text-sm text-gray-600">{topic.content}</p>
-                      <p className="mt-3 text-xs text-gray-500">{topic.forum_name} · {topic.author.username} · {new Date(topic.updated_at).toLocaleDateString('zh-CN')}</p>
+                      <p className="mt-3 text-xs text-gray-500">{topic.forum_name} · {topic.author.username} · {new Date(topic.updated_at).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'zh-CN')}</p>
                     </div>
                     <div className="shrink-0 text-right text-xs text-gray-500">
-                      <div>{topic.views_count} 浏览</div><div className="mt-1">{topic.replies_count} 回复</div>
+                      <div>{t('forums.viewsCount', { count: topic.views_count })}</div><div className="mt-1">{t('forums.repliesCount', { count: topic.replies_count })}</div>
                     </div>
                   </div>
                 </CardContent></Card>

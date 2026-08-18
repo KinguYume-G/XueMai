@@ -80,7 +80,53 @@
     "ok": "OK",
     "guest": "Guest",
     "submit": "Submit",
-    "send": "Send"
+    "send": "Send",
+    "search": "Search"
+  },
+  "forums": {
+    "title": "Forums",
+    "subtitle": "Browse real faculty and forum data, and join the latest discussions.",
+    "postTopic": "New Topic",
+    "stats": {
+      "faculty": "Faculties",
+      "major": "Majors",
+      "topic": "Topics",
+      "activeUsers": "Active Users"
+    },
+    "facultiesTitle": "Faculties",
+    "facultiesEmpty": "No faculty data yet",
+    "facultyDescriptionEmpty": "No faculty description yet",
+    "facultyStats": "{{majorCount}} majors · {{topicCount}} topics",
+    "hotTagsTitle": "Trending Tags",
+    "allForums": "All Forums",
+    "searchPlaceholder": "Search topics",
+    "loadingTopics": "Loading topics…",
+    "noTopics": "No topics match your search",
+    "pinned": "Pinned",
+    "solved": "Solved",
+    "viewsCount": "{{count}} views",
+    "repliesCount": "{{count}} replies"
+  },
+  "communities": {
+    "title": "Communities",
+    "subtitle": "Discover and join real campus and interest communities.",
+    "create": "Create Community",
+    "categories": {
+      "all": "All",
+      "interest": "Interests",
+      "city": "City",
+      "oncampus": "On Campus",
+      "study_group": "Study Groups"
+    },
+    "searchPlaceholder": "Search communities",
+    "loading": "Loading communities…",
+    "empty": "No communities match your search",
+    "descriptionEmpty": "No community description yet",
+    "membersCount": "{{count}} members",
+    "activityRate": "{{percent}}% active",
+    "viewDetails": "View Details",
+    "leave": "Leave Community",
+    "join": "Join Community"
   },
   "sidebar": {
     "nav": {
