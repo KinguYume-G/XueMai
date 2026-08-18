@@ -161,20 +161,6 @@ export default function AIChat() {
     // 🆕 Orchestrator工作流执行函数
     const handleOrchestratorChat = async (question: string, documentIds: number[]) => {
         try {
-            // 添加用户消息到界面
-            const userMessage = {
-                id: Date.now().toString(),
-                role: 'user' as const,
-                content: question,
-                timestamp: new Date()
-            }
-            setMessages(prev => [...prev, userMessage])
-
-            // 重置工作流状态
-            setOrchestratorRunning(true)
-            setOrchestratorSteps([])
-            setOrchestratorResult(null)
-
             console.log('🚀 [Orchestrator] 开始执行工作流:', { question, documentIds })
 
             const response = await apiFetch('/ai/orchestrator/execute/', {
@@ -188,6 +174,30 @@ export default function AIChat() {
                     // workflow_name: 'resume_optimization' // 可选，让后端自动匹配
                 })
             })
+
+            if (response.status === 404) {
+                // 没有匹配的多步工作流（比如普通"智能对话"功能没有专属工作流）——
+                // 这不代表带附件的消息发不出去，退回到普通聊天接口，
+                // 它同样会把 document_ids 对应的文件内容注入给 AI。
+                console.log('ℹ️ [Orchestrator] 未找到匹配工作流，回退到普通聊天接口')
+                await sendMessage(question, true, documentIds)
+                return
+            }
+
+            // 添加用户消息到界面（只有确认真的会走工作流才在这里手动加，
+            // 避免和上面 sendMessage 回退路径重复添加用户消息）
+            const userMessage = {
+                id: Date.now().toString(),
+                role: 'user' as const,
+                content: question,
+                timestamp: new Date()
+            }
+            setMessages(prev => [...prev, userMessage])
+
+            // 重置工作流状态
+            setOrchestratorRunning(true)
+            setOrchestratorSteps([])
+            setOrchestratorResult(null)
 
             if (!response.ok) {
                 throw new Error(await readApiErrorMessage(response))
