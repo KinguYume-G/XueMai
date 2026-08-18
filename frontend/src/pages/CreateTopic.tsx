@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useState } from 'react'
 import { ArrowLeft, MessageCircle } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -10,6 +11,7 @@ import { forumsApi, type Forum } from '@/services/api/forums'
 import { useAuthStore } from '@/store/authStore'
 
 export default function CreateTopic() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const isEditMode = Boolean(id)
@@ -89,31 +91,31 @@ export default function CreateTopic() {
   }
 
   if (isEditMode && loadingExisting) {
-    return <Card><CardContent className="p-10 text-center text-gray-500">正在加载话题…</CardContent></Card>
+    return <Card><CardContent className="p-10 text-center text-gray-500">{t('createTopic.loading')}</CardContent></Card>
   }
 
   if (isEditMode && (loadError || forbidden)) {
     return (
       <Card><CardContent className="p-6">
-        <ErrorState message={loadError || '你没有权限编辑这个话题'} onRetry={loadError ? () => navigate(0) : undefined} />
+        <ErrorState message={loadError || t('createTopic.forbidden')} onRetry={loadError ? () => navigate(0) : undefined} />
       </CardContent></Card>
     )
   }
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2"><ArrowLeft className="h-4 w-4" />返回</Button>
+      <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2"><ArrowLeft className="h-4 w-4" />{t('createTopic.back')}</Button>
       <Card><CardContent className="p-6">
-        <h1 className="text-2xl font-bold">{isEditMode ? '编辑论坛话题' : '发布论坛话题'}</h1>
+        <h1 className="text-2xl font-bold">{isEditMode ? t('createTopic.titleEdit') : t('createTopic.titleCreate')}</h1>
         <form onSubmit={submit} className="mt-6 space-y-5">
-          <label className="block space-y-2"><span className="text-sm font-medium">论坛</span><select value={forum} onChange={(event) => setForum(event.target.value)} disabled={loadingForums} required className="h-10 w-full rounded-md border bg-white px-3 text-sm"><option value="">请选择论坛</option>{forums.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-          <label className="block space-y-2"><span className="text-sm font-medium">标题</span><Input value={title} onChange={(event) => setTitle(event.target.value)} required maxLength={200} /></label>
-          <label className="block space-y-2"><span className="text-sm font-medium">内容</span><textarea value={content} onChange={(event) => setContent(event.target.value)} required rows={10} className="w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></label>
-          <label className="block space-y-2"><span className="text-sm font-medium">标签（逗号分隔）</span><Input value={tags} onChange={(event) => setTags(event.target.value)} /></label>
-          <label className="block space-y-2"><span className="text-sm font-medium">可见范围</span><select value={visibility} onChange={(event) => setVisibility(event.target.value as typeof visibility)} className="h-10 w-full rounded-md border bg-white px-3 text-sm"><option value="public">公开</option><option value="university">同校</option><option value="private">仅自己</option></select></label>
-          {forums.length === 0 && !loadingForums && <p className="text-sm text-amber-700">当前没有可发布的论坛，请联系管理员先创建论坛分类。</p>}
+          <label className="block space-y-2"><span className="text-sm font-medium">{t('createTopic.forumLabel')}</span><select value={forum} onChange={(event) => setForum(event.target.value)} disabled={loadingForums} required className="h-10 w-full rounded-md border bg-white px-3 text-sm"><option value="">{t('createTopic.forumPlaceholder')}</option>{forums.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+          <label className="block space-y-2"><span className="text-sm font-medium">{t('createTopic.titleLabel')}</span><Input value={title} onChange={(event) => setTitle(event.target.value)} required maxLength={200} /></label>
+          <label className="block space-y-2"><span className="text-sm font-medium">{t('createTopic.contentLabel')}</span><textarea value={content} onChange={(event) => setContent(event.target.value)} required rows={10} className="w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></label>
+          <label className="block space-y-2"><span className="text-sm font-medium">{t('createTopic.tagsLabel')}</span><Input value={tags} onChange={(event) => setTags(event.target.value)} /></label>
+          <label className="block space-y-2"><span className="text-sm font-medium">{t('createTopic.visibilityLabel')}</span><select value={visibility} onChange={(event) => setVisibility(event.target.value as typeof visibility)} className="h-10 w-full rounded-md border bg-white px-3 text-sm"><option value="public">{t('common.visibility.public')}</option><option value="university">{t('common.visibility.university')}</option><option value="private">{t('common.visibility.private')}</option></select></label>
+          {forums.length === 0 && !loadingForums && <p className="text-sm text-amber-700">{t('createTopic.noForums')}</p>}
           {error && <p className="text-sm text-red-600">{error}</p>}
-          <Button type="submit" disabled={submitting || !forum || !title.trim() || !content.trim()} className="w-full gap-2"><MessageCircle className="h-4 w-4" />{submitting ? (isEditMode ? '保存中…' : '发布中…') : (isEditMode ? '保存修改' : '发布话题')}</Button>
+          <Button type="submit" disabled={submitting || !forum || !title.trim() || !content.trim()} className="w-full gap-2"><MessageCircle className="h-4 w-4" />{submitting ? (isEditMode ? t('createTopic.saving') : t('createTopic.publishing')) : (isEditMode ? t('createTopic.saveChanges') : t('createTopic.publish'))}</Button>
         </form>
       </CardContent></Card>
     </div>

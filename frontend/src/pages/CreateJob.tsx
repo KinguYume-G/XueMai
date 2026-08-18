@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from 'react'
 import { ArrowLeft, Briefcase } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -9,6 +10,7 @@ import { opportunitiesApi } from '@/services/api/opportunities'
 import type { Internship } from '@/types/api'
 
 export default function CreateJob() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
   const [company, setCompany] = useState('')
@@ -46,24 +48,24 @@ export default function CreateJob() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2"><ArrowLeft className="h-4 w-4" />返回</Button>
+      <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2"><ArrowLeft className="h-4 w-4" />{t('createJob.back')}</Button>
       <Card><CardContent className="p-6">
-        <h1 className="text-2xl font-bold">发布职位</h1>
-        <p className="mt-2 text-sm text-gray-500">职位将提交到真实职位库并立即在机会列表中展示。</p>
+        <h1 className="text-2xl font-bold">{t('createJob.title')}</h1>
+        <p className="mt-2 text-sm text-gray-500">{t('createJob.subtitle')}</p>
         <form onSubmit={submit} className="mt-6 space-y-5">
-          <label className="block space-y-2"><span className="text-sm font-medium">职位标题</span><Input value={title} onChange={(event) => setTitle(event.target.value)} required maxLength={200} /></label>
-          <label className="block space-y-2"><span className="text-sm font-medium">公司</span><Input value={company} onChange={(event) => setCompany(event.target.value)} required maxLength={200} /></label>
-          <label className="block space-y-2"><span className="text-sm font-medium">职位描述</span><textarea value={description} onChange={(event) => setDescription(event.target.value)} required rows={8} className="w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></label>
+          <label className="block space-y-2"><span className="text-sm font-medium">{t('createJob.titleLabel')}</span><Input value={title} onChange={(event) => setTitle(event.target.value)} required maxLength={200} /></label>
+          <label className="block space-y-2"><span className="text-sm font-medium">{t('createJob.companyLabel')}</span><Input value={company} onChange={(event) => setCompany(event.target.value)} required maxLength={200} /></label>
+          <label className="block space-y-2"><span className="text-sm font-medium">{t('createJob.descriptionLabel')}</span><textarea value={description} onChange={(event) => setDescription(event.target.value)} required rows={8} className="w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></label>
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block space-y-2"><span className="text-sm font-medium">工作地点</span><Input value={location} onChange={(event) => setLocation(event.target.value)} required placeholder="例如 吉隆坡" /></label>
-            <label className="block space-y-2"><span className="text-sm font-medium">类型</span><select value={type} onChange={(event) => setType(event.target.value as Internship['type'])} className="h-10 w-full rounded-md border bg-white px-3 text-sm"><option value="internship">实习</option><option value="full_time">全职</option><option value="part_time">兼职</option><option value="remote">远程</option></select></label>
+            <label className="block space-y-2"><span className="text-sm font-medium">{t('createJob.locationLabel')}</span><Input value={location} onChange={(event) => setLocation(event.target.value)} required placeholder={t('createJob.locationPlaceholder')} /></label>
+            <label className="block space-y-2"><span className="text-sm font-medium">{t('createJob.typeLabel')}</span><select value={type} onChange={(event) => setType(event.target.value as Internship['type'])} className="h-10 w-full rounded-md border bg-white px-3 text-sm"><option value="internship">{t('createJob.type.internship')}</option><option value="full_time">{t('createJob.type.full_time')}</option><option value="part_time">{t('createJob.type.part_time')}</option><option value="remote">{t('createJob.type.remote')}</option></select></label>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block space-y-2"><span className="text-sm font-medium">薪资范围（可选）</span><Input value={salaryRange} onChange={(event) => setSalaryRange(event.target.value)} placeholder="例如 RM2000-3000/月" /></label>
-            <label className="block space-y-2"><span className="text-sm font-medium">截止日期（可选）</span><Input type="date" value={deadline} onChange={(event) => setDeadline(event.target.value)} /></label>
+            <label className="block space-y-2"><span className="text-sm font-medium">{t('createJob.salaryLabel')}</span><Input value={salaryRange} onChange={(event) => setSalaryRange(event.target.value)} placeholder={t('createJob.salaryPlaceholder')} /></label>
+            <label className="block space-y-2"><span className="text-sm font-medium">{t('createJob.deadlineLabel')}</span><Input type="date" value={deadline} onChange={(event) => setDeadline(event.target.value)} /></label>
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
-          <Button type="submit" disabled={submitting || !title.trim() || !company.trim() || !description.trim() || !location.trim()} className="w-full gap-2"><Briefcase className="h-4 w-4" />{submitting ? '发布中…' : '发布职位'}</Button>
+          <Button type="submit" disabled={submitting || !title.trim() || !company.trim() || !description.trim() || !location.trim()} className="w-full gap-2"><Briefcase className="h-4 w-4" />{submitting ? t('createJob.publishing') : t('createJob.publish')}</Button>
         </form>
       </CardContent></Card>
     </div>
