@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { GraduationCap, ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { universitiesApi, type UniversitySummary } from '@/services/api/universities'
 
 export default function SchoolZoneCard() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [schools, setSchools] = useState<UniversitySummary[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -29,12 +31,12 @@ export default function SchoolZoneCard() {
       <CardHeader className="pb-3 px-4 pt-4">
         <CardTitle className="flex items-center gap-2 text-base font-semibold">
           <GraduationCap className="h-5 w-5 text-primary" />
-          学校专区
+          {t('rightAside.schoolZone.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-0 px-2 pb-2">
-        {loading ? <p className="px-3 py-3 text-sm text-muted-foreground">加载中…</p> : null}
-        {!loading && schools.length === 0 ? <p className="px-3 py-3 text-sm text-muted-foreground">暂无学校数据</p> : null}
+        {loading ? <p className="px-3 py-3 text-sm text-muted-foreground">{t('rightAside.schoolZone.loading')}</p> : null}
+        {!loading && schools.length === 0 ? <p className="px-3 py-3 text-sm text-muted-foreground">{t('rightAside.schoolZone.empty')}</p> : null}
         {schools.map((school) => (
           <button
             key={school.id}
@@ -47,7 +49,7 @@ export default function SchoolZoneCard() {
                   {school.name}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {school.city || school.country || '大学专区'}
+                  {school.city || school.country || t('rightAside.schoolZone.defaultLabel')}
                 </span>
               </div>
             </div>

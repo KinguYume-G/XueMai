@@ -6,25 +6,25 @@ import { useTranslation } from 'react-i18next'
 
 interface NavItem {
   icon: React.ElementType
-  label: string
+  labelKey: string
   path: string
 }
 
 const navigationItems: NavItem[] = [
-  { icon: Home, label: '主页', path: '/' },
-  { icon: GraduationCap, label: '专业论坛', path: '/forums' },
-  { icon: Users, label: '社区', path: '/communities' },
-  { icon: Plane, label: '交换项目', path: '/exchange' },
-  { icon: Briefcase, label: '实习 & 机会', path: '/opportunities' },
-  { icon: Bot, label: 'AI 工具箱', path: '/ai-tools' },
-  { icon: BookmarkIcon, label: '收藏', path: '/bookmarks' },
-  { icon: GraduationCap, label: '关于 APU', path: '/apu' },
+  { icon: Home, labelKey: 'sidebar.nav.home', path: '/' },
+  { icon: GraduationCap, labelKey: 'sidebar.nav.forums', path: '/forums' },
+  { icon: Users, labelKey: 'sidebar.nav.communities', path: '/communities' },
+  { icon: Plane, labelKey: 'sidebar.nav.exchange', path: '/exchange' },
+  { icon: Briefcase, labelKey: 'sidebar.nav.opportunities', path: '/opportunities' },
+  { icon: Bot, labelKey: 'sidebar.nav.aiTools', path: '/ai-tools' },
+  { icon: BookmarkIcon, labelKey: 'sidebar.nav.bookmarks', path: '/bookmarks' },
+  { icon: GraduationCap, labelKey: 'sidebar.nav.aboutApu', path: '/apu' },
 ]
 
 export default function Sidebar() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const currentLanguage = i18n.language
   const languages = [
@@ -56,7 +56,7 @@ export default function Sidebar() {
                 onClick={() => navigate(item.path)}
               >
                 <Icon className="h-5 w-5" />
-                <span>{item.label}</span>
+                <span>{t(item.labelKey)}</span>
               </Button>
             )
           })}

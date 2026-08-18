@@ -73,6 +73,74 @@
     "confirm": "确认",
     "save": "保存",
     "delete": "删除",
-    "edit": "编辑"
+    "edit": "编辑",
+    "back": "返回",
+    "processing": "处理中…",
+    "errorTitle": "出错了",
+    "ok": "确定",
+    "guest": "访客",
+    "submit": "提交",
+    "send": "发送"
+  },
+  "sidebar": {
+    "nav": {
+      "home": "主页",
+      "forums": "专业论坛",
+      "communities": "社区",
+      "exchange": "交换项目",
+      "opportunities": "实习 & 机会",
+      "aiTools": "AI 工具箱",
+      "bookmarks": "收藏",
+      "aboutApu": "关于 APU"
+    },
+    "mobileNav": {
+      "ariaLabel": "移动端主导航",
+      "home": "主页",
+      "forums": "论坛",
+      "communities": "社区",
+      "opportunities": "机会",
+      "aiTools": "AI"
+    }
+  },
+  "header": {
+    "searchAriaLabel": "搜索学脉",
+    "searchPlaceholder": "搜索同学、话题、课程、职位...",
+    "create": "创建",
+    "createMenu": {
+      "post": "发布帖子",
+      "question": "提出问题",
+      "community": "创建社区",
+      "job": "发布职位"
+    },
+    "messagesAriaLabel": "消息",
+    "userMenu": {
+      "myHome": "我的主页",
+      "profile": "个人资料",
+      "myPosts": "我的帖子",
+      "settings": "设置",
+      "logout": "退出登录"
+    }
+  },
+  "rightAside": {
+    "schoolZone": {
+      "title": "学校专区",
+      "loading": "加载中…",
+      "empty": "暂无学校数据",
+      "defaultLabel": "大学专区"
+    },
+    "hotTopics": {
+      "title": "热门话题",
+      "loading": "加载中…",
+      "empty": "暂无热门话题",
+      "postCount": "{{count}} 个话题"
+    },
+    "exchangeReminders": {
+      "title": "交换项目提醒",
+      "loading": "加载中...",
+      "empty": "暂无即将截止的项目",
+      "new": "新",
+      "deadline": "截止日期: {{date}}",
+      "program": "{{university}}交换"
+    }
   }
 }

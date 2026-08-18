@@ -1,6 +1,7 @@
 import { Search, MessageSquare, Plus, ChevronDown } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,11 +19,12 @@ import { NotificationBell } from '@/components/notifications'
 
 export default function Header() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [searchQuery, setSearchQuery] = useState('')
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
 
-  const displayName = user?.profile?.username ?? user?.username ?? '访客'
+  const displayName = user?.profile?.username ?? user?.username ?? t('common.guest')
   const avatarSrc =
     user?.profile?.avatar_url || user?.profile?.avatar || user?.avatar || undefined
   const avatarFallback = displayName ? displayName.charAt(0).toUpperCase() : 'U'
@@ -50,8 +52,8 @@ export default function Header() {
         <form onSubmit={submitSearch} className="relative mx-4 hidden max-w-2xl flex-1 md:block xl:mx-8">
           <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            aria-label="搜索学脉"
-            placeholder="搜索同学、话题、课程、职位..."
+            aria-label={t('header.searchAriaLabel')}
+            placeholder={t('header.searchPlaceholder')}
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             className="h-11 rounded-full pl-11 pr-4 bg-secondary/50 border-0 focus-visible:ring-1"
@@ -63,24 +65,24 @@ export default function Header() {
           <DropdownMenu>
             <DropdownMenuTrigger className="hidden h-10 items-center gap-2 rounded-full bg-primary px-4 font-medium text-white transition-colors hover:bg-primary/90 sm:flex xl:px-6">
               <Plus className="h-4 w-4" />
-              创建
+              {t('header.create')}
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
               <DropdownMenuItem onClick={() => navigate('/create/post')}>
                 <span className="mr-2">📝</span>
-                发布帖子
+                {t('header.createMenu.post')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate('/create/question')}>
                 <span className="mr-2">❓</span>
-                提出问题
+                {t('header.createMenu.question')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate('/create/community')}>
                 <span className="mr-2">🌐</span>
-                创建社区
+                {t('header.createMenu.community')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate('/create/job')}>
                 <span className="mr-2">💼</span>
-                发布职位
+                {t('header.createMenu.job')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -91,7 +93,7 @@ export default function Header() {
             variant="ghost"
             size="icon"
             className="hidden rounded-full sm:inline-flex"
-            aria-label="消息"
+            aria-label={t('header.messagesAriaLabel')}
           >
             <MessageSquare className="h-5 w-5" />
           </Button>
@@ -108,18 +110,18 @@ export default function Header() {
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
-              <DropdownMenuItem>我的主页</DropdownMenuItem>
-              <DropdownMenuItem>个人资料</DropdownMenuItem>
-              <DropdownMenuItem>我的帖子</DropdownMenuItem>
+              <DropdownMenuItem>{t('header.userMenu.myHome')}</DropdownMenuItem>
+              <DropdownMenuItem>{t('header.userMenu.profile')}</DropdownMenuItem>
+              <DropdownMenuItem>{t('header.userMenu.myPosts')}</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>设置</DropdownMenuItem>
+              <DropdownMenuItem>{t('header.userMenu.settings')}</DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
                   logout()
                   navigate('/login', { replace: true })
                 }}
               >
-                退出登录
+                {t('header.userMenu.logout')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

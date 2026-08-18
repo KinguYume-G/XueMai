@@ -73,6 +73,74 @@
     "confirm": "Confirm",
     "save": "Save",
     "delete": "Delete",
-    "edit": "Edit"
+    "edit": "Edit",
+    "back": "Back",
+    "processing": "Processing…",
+    "errorTitle": "Something went wrong",
+    "ok": "OK",
+    "guest": "Guest",
+    "submit": "Submit",
+    "send": "Send"
+  },
+  "sidebar": {
+    "nav": {
+      "home": "Home",
+      "forums": "Forums",
+      "communities": "Communities",
+      "exchange": "Exchange Programs",
+      "opportunities": "Internships & Jobs",
+      "aiTools": "AI Toolbox",
+      "bookmarks": "Bookmarks",
+      "aboutApu": "About APU"
+    },
+    "mobileNav": {
+      "ariaLabel": "Mobile main navigation",
+      "home": "Home",
+      "forums": "Forums",
+      "communities": "Communities",
+      "opportunities": "Jobs",
+      "aiTools": "AI"
+    }
+  },
+  "header": {
+    "searchAriaLabel": "Search UniPulse",
+    "searchPlaceholder": "Search people, topics, courses, jobs...",
+    "create": "Create",
+    "createMenu": {
+      "post": "New Post",
+      "question": "Ask a Question",
+      "community": "Create Community",
+      "job": "Post a Job"
+    },
+    "messagesAriaLabel": "Messages",
+    "userMenu": {
+      "myHome": "My Homepage",
+      "profile": "Profile",
+      "myPosts": "My Posts",
+      "settings": "Settings",
+      "logout": "Log Out"
+    }
+  },
+  "rightAside": {
+    "schoolZone": {
+      "title": "School Zone",
+      "loading": "Loading…",
+      "empty": "No schools yet",
+      "defaultLabel": "University zone"
+    },
+    "hotTopics": {
+      "title": "Hot Topics",
+      "loading": "Loading…",
+      "empty": "No hot topics yet",
+      "postCount": "{{count}} posts"
+    },
+    "exchangeReminders": {
+      "title": "Exchange Reminders",
+      "loading": "Loading...",
+      "empty": "No upcoming deadlines",
+      "new": "New",
+      "deadline": "Deadline: {{date}}",
+      "program": "{{university}} Exchange"
+    }
   }
 }
