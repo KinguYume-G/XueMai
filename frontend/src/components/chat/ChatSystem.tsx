@@ -1,5 +1,4 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import FloatingActions from './FloatingActions';
 import ChatDrawer from './ChatDrawer';
 import ChatView from './ChatView';
@@ -7,7 +6,6 @@ import useChatStore from '@/store/useChatStore';
 import { useAuthStore } from '@/store/authStore';
 
 const ChatSystem: React.FC = () => {
-  const { i18n } = useTranslation();
   const { user } = useAuthStore();
 
   const {
@@ -33,12 +31,6 @@ const ChatSystem: React.FC = () => {
     rejectRequest,
   } = useChatStore();
 
-  // 语言切换处理
-  const handleLanguageChange = (lang: 'zh' | 'en') => {
-    i18n.changeLanguage(lang);
-    localStorage.setItem('language', lang);
-  };
-
   // 检查用户是否已登录
   if (!user) {
     return null; // 未登录时不显示聊天按钮
@@ -50,8 +42,6 @@ const ChatSystem: React.FC = () => {
       <FloatingActions
         unreadCount={unreadCount}
         onChatClick={() => setOpen(true)}
-        currentLanguage={i18n.language as 'zh' | 'en'}
-        onLanguageChange={handleLanguageChange}
       />
 
       {/* 聊天弹窗或聊天界面 */}

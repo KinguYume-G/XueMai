@@ -4,15 +4,11 @@ import { MessageCircle } from 'lucide-react';
 interface FloatingActionsProps {
   unreadCount: number;
   onChatClick: () => void;
-  currentLanguage: 'zh' | 'en';
-  onLanguageChange: (lang: 'zh' | 'en') => void;
 }
 
 const FloatingActions: React.FC<FloatingActionsProps> = ({
   unreadCount,
   onChatClick,
-  currentLanguage,
-  onLanguageChange,
 }) => {
   return (
     <div className="fixed bottom-6 left-6 z-50 flex flex-col gap-3">
@@ -34,32 +30,6 @@ const FloatingActions: React.FC<FloatingActionsProps> = ({
             </span>
           </div>
         )}
-      </div>
-
-      {/* 语言切换按钮 */}
-      <div className="flex bg-white rounded-lg shadow-md overflow-hidden">
-        <button
-          onClick={() => onLanguageChange('zh')}
-          className={`w-[50px] h-10 text-sm font-medium transition-all duration-200 ${
-            currentLanguage === 'zh'
-              ? 'bg-blue-50 text-blue-500 font-bold'
-              : 'bg-white text-gray-600 hover:bg-gray-50'
-          }`}
-          aria-label="Switch to Chinese"
-        >
-          中
-        </button>
-        <button
-          onClick={() => onLanguageChange('en')}
-          className={`w-[50px] h-10 text-sm font-medium transition-all duration-200 ${
-            currentLanguage === 'en'
-              ? 'bg-blue-50 text-blue-500 font-bold'
-              : 'bg-white text-gray-600 hover:bg-gray-50'
-          }`}
-          aria-label="Switch to English"
-        >
-          EN
-        </button>
       </div>
     </div>
   );
