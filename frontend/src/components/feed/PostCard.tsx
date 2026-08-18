@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Heart, MessageCircle, Share2, MoreHorizontal } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -125,13 +126,15 @@ export default function PostCard({ post }: PostCardProps) {
 
         {/* Content */}
         <div className="space-y-3">
-          {post.title && (
-            <h3 className="font-semibold text-lg">{post.title}</h3>
-          )}
-          <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
-            {post.body}
-          </p>
-          
+          <Link to={`/posts/${post.id}`} className="block space-y-3 hover:opacity-90">
+            {post.title && (
+              <h3 className="font-semibold text-lg">{post.title}</h3>
+            )}
+            <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
+              {post.body}
+            </p>
+          </Link>
+
           {/* Tags */}
           {post.tags_data && post.tags_data.length > 0 && (
             <div className="flex flex-wrap gap-2">
