@@ -327,6 +327,18 @@
       "genericError": "Registration failed, please try again later"
     }
   },
+  "comingSoon": {
+    "title": "Coming Soon",
+    "message": "This feature is under development — stay tuned",
+    "backHome": "Back to Home"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "descriptionBefore": "We couldn't find",
+    "descriptionAfter": ". Check the link, or head back home to keep browsing.",
+    "goBack": "Go Back",
+    "backHome": "Back to Home"
+  },
   "jobTypes": {
     "all": "All Types",
     "internship": "Internship",
