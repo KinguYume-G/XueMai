@@ -28,11 +28,13 @@ class ContentModerator:
     ]
     
     # 个人隐私信息正则表达式
+    # 手机号/身份证号加了 (?<!\d)/(?!\d) 边界，避免匹配到更长数字串（如文件名、
+    # 时间戳、订单号）里凑巧出现的子串——之前 "20260817141935286.pdf" 这种自动
+    # 生成的文件名会被误判成手机号+银行卡号，导致所有带文件名的消息被拦截。
     PRIVACY_PATTERNS = {
-        'phone': r'1[3-9]\d{9}',  # 手机号
-        'id_card': r'\d{17}[\dXx]',  # 身份证号
+        'phone': r'(?<!\d)1[3-9]\d{9}(?!\d)',  # 手机号
+        'id_card': r'(?<!\d)\d{17}[\dXx](?!\d)',  # 身份证号
         'email': r'[\w\.-]+@[\w\.-]+\.\w+',  # 邮箱（可能需要）
-        'bank_card': r'\d{16,19}',  # 银行卡号
     }
     
     # SQL注入关键词
@@ -137,7 +139,34 @@ class ContentModerator:
             if re.search(pattern, text):
                 matches.append(name)
                 logger.warning(f"[审核] 检测到隐私信息: {name}")
+
+        if self._detect_bank_card(text):
+            matches.append('bank_card')
+            logger.warning("[审核] 检测到隐私信息: bank_card")
+
         return matches
+
+    @staticmethod
+    def _luhn_valid(digits: str) -> bool:
+        """Luhn 校验和，用于区分真实银行卡号与凑巧同长度的其他数字串
+        （文件名、时间戳、订单号等几乎不可能通过校验）"""
+        total = 0
+        for i, ch in enumerate(reversed(digits)):
+            d = int(ch)
+            if i % 2 == 1:
+                d *= 2
+                if d > 9:
+                    d -= 9
+            total += d
+        return total % 10 == 0
+
+    def _detect_bank_card(self, text: str) -> bool:
+        """检测银行卡号：先按长度/边界找出候选数字串，再用 Luhn 校验确认，
+        避免把文件名、时间戳等任意长数字串误判为银行卡号"""
+        for match in re.finditer(r'(?<!\d)\d{16,19}(?!\d)', text):
+            if self._luhn_valid(match.group()):
+                return True
+        return False
     
     def _detect_sql_injection(self, text: str) -> bool:
         """检测SQL注入"""
