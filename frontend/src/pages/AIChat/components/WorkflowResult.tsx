@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, Button, Skeleton, Typography, Space, message } from 'antd';
 import { CopyOutlined, ReloadOutlined } from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
+import { useTranslation } from 'react-i18next';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -19,6 +20,7 @@ export const WorkflowResult: React.FC<WorkflowResultProps> = ({
     isLoading,
     onRetry,
 }) => {
+    const { t } = useTranslation();
     const [copying, setCopying] = useState(false);
 
     const handleCopy = async () => {
@@ -27,9 +29,9 @@ export const WorkflowResult: React.FC<WorkflowResultProps> = ({
         setCopying(true);
         try {
             await navigator.clipboard.writeText(result.answer);
-            message.success('结果已复制到剪贴板');
+            message.success(t('workflowResult.copySuccess'));
         } catch (error) {
-            message.error('复制失败');
+            message.error(t('workflowResult.copyFailed'));
         } finally {
             setCopying(false);
         }
@@ -40,7 +42,7 @@ export const WorkflowResult: React.FC<WorkflowResultProps> = ({
             title={
                 <Space>
                     <Title level={4} style={{ margin: 0 }}>
-                        AI分析结果
+                        {t('workflowResult.title')}
                     </Title>
                 </Space>
             }
@@ -53,7 +55,7 @@ export const WorkflowResult: React.FC<WorkflowResultProps> = ({
                             loading={copying}
                             size="small"
                         >
-                            复制
+                            {t('workflowResult.copy')}
                         </Button>
                         {onRetry && (
                             <Button
@@ -61,7 +63,7 @@ export const WorkflowResult: React.FC<WorkflowResultProps> = ({
                                 onClick={onRetry}
                                 size="small"
                             >
-                                重新生成
+                                {t('workflowResult.regenerate')}
                             </Button>
                         )}
                     </Space>
@@ -151,7 +153,7 @@ export const WorkflowResult: React.FC<WorkflowResultProps> = ({
                             }}
                         >
                             <Text type="secondary" style={{ fontSize: '12px', fontWeight: 600 }}>
-                                处理详情
+                                {t('workflowResult.processingDetails')}
                             </Text>
                             <div style={{ marginTop: 8 }}>
                                 {Object.entries(result.metadata).map(([key, value]) => (
@@ -166,7 +168,7 @@ export const WorkflowResult: React.FC<WorkflowResultProps> = ({
                     )}
                 </div>
             ) : (
-                <Text type="secondary">暂无结果</Text>
+                <Text type="secondary">{t('workflowResult.empty')}</Text>
             )}
         </Card>
     );

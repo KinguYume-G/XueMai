@@ -1,4 +1,5 @@
 import { CheckCircle2, Circle, Loader2, XCircle, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export interface WorkflowStep {
     id: string;
@@ -28,6 +29,7 @@ const WorkflowProgress: React.FC<WorkflowProgressProps> = ({
     isCompleted,
     isFailed,
 }) => {
+    const { t } = useTranslation();
     const getStepIcon = (step: WorkflowStep) => {
         switch (step.status) {
             case 'completed':
@@ -93,7 +95,7 @@ const WorkflowProgress: React.FC<WorkflowProgressProps> = ({
                                     <p className="text-xs text-gray-600 mt-1">{step.description}</p>
                                 )}
                                 {step.error && (
-                                    <p className="text-xs text-red-600 mt-1">错误: {step.error}</p>
+                                    <p className="text-xs text-red-600 mt-1">{t('workflowProgress.errorPrefix', { error: step.error })}</p>
                                 )}
                             </div>
                         </div>
@@ -104,12 +106,12 @@ const WorkflowProgress: React.FC<WorkflowProgressProps> = ({
             {/* Status Footer */}
             {isCompleted && (
                 <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm font-medium text-green-800">✅ 工作流执行完成!</p>
+                    <p className="text-sm font-medium text-green-800">{t('workflowProgress.completed')}</p>
                 </div>
             )}
             {isFailed && (
                 <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm font-medium text-red-800">❌ 工作流执行失败</p>
+                    <p className="text-sm font-medium text-red-800">{t('workflowProgress.failed')}</p>
                 </div>
             )}
         </div>

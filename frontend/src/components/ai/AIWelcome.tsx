@@ -1,10 +1,12 @@
 import { Bot, Sparkles, MessageCircle, Zap } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 /**
  * AI 助手欢迎界面组件
  * 在用户未选择任何分类时显示
  */
 export default function AIWelcome() {
+  const { t } = useTranslation()
   return (
     <div className="flex flex-col items-center justify-center py-16 px-6">
       {/* 主图标 */}
@@ -17,13 +19,13 @@ export default function AIWelcome() {
 
       {/* 欢迎标题 */}
       <h1 className="text-3xl font-bold text-foreground mb-4 flex items-center gap-2">
-        欢迎使用学脉AI助手
+        {t('aiChat.welcome.title')}
         <Sparkles className="h-6 w-6 text-yellow-500" />
       </h1>
 
       {/* 欢迎描述 */}
       <p className="text-lg text-muted-foreground text-center max-w-2xl mb-12">
-        您的智能学习与职业发展伙伴，提供全方位的AI辅助服务
+        {t('aiChat.welcome.subtitle')}
       </p>
 
       {/* 功能特色 */}
@@ -32,9 +34,9 @@ export default function AIWelcome() {
           <div className="bg-blue-500 rounded-full p-3 mb-4">
             <MessageCircle className="h-6 w-6 text-white" />
           </div>
-          <h3 className="font-semibold text-foreground mb-2">智能对话</h3>
+          <h3 className="font-semibold text-foreground mb-2">{t('aiChat.welcome.chat.title')}</h3>
           <p className="text-sm text-muted-foreground">
-            自然流畅的AI对话体验，理解您的需求
+            {t('aiChat.welcome.chat.description')}
           </p>
         </div>
 
@@ -42,9 +44,9 @@ export default function AIWelcome() {
           <div className="bg-purple-500 rounded-full p-3 mb-4">
             <Sparkles className="h-6 w-6 text-white" />
           </div>
-          <h3 className="font-semibold text-foreground mb-2">专业建议</h3>
+          <h3 className="font-semibold text-foreground mb-2">{t('aiChat.welcome.advice.title')}</h3>
           <p className="text-sm text-muted-foreground">
-            基于大数据的专业学业和职业建议
+            {t('aiChat.welcome.advice.description')}
           </p>
         </div>
 
@@ -52,9 +54,9 @@ export default function AIWelcome() {
           <div className="bg-green-500 rounded-full p-3 mb-4">
             <Zap className="h-6 w-6 text-white" />
           </div>
-          <h3 className="font-semibold text-foreground mb-2">高效助手</h3>
+          <h3 className="font-semibold text-foreground mb-2">{t('aiChat.welcome.efficient.title')}</h3>
           <p className="text-sm text-muted-foreground">
-            快速响应，提升您的学习和工作效率
+            {t('aiChat.welcome.efficient.description')}
           </p>
         </div>
       </div>
@@ -62,7 +64,7 @@ export default function AIWelcome() {
       {/* 提示文字 */}
       <div className="mt-12 text-center">
         <p className="text-sm text-muted-foreground">
-          从左侧选择功能分类开始使用，或在下方直接输入您的问题
+          {t('aiChat.welcome.hint')}
         </p>
       </div>
     </div>

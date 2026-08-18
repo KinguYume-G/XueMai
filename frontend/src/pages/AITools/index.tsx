@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { MessageSquare, Trash2, Loader2 } from 'lucide-react'
@@ -9,6 +10,7 @@ import { AI_CATEGORIES, getFunctionsByCategory, getFunctionById } from '@/consta
 import { conversationsApi, type Conversation } from '@/services/api/conversations'
 
 export default function AITools() {
+    const { t, i18n } = useTranslation()
     const [activeCategory, setActiveCategory] = useState<string | null>(null)
     const [conversations, setConversations] = useState<Conversation[]>([])
     const [loadingConversations, setLoadingConversations] = useState(true)
@@ -38,7 +40,7 @@ export default function AITools() {
     const handleDeleteConversation = async (id: number, e: React.MouseEvent) => {
         e.stopPropagation()
         
-        if (!confirm('确定要删除这个对话吗？')) {
+        if (!confirm(t('aiTools.sidebar.confirmDelete'))) {
             return
         }
 
@@ -48,7 +50,7 @@ export default function AITools() {
             setConversations(prev => prev.filter(c => c.id !== id))
         } catch (error) {
             console.error('删除对话失败:', error)
-            alert('删除失败，请重试')
+            alert(t('aiTools.sidebar.deleteFailed'))
         } finally {
             setDeletingId(null)
         }
@@ -62,12 +64,12 @@ export default function AITools() {
         const diffHours = Math.floor(diffMs / 3600000)
         const diffDays = Math.floor(diffMs / 86400000)
 
-        if (diffMins < 1) return '刚刚'
-        if (diffMins < 60) return `${diffMins}分钟前`
-        if (diffHours < 24) return `${diffHours}小时前`
-        if (diffDays === 1) return '昨天'
-        if (diffDays < 7) return `${diffDays}天前`
-        return date.toLocaleDateString('zh-CN')
+        if (diffMins < 1) return t('feed.postCard.justNow')
+        if (diffMins < 60) return t('feed.postCard.minutesAgo', { count: diffMins })
+        if (diffHours < 24) return t('feed.postCard.hoursAgo', { count: diffHours })
+        if (diffDays === 1) return t('time.yesterday')
+        if (diffDays < 7) return t('feed.postCard.daysAgo', { count: diffDays })
+        return date.toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'zh-CN')
     }
 
     const getFunctionIcon = (functionId: string) => {
@@ -111,7 +113,7 @@ export default function AITools() {
                 {/* Categories */}
                 <Card className="rounded-xl border shadow-sm">
                     <CardHeader className="pb-3 px-4 pt-4">
-                        <CardTitle className="text-base font-semibold">AI 功能分类</CardTitle>
+                        <CardTitle className="text-base font-semibold">{t('aiTools.sidebar.categoriesTitle')}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-1 px-2 pb-2">
                         {AI_CATEGORIES.map((category) => (
@@ -123,7 +125,7 @@ export default function AITools() {
                                 onClick={() => setActiveCategory(category.id)}
                             >
                                 <span className="text-xl">{category.icon}</span>
-                                <span>{category.name}</span>
+                                <span>{t(`aiTools.categories.${category.id}.name`)}</span>
                             </Button>
                         ))}
                     </CardContent>
@@ -135,11 +137,11 @@ export default function AITools() {
                         <CardTitle className="flex items-center justify-between text-base font-semibold">
                             <div className="flex items-center gap-2">
                                 <MessageSquare className="h-5 w-5 text-primary" />
-                                对话历史
+                                {t('aiTools.sidebar.historyTitle')}
                             </div>
                             {conversations.length > 0 && (
                                 <span className="text-xs font-normal text-muted-foreground">
-                                    {conversations.length}个
+                                    {t('aiTools.sidebar.historyCount', { count: conversations.length })}
                                 </span>
                             )}
                         </CardTitle>
@@ -152,8 +154,8 @@ export default function AITools() {
                         ) : conversations.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
                                 <div className="text-4xl mb-3">📭</div>
-                                <p className="text-sm text-muted-foreground mb-1">暂无对话</p>
-                                <p className="text-xs text-muted-foreground">点击右侧功能卡片开始吧 →</p>
+                                <p className="text-sm text-muted-foreground mb-1">{t('aiTools.sidebar.empty')}</p>
+                                <p className="text-xs text-muted-foreground">{t('aiTools.sidebar.emptyHint')}</p>
                             </div>
                         ) : (
                             conversations.map((conversation) => {
@@ -169,19 +171,19 @@ export default function AITools() {
                                         </span>
                                         <div className="flex-1 min-w-0">
                                             <div className="font-medium text-foreground line-clamp-1">
-                                                {conversation.title || func?.name || '未命名对话'}
+                                                {conversation.title || (func ? t(`aiTools.functions.${func.id}.name`) : t('aiTools.sidebar.untitledConversation'))}
                                             </div>
                                             <div className="text-xs text-muted-foreground flex items-center gap-2">
                                                 <span>{formatTimestamp(conversation.updated_at)}</span>
                                                 <span>·</span>
-                                                <span>{conversation.message_count}条消息</span>
+                                                <span>{t('aiTools.sidebar.messageCount', { count: conversation.message_count })}</span>
                                             </div>
                                         </div>
                                         <button
                                             onClick={(e) => handleDeleteConversation(conversation.id, e)}
                                             disabled={deletingId === conversation.id}
                                             className="flex-shrink-0 opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded transition-all"
-                                            title="删除对话"
+                                            title={t('aiTools.sidebar.deleteTitle')}
                                         >
                                             {deletingId === conversation.id ? (
                                                 <Loader2 className="h-4 w-4 animate-spin text-red-500" />
@@ -210,10 +212,10 @@ export default function AITools() {
                                     <span className="text-4xl">{currentCategory?.icon}</span>
                                     <div>
                                         <h2 className="text-2xl font-bold text-foreground">
-                                            {currentCategory?.name}
+                                            {currentCategory ? t(`aiTools.categories.${currentCategory.id}.name`) : ''}
                                         </h2>
                                         <p className="text-sm text-muted-foreground mt-1">
-                                            选择下方功能开始使用
+                                            {t('aiTools.categoryHeaderHint')}
                                         </p>
                                     </div>
                                 </div>
@@ -237,12 +239,12 @@ export default function AITools() {
 
                                                         {/* Name */}
                                                         <h3 className="font-semibold text-base text-foreground group-hover:text-primary transition-colors">
-                                                            {func.name}
+                                                            {t(`aiTools.functions.${func.id}.name`)}
                                                         </h3>
 
                                                         {/* Description */}
                                                         <p className="text-sm text-muted-foreground line-clamp-2">
-                                                            {func.description}
+                                                            {t(`aiTools.functions.${func.id}.description`)}
                                                         </p>
                                                     </div>
                                                 </CardContent>

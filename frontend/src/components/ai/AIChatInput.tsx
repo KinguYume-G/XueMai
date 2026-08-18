@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,6 +16,7 @@ interface AIChatInputProps {
  * 底部固定的聊天输入区域，包含输入框、附件按钮和发送按钮
  */
 export default function AIChatInput({ onSend }: AIChatInputProps) {
+  const { t } = useTranslation()
   const [message, setMessage] = useState('')
   const [uploadedFiles, setUploadedFiles] = useState<UploadFileResponse[]>([])
   const [uploading, setUploading] = useState(false)
@@ -28,7 +30,7 @@ export default function AIChatInput({ onSend }: AIChatInputProps) {
         // 如果有上传的文件，附加文件信息
         let messageWithFiles = message
         if (uploadedFiles.length > 0) {
-          const fileInfo = uploadedFiles.map(f => `[已上传文件: ${f.file_name}]`).join('\n')
+          const fileInfo = uploadedFiles.map(f => t('aiChat.input.uploadedFileAttachment', { name: f.file_name })).join('\n')
           messageWithFiles = `${message}\n\n${fileInfo}`
         }
         onSend(messageWithFiles)
@@ -55,7 +57,7 @@ export default function AIChatInput({ onSend }: AIChatInputProps) {
     // 验证文件大小（10MB限制）
     const maxSize = 10 * 1024 * 1024
     if (file.size > maxSize) {
-      toast.error('文件大小不能超过10MB')
+      toast.error(t('aiChat.input.fileTooLarge'))
       return
     }
     
@@ -77,16 +79,16 @@ export default function AIChatInput({ onSend }: AIChatInputProps) {
       // 添加到已上传文件列表
       setUploadedFiles(prev => [...prev, result])
       
-      toast.success(`✅ 文件上传成功: ${result.file_name}`)
-      
+      toast.success(t('aiChat.input.fileUploadSuccess', { name: result.file_name }))
+
       // 自动建议分析
       setTimeout(() => {
-        setMessage(`请帮我分析这个${result.file_type}文件`)
+        setMessage(t('aiChat.input.analyzeFilePrompt', { type: result.file_type }))
       }, 500)
-      
+
     } catch (error: unknown) {
       console.error('文件上传失败:', error)
-      const errorMessage = error instanceof Error ? error.message : '文件上传失败，请重试'
+      const errorMessage = error instanceof Error ? error.message : t('aiChat.input.fileUploadFailed')
       toast.error(errorMessage)
     } finally {
       setUploading(false)
@@ -101,7 +103,7 @@ export default function AIChatInput({ onSend }: AIChatInputProps) {
   // 删除已上传文件
   const handleRemoveFile = (index: number) => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index))
-    toast.success('文件已移除')
+    toast.success(t('aiChat.input.fileRemoved'))
   }
 
   const handleFileUpload = (type: 'video' | 'image' | 'document') => {
@@ -138,7 +140,7 @@ export default function AIChatInput({ onSend }: AIChatInputProps) {
                   type="button"
                   onClick={() => handleRemoveFile(index)}
                   className="ml-1 p-0.5 hover:bg-blue-200 rounded transition-colors"
-                  title="移除文件"
+                  title={t('aiChat.input.removeFileTitle')}
                 >
                   <X className="h-3 w-3 text-blue-700" />
                 </button>
@@ -151,7 +153,7 @@ export default function AIChatInput({ onSend }: AIChatInputProps) {
         {uploading && (
           <div className="mb-3 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
-              <span>上传中...</span>
+              <span>{t('aiChat.input.uploading')}</span>
               <span>{uploadProgress}%</span>
             </div>
             <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -180,7 +182,7 @@ export default function AIChatInput({ onSend }: AIChatInputProps) {
               size="icon"
               className="h-10 w-10 rounded-full"
               onClick={() => handleFileUpload('video')}
-              title="上传视频 (MP4, MOV)"
+              title={t('aiChat.input.uploadVideoTitle')}
               disabled={uploading}
             >
               {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Video className="h-5 w-5" />}
@@ -192,7 +194,7 @@ export default function AIChatInput({ onSend }: AIChatInputProps) {
               size="icon"
               className="h-10 w-10 rounded-full"
               onClick={() => handleFileUpload('image')}
-              title="上传图片 (JPG, PNG, GIF)"
+              title={t('aiChat.input.uploadImageTitle')}
               disabled={uploading}
             >
               {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <ImageIcon className="h-5 w-5" />}
@@ -204,7 +206,7 @@ export default function AIChatInput({ onSend }: AIChatInputProps) {
               size="icon"
               className="h-10 w-10 rounded-full"
               onClick={() => handleFileUpload('document')}
-              title="上传文档 (PDF, Word, TXT, CSV)"
+              title={t('aiChat.input.uploadDocumentTitle')}
               disabled={uploading}
             >
               {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <FileText className="h-5 w-5" />}
@@ -217,7 +219,7 @@ export default function AIChatInput({ onSend }: AIChatInputProps) {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="选择功能开始对话，或直接输入您的问题..."
+              placeholder={t('aiChat.input.placeholder')}
               className="h-10 resize-none border-2 focus:border-primary"
             />
           </div>
@@ -235,7 +237,7 @@ export default function AIChatInput({ onSend }: AIChatInputProps) {
 
         {/* 提示文字 */}
         <div className="mt-2 text-xs text-muted-foreground text-center">
-          学脉AI助手由先进的人工智能驱动，可能会生成不准确的信息
+          {t('aiChat.input.disclaimer')}
         </div>
       </div>
     </Card>

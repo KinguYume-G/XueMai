@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { Minus, HelpCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { useChatWidgetStore } from '@/store/useChatWidgetStore'
@@ -8,6 +9,7 @@ const CHAT_WIDGET_PANEL_ID = 'chat-widget-panel'
 const CHAT_WIDGET_TITLE_ID = 'chat-widget-title'
 
 export default function ChatWidget() {
+  const { t } = useTranslation()
   const isOpen = useChatWidgetStore((state) => state.isOpen)
   const openWidget = useChatWidgetStore((state) => state.open)
   const closeWidget = useChatWidgetStore((state) => state.close)
@@ -67,7 +69,7 @@ export default function ChatWidget() {
         style={buttonSafeAreaStyle}
       >
         <HelpCircle className="h-5 w-5" />
-        <span className="text-sm font-semibold">帮助与支持</span>
+        <span className="text-sm font-semibold">{t('chatWidget.helpAndSupport')}</span>
       </Button>
 
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -83,10 +85,10 @@ export default function ChatWidget() {
               <HelpCircle className="h-6 w-6 text-slate-700" />
               <div>
                 <p id={CHAT_WIDGET_TITLE_ID} className="text-sm font-semibold text-slate-900">
-                  帮助与支持
+                  {t('chatWidget.helpAndSupport')}
                 </p>
                 <p className="text-xs text-slate-500">
-                  选择您需要的服务
+                  {t('chatWidget.chooseService')}
                 </p>
               </div>
             </div>
@@ -111,44 +113,44 @@ export default function ChatWidget() {
               >
                 <span className="text-2xl">🤖</span>
                 <div>
-                  <p className="font-semibold text-slate-900">AI助手</p>
-                  <p className="text-xs text-slate-600">智能学业辅导</p>
+                  <p className="font-semibold text-slate-900">{t('chatWidget.aiAssistant.title')}</p>
+                  <p className="text-xs text-slate-600">{t('chatWidget.aiAssistant.description')}</p>
                 </div>
               </button>
 
               {/* 卡片2: 在线客服 */}
               <button
-                onClick={() => alert('客服功能即将开放，敬请期待！')}
+                onClick={() => alert(t('chatWidget.liveSupportComingSoon'))}
                 className="flex flex-col items-start gap-2 rounded-xl bg-green-50 p-4 text-left transition-all hover:bg-green-100 hover:shadow-md active:scale-[0.98] opacity-75"
               >
                 <span className="text-2xl">💬</span>
                 <div>
-                  <p className="font-semibold text-slate-900">在线客服</p>
-                  <p className="text-xs text-slate-600">即将开放</p>
+                  <p className="font-semibold text-slate-900">{t('chatWidget.liveSupport.title')}</p>
+                  <p className="text-xs text-slate-600">{t('chatWidget.liveSupport.description')}</p>
                 </div>
               </button>
 
               {/* 卡片3: 帮助文档 */}
               <button
-                onClick={() => alert('帮助文档正在建设中')}
+                onClick={() => alert(t('chatWidget.helpDocsInProgress'))}
                 className="flex flex-col items-start gap-2 rounded-xl bg-purple-50 p-4 text-left transition-all hover:bg-purple-100 hover:shadow-md active:scale-[0.98]"
               >
                 <span className="text-2xl">📚</span>
                 <div>
-                  <p className="font-semibold text-slate-900">帮助文档</p>
-                  <p className="text-xs text-slate-600">常见问题</p>
+                  <p className="font-semibold text-slate-900">{t('chatWidget.helpDocs.title')}</p>
+                  <p className="text-xs text-slate-600">{t('chatWidget.helpDocs.description')}</p>
                 </div>
               </button>
 
               {/* 卡片4: 反馈建议 */}
               <button
-                onClick={() => alert('请发送邮件至\nfeedback@unipulse.asia')}
+                onClick={() => alert(t('chatWidget.feedbackEmail'))}
                 className="flex flex-col items-start gap-2 rounded-xl bg-orange-50 p-4 text-left transition-all hover:bg-orange-100 hover:shadow-md active:scale-[0.98]"
               >
                 <span className="text-2xl">💡</span>
                 <div>
-                  <p className="font-semibold text-slate-900">反馈建议</p>
-                  <p className="text-xs text-slate-600">帮助改进</p>
+                  <p className="font-semibold text-slate-900">{t('chatWidget.feedback.title')}</p>
+                  <p className="text-xs text-slate-600">{t('chatWidget.feedback.description')}</p>
                 </div>
               </button>
             </div>

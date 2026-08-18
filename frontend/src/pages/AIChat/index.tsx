@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Send, Paperclip, Loader2, X, FileText, Image as ImageIcon, Video } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -13,6 +14,7 @@ import WorkflowProgress, { type WorkflowStep } from '@/components/ai/WorkflowPro
 import { WorkflowResult } from './components/WorkflowResult'
 
 export default function AIChat() {
+    const { t } = useTranslation()
     const { functionId } = useParams()
     const [searchParams] = useSearchParams()
     const navigate = useNavigate()
@@ -77,7 +79,7 @@ export default function AIChat() {
         // 生成全新的欢迎消息（带 \n 修复）
         if (!welcomeAddedRef.current) {
             // 修复描述中的转义字符
-            const cleanDescription = aiFunction.description
+            const cleanDescription = t(`aiTools.functions.${functionId}.description`)
                 .replace(/\\n/g, '\n')   // 修复换行
                 .replace(/\\t/g, '  ')   // 修复制表符
                 .trim();
@@ -85,7 +87,7 @@ export default function AIChat() {
             setMessages([{
                 id: 'welcome',
                 role: 'assistant',
-                content: `你好！我是${aiFunction.name}助手。\n\n${cleanDescription}\n\n请问有什么我可以帮你的吗？`,
+                content: t('aiChat.welcomeMessage', { name: t(`aiTools.functions.${functionId}.name`), description: cleanDescription }),
                 timestamp: new Date()
             }])
             welcomeAddedRef.current = true
@@ -116,7 +118,7 @@ export default function AIChat() {
                     setMessages(formattedMessages)
             } catch (error) {
                 console.error('❌ [AIChat] 加载历史异常:', error)
-                toast.error('加载历史消息时发生错误')
+                toast.error(t('aiChat.loadHistoryError'))
             }
         }
 
@@ -213,6 +215,9 @@ export default function AIChat() {
                                 // 初始化步骤列表
                                 const initialSteps = Array.from({ length: event.total_steps }, (_, i) => ({
                                     id: `step_${i + 1}`,
+                                    // NOTE: kept as the original Chinese template — step_completed matches on
+                                    // this exact string as a fallback when step_id isn't present, so
+                                    // translating it would silently break that match in English mode.
                                     name: `步骤 ${i + 1}`,
                                     description: '',
                                     status: 'pending' as const
@@ -237,7 +242,7 @@ export default function AIChat() {
                                         ? { ...step, name: event.step_name, status: 'failed' as const, error: event.error }
                                         : step
                                 ))
-                                toast.error(`步骤失败: ${event.step_name}`)
+                                toast.error(t('aiChat.stepFailedToast', { name: event.step_name }))
                                 break
 
                             case 'workflow_completed':
@@ -248,7 +253,7 @@ export default function AIChat() {
                             case 'workflow_failed':
                                 console.error(`💥 [Orchestrator] 工作流失败:`, event.error)
                                 setOrchestratorRunning(false)
-                                toast.error(`工作流执行失败: ${event.error}`)
+                                toast.error(t('aiChat.workflowFailedToast', { error: event.error }))
                                 break
 
                             case 'final_result':
@@ -280,7 +285,7 @@ export default function AIChat() {
         } catch (error: any) {
             console.error('🔥 [Orchestrator] 执行失败:', error)
             setOrchestratorRunning(false)
-            toast.error(error.message || '工作流执行失败，请重试')
+            toast.error(error.message || t('aiChat.workflowFailedRetry'))
         }
     }
 
@@ -322,7 +327,7 @@ export default function AIChat() {
         // 验证文件大小（10MB限制）
         const maxSize = 10 * 1024 * 1024
         if (file.size > maxSize) {
-            toast.error('文件大小不能超过10MB')
+            toast.error(t('aiChat.fileTooLarge'))
             return
         }
 
@@ -345,23 +350,23 @@ export default function AIChat() {
             // 添加到已上传文件列表
             setUploadedFiles(prev => [...prev, result])
 
-            toast.success(`文件上传成功: ${result.file_name}`)
+            toast.success(t('aiChat.fileUploadSuccess', { name: result.file_name }))
             console.log('📎 [文件上传] document_id:', result.document_id, 'conversation_id:', activeConversationId || 'none')
 
             // ✅ 自动发送分析请求 - 根据功能ID优化提示词
             setTimeout(() => {
                 if (functionId === 'resume_optimize') {
-                    setInputValue(`请帮我分析这份简历，并给出优化建议`)
+                    setInputValue(t('aiChat.analyzeResumePrompt'))
                 } else if (functionId === 'general') {
-                    setInputValue(`请帮我分析这个文件`)
+                    setInputValue(t('aiChat.analyzeFilePrompt'))
                 } else {
-                    setInputValue(`请帮我分析这个文件`)
+                    setInputValue(t('aiChat.analyzeFilePrompt'))
                 }
             }, 500)
 
         } catch (error: unknown) {
             console.error('文件上传失败:', error)
-            const errorMessage = error instanceof Error ? error.message : '文件上传失败，请重试'
+            const errorMessage = error instanceof Error ? error.message : t('aiChat.fileUploadFailed')
             toast.error(errorMessage)
         } finally {
             setUploading(false)
@@ -376,7 +381,7 @@ export default function AIChat() {
     // 删除已上传文件
     const handleRemoveFile = (index: number) => {
         setUploadedFiles(prev => prev.filter((_, i) => i !== index))
-        toast.success('文件已移除')
+        toast.success(t('aiChat.fileRemoved'))
     }
 
     // 打开文件选择对话框
@@ -398,12 +403,12 @@ export default function AIChat() {
         return (
             <div className="flex h-full items-center justify-center">
                 <div className="text-center">
-                    <h2 className="text-xl font-bold text-gray-900">功能不存在</h2>
+                    <h2 className="text-xl font-bold text-gray-900">{t('aiChat.functionNotFound')}</h2>
                     <button
                         onClick={() => navigate('/ai-tools')}
                         className="mt-4 text-blue-600 hover:underline"
                     >
-                        返回工具箱
+                        {t('aiChat.backToTools')}
                     </button>
                 </div>
             </div>
@@ -421,7 +426,7 @@ export default function AIChat() {
                     className="flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-900"
                 >
                     <ArrowLeft className="h-5 w-5" />
-                    <span>返回</span>
+                    <span>{t('aiChat.back')}</span>
                 </button>
                 <div className="h-8 w-px bg-gray-200" />
                 <div className="flex items-center gap-3">
@@ -429,8 +434,8 @@ export default function AIChat() {
                         <Icon className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
-                        <h1 className="text-lg font-bold text-gray-900">{aiFunction.name}</h1>
-                        <p className="text-xs text-gray-500">{aiFunction.description}</p>
+                        <h1 className="text-lg font-bold text-gray-900">{t(`aiTools.functions.${aiFunction.id}.name`)}</h1>
+                        <p className="text-xs text-gray-500">{t(`aiTools.functions.${aiFunction.id}.description`)}</p>
                     </div>
                 </div>
             </header>
@@ -496,7 +501,7 @@ export default function AIChat() {
                         <div className="flex justify-start">
                             <div className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 shadow-sm border border-gray-100">
                                 <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                                <span className="text-sm text-gray-600">AI正在思考中...</span>
+                                <span className="text-sm text-gray-600">{t('aiChat.thinking')}</span>
                             </div>
                         </div>
                     )}
@@ -505,7 +510,7 @@ export default function AIChat() {
                     {workflowState.isActive && (
                         <div className="mb-4">
                             <WorkflowProgress
-                                workflowName={workflowState.workflowName || '工作流执行中'}
+                                workflowName={workflowState.workflowName || t('aiChat.workflowRunningFallback')}
                                 steps={workflowState.steps}
                                 currentStepIndex={workflowState.currentStepIndex}
                                 totalSteps={workflowState.totalSteps}
@@ -520,7 +525,7 @@ export default function AIChat() {
                     {orchestratorRunning && orchestratorSteps.length > 0 && (
                         <div className="mb-4">
                             <WorkflowProgress
-                                workflowName="简历优化工作流"
+                                workflowName={t('aiChat.resumeWorkflowName')}
                                 steps={orchestratorSteps}
                                 currentStepIndex={orchestratorSteps.findIndex(s => s.status === 'running')}
                                 totalSteps={orchestratorSteps.length}
@@ -575,7 +580,7 @@ export default function AIChat() {
                                         type="button"
                                         onClick={() => handleRemoveFile(index)}
                                         className="ml-1 p-0.5 hover:bg-blue-200 rounded transition-colors"
-                                        title="移除文件"
+                                        title={t('aiChat.removeFile')}
                                     >
                                         <X className="h-3 w-3 text-blue-700" />
                                     </button>
@@ -588,7 +593,7 @@ export default function AIChat() {
                     {uploading && (
                         <div className="mb-3 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
                             <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
-                                <span>上传中...</span>
+                                <span>{t('aiChat.uploading')}</span>
                                 <span>{uploadProgress}%</span>
                             </div>
                             <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -615,7 +620,7 @@ export default function AIChat() {
                                 type="button"
                                 onClick={() => handleUploadClick('image')}
                                 className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                title="上传图片 (JPG, PNG, GIF)"
+                                title={t('aiChat.uploadImageTitle')}
                                 disabled={uploading}
                             >
                                 <ImageIcon className="h-5 w-5" />
@@ -624,7 +629,7 @@ export default function AIChat() {
                                 type="button"
                                 onClick={() => handleUploadClick('video')}
                                 className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                                title="上传视频 (MP4, MOV)"
+                                title={t('aiChat.uploadVideoTitle')}
                                 disabled={uploading}
                             >
                                 <Video className="h-5 w-5" />
@@ -633,7 +638,7 @@ export default function AIChat() {
                                 type="button"
                                 onClick={() => handleUploadClick('document')}
                                 className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                title="上传文档 (PDF, Word, TXT, CSV)"
+                                title={t('aiChat.uploadDocumentTitle')}
                                 disabled={uploading}
                             >
                                 <Paperclip className="h-5 w-5" />
@@ -649,7 +654,7 @@ export default function AIChat() {
                                     handleSubmit(e)
                                 }
                             }}
-                            placeholder={`问${aiFunction.name}任何问题... (Enter发送，Shift+Enter换行)`}
+                            placeholder={t('aiChat.inputPlaceholder', { name: t(`aiTools.functions.${aiFunction.id}.name`) })}
                             disabled={isStreaming}
                             className="flex-1 max-h-32 min-h-[44px] bg-transparent border-0 focus:ring-0 resize-none py-3 text-sm text-gray-900 placeholder:text-gray-400 disabled:opacity-50"
                             rows={1}
@@ -669,7 +674,7 @@ export default function AIChat() {
                         </button>
                     </div>
                     <p className="text-center text-xs text-gray-400 mt-2">
-                        AI生成内容仅供参考，请核实重要信息
+                        {t('aiChat.disclaimer')}
                     </p>
                 </form>
             </div>
