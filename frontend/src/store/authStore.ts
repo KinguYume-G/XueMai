@@ -33,8 +33,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       setTokens(access, refresh)
       set({ user, isAuthenticated: true, isReady: true, loading: false })
     } catch (error) {
-      clearTokens()
-      set({ user: null, isAuthenticated: false, isReady: true, loading: false })
+      // A failed login attempt (e.g. wrong password) says nothing about
+      // whether an *existing* session in this tab is still valid, so it
+      // must not clear tokens or flip isAuthenticated for a session this
+      // call didn't establish. Real session invalidation (401 on an
+      // authenticated request with a failed refresh) is already handled
+      // globally by the axios response interceptor in lib/api/client.ts.
+      set({ loading: false })
       throw new Error(parseApiError(error))
     }
   },
@@ -47,8 +52,10 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ user, isAuthenticated: true, isReady: true, loading: false })
       return user
     } catch (error) {
-      clearTokens()
-      set({ user: null, isAuthenticated: false, isReady: true, loading: false })
+      // Same reasoning as login(): a register failure (e.g. 400 duplicate
+      // email) must not log out whatever session is already active in this
+      // tab. This call never had a session to invalidate in the first place.
+      set({ loading: false })
       throw new Error(parseApiError(error))
     }
   },
