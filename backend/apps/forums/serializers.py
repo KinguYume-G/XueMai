@@ -93,6 +93,28 @@ class TopicSerializer(serializers.ModelSerializer):
 
         return topic
 
+    def update(self, instance, validated_data):
+        # get_serializer_class() only swaps in TopicCreateSerializer for the
+        # "create" action, so this is the serializer PATCH/PUT actually use.
+        # Without this override, ModelSerializer's default update() would
+        # setattr() tag_names onto the instance (a no-op, since it isn't a
+        # real model field) and silently drop the caller's tag changes.
+        tag_names = validated_data.pop("tag_names", None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if tag_names is not None:
+            from apps.posts.models import Tag
+
+            instance.tags.clear()
+            for tag_name in tag_names:
+                tag, _ = Tag.objects.get_or_create(name=tag_name.strip())
+                instance.tags.add(tag)
+
+        return instance
+
 
 class TopicCreateSerializer(serializers.ModelSerializer):
     tag_names = serializers.ListField(
