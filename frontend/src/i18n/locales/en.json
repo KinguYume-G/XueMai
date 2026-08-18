@@ -327,6 +327,25 @@
       "genericError": "Registration failed, please try again later"
     }
   },
+  "userProfile": {
+    "notFound": "User not found",
+    "back": "Back",
+    "followers": "Followers",
+    "following": "Following",
+    "posts": "Posts",
+    "website": "Website"
+  },
+  "startupDetail": {
+    "notFound": "Startup not found",
+    "backToList": "Back to List",
+    "followersCount": "{{count}} followers",
+    "equity": "Equity {{min}}% - {{max}}%",
+    "aboutTitle": "About",
+    "contactTeam": "Contact Team",
+    "postedBy": "Posted by: {{name}}",
+    "postedByFallback": "User #{{id}}",
+    "postedAt": "Posted: {{date}}"
+  },
   "topicDetail": {
     "notFound": "Topic not found",
     "backToForums": "Back to Forums",

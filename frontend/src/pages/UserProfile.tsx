@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ArrowLeft, GraduationCap, Link as LinkIcon, Github } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
@@ -12,6 +13,7 @@ import { usersApi } from '@/services/api/users'
 import type { User } from '@/types/api'
 
 export default function UserProfile() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [user, setUser] = useState<User | null>(null)
@@ -44,7 +46,7 @@ export default function UserProfile() {
       <div className="space-y-4">
         <Card className="border shadow-sm">
           <CardContent className="p-6">
-            <ErrorState message={error || '用户不存在'} onRetry={load} />
+            <ErrorState message={error || t('userProfile.notFound')} onRetry={load} />
           </CardContent>
         </Card>
       </div>
@@ -57,7 +59,7 @@ export default function UserProfile() {
     <div className="space-y-4">
       <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
         <ArrowLeft className="h-4 w-4" />
-        返回
+        {t('userProfile.back')}
       </Button>
 
       <Card className="border shadow-sm">
@@ -85,9 +87,9 @@ export default function UserProfile() {
             <>
               <Separator />
               <div className="flex flex-wrap gap-6 text-sm">
-                <div><span className="font-semibold">{profile.followers_count}</span> <span className="text-muted-foreground">关注者</span></div>
-                <div><span className="font-semibold">{profile.following_count}</span> <span className="text-muted-foreground">正在关注</span></div>
-                <div><span className="font-semibold">{profile.posts_count}</span> <span className="text-muted-foreground">帖子</span></div>
+                <div><span className="font-semibold">{profile.followers_count}</span> <span className="text-muted-foreground">{t('userProfile.followers')}</span></div>
+                <div><span className="font-semibold">{profile.following_count}</span> <span className="text-muted-foreground">{t('userProfile.following')}</span></div>
+                <div><span className="font-semibold">{profile.posts_count}</span> <span className="text-muted-foreground">{t('userProfile.posts')}</span></div>
               </div>
             </>
           )}
@@ -103,7 +105,7 @@ export default function UserProfile() {
             <div className="flex flex-wrap gap-4 text-sm">
               {profile?.website && (
                 <a href={profile.website} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-600 hover:underline">
-                  <LinkIcon className="h-4 w-4" />网站
+                  <LinkIcon className="h-4 w-4" />{t('userProfile.website')}
                 </a>
               )}
               {profile?.github_url && (

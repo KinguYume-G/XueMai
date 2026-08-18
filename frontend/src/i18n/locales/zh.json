@@ -327,6 +327,25 @@
       "genericError": "注册失败，请稍后重试"
     }
   },
+  "userProfile": {
+    "notFound": "用户不存在",
+    "back": "返回",
+    "followers": "关注者",
+    "following": "正在关注",
+    "posts": "帖子",
+    "website": "网站"
+  },
+  "startupDetail": {
+    "notFound": "创业项目不存在",
+    "backToList": "返回列表",
+    "followersCount": "{{count}} 位关注者",
+    "equity": "股权 {{min}}% - {{max}}%",
+    "aboutTitle": "项目介绍",
+    "contactTeam": "联系团队",
+    "postedBy": "发布者：{{name}}",
+    "postedByFallback": "用户 #{{id}}",
+    "postedAt": "发布时间：{{date}}"
+  },
   "topicDetail": {
     "notFound": "话题不存在",
     "backToForums": "返回论坛",

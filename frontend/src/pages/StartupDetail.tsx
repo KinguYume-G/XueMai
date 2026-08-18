@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ArrowLeft, MapPin, ExternalLink, Users, Percent } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -12,6 +13,7 @@ import { opportunitiesApi } from '@/services/api/opportunities'
 import type { Startup } from '@/types/api'
 
 export default function StartupDetail() {
+  const { t, i18n } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [startup, setStartup] = useState<Startup | null>(null)
@@ -44,7 +46,7 @@ export default function StartupDetail() {
       <div className="space-y-4">
         <Card className="border shadow-sm">
           <CardContent className="p-6">
-            <ErrorState message={error || '创业项目不存在'} onRetry={load} />
+            <ErrorState message={error || t('startupDetail.notFound')} onRetry={load} />
           </CardContent>
         </Card>
       </div>
@@ -55,7 +57,7 @@ export default function StartupDetail() {
     <div className="space-y-4">
       <Button variant="ghost" onClick={() => navigate('/opportunities')} className="gap-2">
         <ArrowLeft className="h-4 w-4" />
-        返回列表
+        {t('startupDetail.backToList')}
       </Button>
 
       <Card className="border shadow-sm">
@@ -73,12 +75,12 @@ export default function StartupDetail() {
               </div>
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                <span>{startup.followers_count} 位关注者</span>
+                <span>{t('startupDetail.followersCount', { count: startup.followers_count })}</span>
               </div>
               {(startup.equity_min || startup.equity_max) && (
                 <div className="flex items-center gap-2">
                   <Percent className="h-4 w-4" />
-                  <span>股权 {startup.equity_min ?? '?'}% - {startup.equity_max ?? '?'}%</span>
+                  <span>{t('startupDetail.equity', { min: startup.equity_min ?? '?', max: startup.equity_max ?? '?' })}</span>
                 </div>
               )}
             </div>
@@ -97,7 +99,7 @@ export default function StartupDetail() {
 
         <CardContent className="pt-6 space-y-6">
           <div>
-            <h2 className="text-lg font-semibold mb-3">项目介绍</h2>
+            <h2 className="text-lg font-semibold mb-3">{t('startupDetail.aboutTitle')}</h2>
             <div className="prose prose-sm max-w-none text-muted-foreground whitespace-pre-wrap">
               {startup.description}
             </div>
@@ -109,15 +111,15 @@ export default function StartupDetail() {
             {startup.contact_url && (
               <Button onClick={() => window.open(startup.contact_url, '_blank')} className="gap-2">
                 <ExternalLink className="h-4 w-4" />
-                联系团队
+                {t('startupDetail.contactTeam')}
               </Button>
             )}
           </div>
 
           <div className="text-xs text-muted-foreground pt-4 border-t">
             <div className="flex items-center justify-between">
-              <span>发布者：{startup.posted_by_info?.username ?? `用户 #${startup.posted_by}`}</span>
-              <span>发布时间：{new Date(startup.created_at).toLocaleDateString('zh-CN')}</span>
+              <span>{t('startupDetail.postedBy', { name: startup.posted_by_info?.username ?? t('startupDetail.postedByFallback', { id: startup.posted_by }) })}</span>
+              <span>{t('startupDetail.postedAt', { date: new Date(startup.created_at).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'zh-CN') })}</span>
             </div>
           </div>
         </CardContent>
