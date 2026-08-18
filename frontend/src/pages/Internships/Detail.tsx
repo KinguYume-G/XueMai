@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ArrowLeft, MapPin, Briefcase, ExternalLink, Clock, Bookmark, DollarSign, Wifi } from 'lucide-react'
 import { useInternshipStore } from '@/store/useInternshipStore'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -10,6 +11,7 @@ import SkeletonCard from '@/components/common/SkeletonCard'
 import ErrorState from '@/components/common/ErrorState'
 
 export default function InternshipDetailPage() {
+  const { t, i18n } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { currentInternship, loading, error, fetchInternship } = useInternshipStore()
@@ -21,13 +23,10 @@ export default function InternshipDetailPage() {
   }, [id, fetchInternship])
 
   const getTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      full_time: '全职',
-      part_time: '兼职',
-      internship: '实习',
-      remote: '远程',
+    if (type === 'full_time' || type === 'part_time' || type === 'internship' || type === 'remote') {
+      return t(`jobTypes.${type}`)
     }
-    return labels[type] || type
+    return type
   }
 
   if (loading) {
@@ -44,7 +43,7 @@ export default function InternshipDetailPage() {
         <Card className="border shadow-sm">
           <CardContent className="p-6">
             <ErrorState
-              message={error || '实习机会不存在'}
+              message={error || t('internships.detail.notFound')}
               onRetry={() => id && fetchInternship(parseInt(id, 10))}
             />
           </CardContent>
@@ -62,7 +61,7 @@ export default function InternshipDetailPage() {
         className="gap-2"
       >
         <ArrowLeft className="h-4 w-4" />
-        返回列表
+        {t('internships.detail.backToList')}
       </Button>
 
       {/* Main Content */}
@@ -94,7 +93,7 @@ export default function InternshipDetailPage() {
               {currentInternship.type === 'remote' && (
                 <div className="flex items-center gap-2">
                   <Wifi className="h-4 w-4" />
-                  <span>远程工作</span>
+                  <span>{t('internships.detail.remoteWork')}</span>
                 </div>
               )}
               {currentInternship.salary_range && (
@@ -112,7 +111,7 @@ export default function InternshipDetailPage() {
         <CardContent className="pt-6 space-y-6">
           {/* Description */}
           <div>
-            <h2 className="text-lg font-semibold mb-3">职位描述</h2>
+            <h2 className="text-lg font-semibold mb-3">{t('internships.detail.descriptionTitle')}</h2>
             <div className="prose prose-sm max-w-none text-muted-foreground whitespace-pre-wrap">
               {currentInternship.description}
             </div>
@@ -122,7 +121,7 @@ export default function InternshipDetailPage() {
 
           {/* Requirements */}
           <div>
-            <h2 className="text-lg font-semibold mb-3">任职要求</h2>
+            <h2 className="text-lg font-semibold mb-3">{t('internships.detail.requirementsTitle')}</h2>
             <div className="prose prose-sm max-w-none text-muted-foreground whitespace-pre-wrap">
               {currentInternship.requirements}
             </div>
@@ -138,21 +137,21 @@ export default function InternshipDetailPage() {
                 className="gap-2"
               >
                 <ExternalLink className="h-4 w-4" />
-                申请职位
+                {t('internships.detail.apply')}
               </Button>
             )}
             <Button variant="outline" className="gap-2">
               <Bookmark className="h-4 w-4" />
-              收藏
+              {t('internships.detail.bookmark')}
             </Button>
           </div>
 
           {/* Footer Info */}
           <div className="text-xs text-muted-foreground pt-4 border-t">
             <div className="flex items-center justify-between">
-              <span>发布者：{currentInternship.posted_by_username}</span>
+              <span>{t('internships.detail.postedBy', { name: currentInternship.posted_by_username })}</span>
               <span>
-                发布时间：{new Date(currentInternship.created_at).toLocaleDateString('zh-CN')}
+                {t('internships.detail.postedAt', { date: new Date(currentInternship.created_at).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'zh-CN') })}
               </span>
             </div>
           </div>

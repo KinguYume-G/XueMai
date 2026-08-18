@@ -327,6 +327,100 @@
       "genericError": "Registration failed, please try again later"
     }
   },
+  "jobTypes": {
+    "all": "All Types",
+    "internship": "Internship",
+    "full_time": "Full-time",
+    "part_time": "Part-time",
+    "remote": "Remote"
+  },
+  "exchange": {
+    "title": "Exchange Programs",
+    "subtitle": "Discover top exchange program opportunities worldwide",
+    "searchPlaceholder": "Search program name, school...",
+    "filterCountryLabel": "Country/Region",
+    "countries": {
+      "all": "All Countries",
+      "Singapore": "Singapore",
+      "HongKong": "Hong Kong",
+      "UnitedStates": "United States",
+      "UnitedKingdom": "United Kingdom",
+      "Australia": "Australia",
+      "Japan": "Japan"
+    },
+    "deadline": {
+      "none": "No deadline yet",
+      "expired": "Closed",
+      "today": "Closes today",
+      "daysLeft": "Closes in {{count}}d"
+    },
+    "emptyFiltered": "No exchange programs match your search",
+    "emptyDefault": "No exchange programs yet — check back soon",
+    "viewDetails": "View Details",
+    "prevPage": "Previous",
+    "nextPage": "Next",
+    "pageIndicator": "Page {{current}} of {{total}}",
+    "detail": {
+      "notFound": "Program not found",
+      "backToList": "Back to List",
+      "deadlinePrefix": "Deadline: {{date}}",
+      "aboutTitle": "About the Program",
+      "requirementsTitle": "Requirements",
+      "visitWebsite": "Visit Website",
+      "bookmark": "Bookmark",
+      "postedBy": "Posted by: User #{{id}}",
+      "postedAt": "Posted: {{date}}"
+    }
+  },
+  "internships": {
+    "title": "Internships & Jobs",
+    "subtitle": "Explore great internship and job opportunities",
+    "searchPlaceholder": "Search jobs, companies...",
+    "filterCountryLabel": "Country/Region",
+    "countries": {
+      "all": "All Countries",
+      "Malaysia": "Malaysia",
+      "Singapore": "Singapore",
+      "China": "China",
+      "UnitedStates": "United States",
+      "UnitedKingdom": "United Kingdom"
+    },
+    "filterTypeLabel": "Type",
+    "remoteTag": "Remote",
+    "emptyFiltered": "No internships match your search",
+    "emptyDefault": "No internships yet — check back soon",
+    "viewDetails": "View Details",
+    "prevPage": "Previous",
+    "nextPage": "Next",
+    "pageIndicator": "Page {{current}} of {{total}}",
+    "detail": {
+      "notFound": "Internship not found",
+      "backToList": "Back to List",
+      "remoteWork": "Remote work",
+      "descriptionTitle": "Job Description",
+      "requirementsTitle": "Requirements",
+      "apply": "Apply Now",
+      "bookmark": "Bookmark",
+      "postedBy": "Posted by: {{name}}",
+      "postedAt": "Posted: {{date}}"
+    }
+  },
+  "opportunities": {
+    "title": "Internships & Startups",
+    "subtitle": "Everything here comes straight from the live opportunities database.",
+    "postOpportunity": "Post an Opportunity",
+    "tabs": {
+      "internships": "Internships & Jobs",
+      "startups": "Startups"
+    },
+    "searchPlaceholder": "Search jobs, companies, or projects",
+    "loading": "Loading opportunities…",
+    "empty": "No opportunities match your search",
+    "remoteTag": "Remote OK",
+    "applicantsCount": "{{count}} applicants",
+    "postedDaysAgo": "Posted {{count}} days ago",
+    "followersCount": "{{count}} followers"
+  },
   "aiTools": {
     "categories": {
       "academic": { "name": "Academic Assistant" },

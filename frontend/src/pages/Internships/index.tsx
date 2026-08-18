@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { MapPin, Briefcase, ExternalLink, DollarSign, Wifi } from 'lucide-react'
 import { useInternshipStore } from '@/store/useInternshipStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,6 +12,7 @@ import ErrorState from '@/components/common/ErrorState'
 import EmptyState from '@/components/common/EmptyState'
 
 export default function InternshipsListPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const {
     internships,
@@ -39,13 +41,10 @@ export default function InternshipsListPage() {
   }
 
   const getTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      full_time: '全职',
-      part_time: '兼职',
-      internship: '实习',
-      remote: '远程',
+    if (type === 'full_time' || type === 'part_time' || type === 'internship' || type === 'remote') {
+      return t(`jobTypes.${type}`)
     }
-    return labels[type] || type
+    return type
   }
 
   const totalPages = Math.ceil(totalCount / (filters.limit || 20))
@@ -59,9 +58,9 @@ export default function InternshipsListPage() {
             <Briefcase className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">实习 & 机会</h1>
+            <h1 className="text-2xl font-bold">{t('internships.title')}</h1>
             <p className="text-sm text-muted-foreground">
-              探索优质实习与工作机会
+              {t('internships.subtitle')}
             </p>
           </div>
         </div>
@@ -70,32 +69,32 @@ export default function InternshipsListPage() {
       {/* Filters */}
       <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
         <FilterBar
-          searchPlaceholder="搜索职位、公司..."
+          searchPlaceholder={t('internships.searchPlaceholder')}
           searchValue={searchInput}
           onSearchChange={handleSearchChange}
           filters={[
             {
-              label: '国家/地区',
+              label: t('internships.filterCountryLabel'),
               value: filters.country || '',
               options: [
-                { value: '', label: '全部国家' },
-                { value: 'Malaysia', label: '马来西亚' },
-                { value: 'Singapore', label: '新加坡' },
-                { value: 'China', label: '中国' },
-                { value: 'United States', label: '美国' },
-                { value: 'United Kingdom', label: '英国' },
+                { value: '', label: t('internships.countries.all') },
+                { value: 'Malaysia', label: t('internships.countries.Malaysia') },
+                { value: 'Singapore', label: t('internships.countries.Singapore') },
+                { value: 'China', label: t('internships.countries.China') },
+                { value: 'United States', label: t('internships.countries.UnitedStates') },
+                { value: 'United Kingdom', label: t('internships.countries.UnitedKingdom') },
               ],
               onChange: (value) => setFilters({ country: value }),
             },
             {
-              label: '类型',
+              label: t('internships.filterTypeLabel'),
               value: filters.type || '',
               options: [
-                { value: '', label: '全部类型' },
-                { value: 'internship', label: '实习' },
-                { value: 'full_time', label: '全职' },
-                { value: 'part_time', label: '兼职' },
-                { value: 'remote', label: '远程' },
+                { value: '', label: t('jobTypes.all') },
+                { value: 'internship', label: t('jobTypes.internship') },
+                { value: 'full_time', label: t('jobTypes.full_time') },
+                { value: 'part_time', label: t('jobTypes.part_time') },
+                { value: 'remote', label: t('jobTypes.remote') },
               ],
               onChange: (value) => setFilters({ type: value }),
             },
@@ -112,8 +111,8 @@ export default function InternshipsListPage() {
             <EmptyState
               message={
                 filters.search || filters.country || filters.type
-                  ? '没有找到符合条件的实习机会'
-                  : '暂无实习机会，敬请期待'
+                  ? t('internships.emptyFiltered')
+                  : t('internships.emptyDefault')
               }
               icon={<Briefcase className="h-8 w-8 text-muted-foreground" />}
             />
@@ -148,7 +147,7 @@ export default function InternshipsListPage() {
                       {internship.type === 'remote' && (
                         <div className="flex items-center gap-1">
                           <Wifi className="h-4 w-4" />
-                          <span>远程</span>
+                          <span>{t('internships.remoteTag')}</span>
                         </div>
                       )}
                       {internship.salary_range && (
@@ -173,7 +172,7 @@ export default function InternshipsListPage() {
                           navigate(`/internships/${internship.id}`)
                         }}
                       >
-                        查看详情
+                        {t('internships.viewDetails')}
                         <ExternalLink className="ml-2 h-3 w-3" />
                       </Button>
                     </div>
@@ -192,10 +191,10 @@ export default function InternshipsListPage() {
                 onClick={() => setPage(currentPage - 1)}
                 disabled={currentPage === 1}
               >
-                上一页
+                {t('internships.prevPage')}
               </Button>
               <span className="text-sm text-muted-foreground px-4">
-                第 {currentPage} / {totalPages} 页
+                {t('internships.pageIndicator', { current: currentPage, total: totalPages })}
               </span>
               <Button
                 variant="outline"
@@ -203,7 +202,7 @@ export default function InternshipsListPage() {
                 onClick={() => setPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
               >
-                下一页
+                {t('internships.nextPage')}
               </Button>
             </div>
           )}

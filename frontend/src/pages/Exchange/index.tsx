@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { MapPin, Calendar, ExternalLink, Globe2 } from 'lucide-react'
 import { useExchangeStore } from '@/store/useExchangeStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,6 +12,7 @@ import ErrorState from '@/components/common/ErrorState'
 import EmptyState from '@/components/common/EmptyState'
 
 export default function ExchangeListPage() {
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const {
     programs,
@@ -40,15 +42,15 @@ export default function ExchangeListPage() {
   }
 
   const formatDeadline = (deadline?: string) => {
-    if (!deadline) return '暂无截止日期'
+    if (!deadline) return t('exchange.deadline.none')
     const date = new Date(deadline)
     const now = new Date()
     const diffDays = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 
-    if (diffDays < 0) return '已截止'
-    if (diffDays === 0) return '今天截止'
-    if (diffDays <= 7) return `${diffDays}天后截止`
-    return date.toLocaleDateString('zh-CN')
+    if (diffDays < 0) return t('exchange.deadline.expired')
+    if (diffDays === 0) return t('exchange.deadline.today')
+    if (diffDays <= 7) return t('exchange.deadline.daysLeft', { count: diffDays })
+    return date.toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'zh-CN')
   }
 
   const totalPages = Math.ceil(totalCount / (filters.limit || 20))
@@ -62,9 +64,9 @@ export default function ExchangeListPage() {
             <Globe2 className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">交换项目</h1>
+            <h1 className="text-2xl font-bold">{t('exchange.title')}</h1>
             <p className="text-sm text-muted-foreground">
-              发现全球优质交换项目机会
+              {t('exchange.subtitle')}
             </p>
           </div>
         </div>
@@ -73,21 +75,21 @@ export default function ExchangeListPage() {
       {/* Filters */}
       <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
         <FilterBar
-          searchPlaceholder="搜索项目名称、学校..."
+          searchPlaceholder={t('exchange.searchPlaceholder')}
           searchValue={searchInput}
           onSearchChange={handleSearchChange}
           filters={[
             {
-              label: '国家/地区',
+              label: t('exchange.filterCountryLabel'),
               value: filters.country || '',
               options: [
-                { value: '', label: '全部国家' },
-                { value: 'Singapore', label: '新加坡' },
-                { value: 'Hong Kong', label: '香港' },
-                { value: 'United States', label: '美国' },
-                { value: 'United Kingdom', label: '英国' },
-                { value: 'Australia', label: '澳大利亚' },
-                { value: 'Japan', label: '日本' },
+                { value: '', label: t('exchange.countries.all') },
+                { value: 'Singapore', label: t('exchange.countries.Singapore') },
+                { value: 'Hong Kong', label: t('exchange.countries.HongKong') },
+                { value: 'United States', label: t('exchange.countries.UnitedStates') },
+                { value: 'United Kingdom', label: t('exchange.countries.UnitedKingdom') },
+                { value: 'Australia', label: t('exchange.countries.Australia') },
+                { value: 'Japan', label: t('exchange.countries.Japan') },
               ],
               onChange: (value) => setFilters({ country: value }),
             },
@@ -104,8 +106,8 @@ export default function ExchangeListPage() {
             <EmptyState
               message={
                 filters.search || filters.country
-                  ? '没有找到符合条件的交换项目'
-                  : '暂无交换项目，敬请期待'
+                  ? t('exchange.emptyFiltered')
+                  : t('exchange.emptyDefault')
               }
               icon={<Globe2 className="h-8 w-8 text-muted-foreground" />}
             />
@@ -162,7 +164,7 @@ export default function ExchangeListPage() {
                           navigate(`/exchange/${program.id}`)
                         }}
                       >
-                        查看详情
+                        {t('exchange.viewDetails')}
                         <ExternalLink className="ml-2 h-3 w-3" />
                       </Button>
                     </div>
@@ -181,10 +183,10 @@ export default function ExchangeListPage() {
                 onClick={() => setPage(currentPage - 1)}
                 disabled={currentPage === 1}
               >
-                上一页
+                {t('exchange.prevPage')}
               </Button>
               <span className="text-sm text-muted-foreground px-4">
-                第 {currentPage} / {totalPages} 页
+                {t('exchange.pageIndicator', { current: currentPage, total: totalPages })}
               </span>
               <Button
                 variant="outline"
@@ -192,7 +194,7 @@ export default function ExchangeListPage() {
                 onClick={() => setPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
               >
-                下一页
+                {t('exchange.nextPage')}
               </Button>
             </div>
           )}

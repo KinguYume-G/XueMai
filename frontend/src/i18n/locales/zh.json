@@ -327,6 +327,100 @@
       "genericError": "注册失败，请稍后重试"
     }
   },
+  "jobTypes": {
+    "all": "全部类型",
+    "internship": "实习",
+    "full_time": "全职",
+    "part_time": "兼职",
+    "remote": "远程"
+  },
+  "exchange": {
+    "title": "交换项目",
+    "subtitle": "发现全球优质交换项目机会",
+    "searchPlaceholder": "搜索项目名称、学校...",
+    "filterCountryLabel": "国家/地区",
+    "countries": {
+      "all": "全部国家",
+      "Singapore": "新加坡",
+      "HongKong": "香港",
+      "UnitedStates": "美国",
+      "UnitedKingdom": "英国",
+      "Australia": "澳大利亚",
+      "Japan": "日本"
+    },
+    "deadline": {
+      "none": "暂无截止日期",
+      "expired": "已截止",
+      "today": "今天截止",
+      "daysLeft": "{{count}}天后截止"
+    },
+    "emptyFiltered": "没有找到符合条件的交换项目",
+    "emptyDefault": "暂无交换项目，敬请期待",
+    "viewDetails": "查看详情",
+    "prevPage": "上一页",
+    "nextPage": "下一页",
+    "pageIndicator": "第 {{current}} / {{total}} 页",
+    "detail": {
+      "notFound": "项目不存在",
+      "backToList": "返回列表",
+      "deadlinePrefix": "截止：{{date}}",
+      "aboutTitle": "项目介绍",
+      "requirementsTitle": "申请要求",
+      "visitWebsite": "访问官网",
+      "bookmark": "收藏",
+      "postedBy": "发布者：用户 #{{id}}",
+      "postedAt": "发布时间：{{date}}"
+    }
+  },
+  "internships": {
+    "title": "实习 & 机会",
+    "subtitle": "探索优质实习与工作机会",
+    "searchPlaceholder": "搜索职位、公司...",
+    "filterCountryLabel": "国家/地区",
+    "countries": {
+      "all": "全部国家",
+      "Malaysia": "马来西亚",
+      "Singapore": "新加坡",
+      "China": "中国",
+      "UnitedStates": "美国",
+      "UnitedKingdom": "英国"
+    },
+    "filterTypeLabel": "类型",
+    "remoteTag": "远程",
+    "emptyFiltered": "没有找到符合条件的实习机会",
+    "emptyDefault": "暂无实习机会，敬请期待",
+    "viewDetails": "查看详情",
+    "prevPage": "上一页",
+    "nextPage": "下一页",
+    "pageIndicator": "第 {{current}} / {{total}} 页",
+    "detail": {
+      "notFound": "实习机会不存在",
+      "backToList": "返回列表",
+      "remoteWork": "远程工作",
+      "descriptionTitle": "职位描述",
+      "requirementsTitle": "任职要求",
+      "apply": "申请职位",
+      "bookmark": "收藏",
+      "postedBy": "发布者：{{name}}",
+      "postedAt": "发布时间：{{date}}"
+    }
+  },
+  "opportunities": {
+    "title": "实习与创业机会",
+    "subtitle": "所有内容直接来自当前机会数据库。",
+    "postOpportunity": "发布机会",
+    "tabs": {
+      "internships": "实习与职位",
+      "startups": "创业项目"
+    },
+    "searchPlaceholder": "搜索职位、公司或项目",
+    "loading": "正在加载机会…",
+    "empty": "没有符合条件的机会",
+    "remoteTag": "可远程",
+    "applicantsCount": "{{count}} 人申请",
+    "postedDaysAgo": "发布于 {{count}} 天前",
+    "followersCount": "{{count}} 人关注"
+  },
   "aiTools": {
     "categories": {
       "academic": { "name": "学业助手" },
