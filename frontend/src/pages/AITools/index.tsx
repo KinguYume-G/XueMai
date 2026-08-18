@@ -99,10 +99,15 @@ export default function AITools() {
         return iconMap[functionId] || '💬'
     }
 
-    const handleSendMessage = (message: string) => {
+    const handleSendMessage = (message: string, documentIds?: number[]) => {
         if (message.trim()) {
             // Default to general chat if typing in the main box
-            navigate(`/ai-chat/general?message=${encodeURIComponent(message.trim())}`)
+            const params = new URLSearchParams({ message: message.trim() })
+            // ✅ 转发真实的 document_id，否则后端无法把上传的文件内容注入AI上下文
+            if (documentIds && documentIds.length > 0) {
+                params.set('document_ids', documentIds.join(','))
+            }
+            navigate(`/ai-chat/general?${params.toString()}`)
         }
     }
 

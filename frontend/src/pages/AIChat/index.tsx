@@ -139,8 +139,21 @@ export default function AIChat() {
         const initialMessage = searchParams.get('message')
         if (initialMessage && !initialMessageSentRef.current && !isStreaming) {
             initialMessageSentRef.current = true
+            // ✅ 文件在上一页（AI工具首页/其他入口）上传时，document_id 通过 URL 转发过来，
+            // 否则后端拿不到真实文件内容，AI只能看到消息文本里装饰性的文件名字符串。
+            const documentIdsParam = searchParams.get('document_ids')
+            const initialDocumentIds = documentIdsParam
+                ? documentIdsParam
+                    .split(',')
+                    .map((id) => parseInt(id, 10))
+                    .filter((id) => !Number.isNaN(id))
+                : []
             setTimeout(() => {
-                sendMessage(initialMessage)
+                if (initialDocumentIds.length > 0) {
+                    handleOrchestratorChat(initialMessage, initialDocumentIds)
+                } else {
+                    sendMessage(initialMessage)
+                }
             }, 500)
         }
     }, [searchParams, sendMessage, isStreaming])

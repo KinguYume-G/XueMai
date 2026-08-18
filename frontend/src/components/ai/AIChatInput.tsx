@@ -8,7 +8,7 @@ import { uploadFile, type UploadFileResponse } from '@/services/api/upload'
 import { toast } from '@/store/useToastStore'
 
 interface AIChatInputProps {
-  onSend?: (message: string) => void
+  onSend?: (message: string, documentIds?: number[]) => void
 }
 
 /**
@@ -27,13 +27,15 @@ export default function AIChatInput({ onSend }: AIChatInputProps) {
     if (message.trim()) {
       console.log('发送消息:', message)
       if (onSend) {
-        // 如果有上传的文件，附加文件信息
+        // 如果有上传的文件，附加文件信息（仅用于聊天气泡展示）
         let messageWithFiles = message
         if (uploadedFiles.length > 0) {
           const fileInfo = uploadedFiles.map(f => t('aiChat.input.uploadedFileAttachment', { name: f.file_name })).join('\n')
           messageWithFiles = `${message}\n\n${fileInfo}`
         }
-        onSend(messageWithFiles)
+        // ✅ 同时传递真实的 document_id，后端才能真正读取文件内容
+        const documentIds = uploadedFiles.map(f => f.document_id)
+        onSend(messageWithFiles, documentIds)
       }
       setMessage('')
       setUploadedFiles([]) // 清空已上传文件
