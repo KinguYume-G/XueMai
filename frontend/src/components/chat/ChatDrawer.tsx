@@ -36,7 +36,7 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
   onRejectRequest,
   isLoading,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
 
   // 当弹窗关闭时重置搜索
@@ -101,7 +101,7 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
 
   // 格式化时间
   const formatTime = (dateString?: string) => {
-    if (!dateString) return '随时';
+    if (!dateString) return t('chat.time.anytime');
 
     const date = new Date(dateString);
     const now = new Date();
@@ -110,13 +110,13 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return '刚刚';
-    if (minutes < 60) return `${minutes}分钟前`;
-    if (hours < 24) return `${hours}小时前`;
-    if (days === 1) return '昨天';
-    if (days < 7) return `${days}天前`;
+    if (minutes < 1) return t('feed.postCard.justNow');
+    if (minutes < 60) return t('feed.postCard.minutesAgo', { count: minutes });
+    if (hours < 24) return t('feed.postCard.hoursAgo', { count: hours });
+    if (days === 1) return t('time.yesterday');
+    if (days < 7) return t('feed.postCard.daysAgo', { count: days });
 
-    return date.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' });
+    return date.toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'zh-CN', { month: '2-digit', day: '2-digit' });
   };
 
   // 渲染联系人列表项
@@ -165,7 +165,7 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
         {/* 消息预览 */}
         {contact.last_message && (
           <p className={`text-xs truncate mb-0.5 ${contact.unread_count > 0 ? 'text-gray-700 font-medium' : 'text-gray-500'}`}>
-            {contact.last_message.from_me && '我: '}
+            {contact.last_message.from_me && t('chat.selfPrefix')}
             {contact.last_message.content}
           </p>
         )}
@@ -180,7 +180,7 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
       {contact.unread_count > 0 && (
         <div className="flex-shrink-0 min-w-[20px] h-5 px-1.5 bg-red-500 rounded-full flex items-center justify-center">
           <span className="text-white text-xs font-bold">
-            {contact.unread_count > 99 ? '99+' : contact.unread_count}
+            {contact.unread_count > 99 ? t('chat.unread.badge', { count: 99 }) : contact.unread_count}
           </span>
         </div>
       )}
@@ -223,14 +223,14 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
             {formatTime(group.last_message_time)}
           </span>
         </div>
-        <p className="text-xs text-gray-500 truncate">{group.member_count} 成员</p>
+        <p className="text-xs text-gray-500 truncate">{t('chat.group.memberCount', { count: group.member_count })}</p>
       </div>
 
       {/* 未读消息气泡 */}
       {(group.unread_count || 0) > 0 && (
         <div className="flex-shrink-0 min-w-[20px] h-5 px-1.5 bg-red-500 rounded-full flex items-center justify-center">
           <span className="text-white text-xs font-bold">
-            {group.unread_count! > 99 ? '99+' : group.unread_count}
+            {group.unread_count! > 99 ? t('chat.unread.badge', { count: 99 }) : group.unread_count}
           </span>
         </div>
       )}
@@ -335,7 +335,7 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
       <div className="fixed bottom-24 left-6 w-[400px] h-[600px] bg-white rounded-xl shadow-2xl z-50 flex flex-col animate-slide-up">
         {/* 标题栏 */}
         <div className="flex items-center justify-between px-4 h-14 border-b border-gray-200 flex-shrink-0">
-          <h2 className="text-base font-bold text-gray-900">消息</h2>
+          <h2 className="text-base font-bold text-gray-900">{t('chat.title')}</h2>
           <button
             onClick={onClose}
             className="p-1 hover:bg-gray-100 rounded-full transition-colors duration-150"

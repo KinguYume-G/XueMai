@@ -1,4 +1,5 @@
 import { Search } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
@@ -25,11 +26,13 @@ interface FilterBarProps {
 }
 
 export default function FilterBar({
-  searchPlaceholder = '搜索...',
+  searchPlaceholder,
   searchValue = '',
   onSearchChange,
   filters = [],
 }: FilterBarProps) {
+  const { t } = useTranslation()
+  const resolvedPlaceholder = searchPlaceholder ?? `${t('common.search')}...`
   return (
     <div className="flex flex-col sm:flex-row gap-3 p-4 bg-white border-b">
       {/* Search Input */}
@@ -38,7 +41,7 @@ export default function FilterBar({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder={searchPlaceholder}
+            placeholder={resolvedPlaceholder}
             value={searchValue}
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-9"

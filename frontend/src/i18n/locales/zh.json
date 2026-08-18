@@ -54,7 +54,19 @@
       "request_rejected": "已拒绝好友申请",
       "followed": "已关注",
       "unfollowed": "已取消关注"
-    }
+    },
+    "time": {
+      "anytime": "随时"
+    },
+    "selfPrefix": "我: ",
+    "group": {
+      "memberCount": "{{count}} 成员",
+      "onlineFallback": "在线",
+      "lastSeenFallback": "上次在线：2小时前"
+    },
+    "loadingMessages": "加载消息中...",
+    "today": "今天",
+    "yesterdayAt": "昨天 {{time}}"
   },
   "time": {
     "just_now": "刚刚",

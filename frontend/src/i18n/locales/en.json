@@ -54,7 +54,19 @@
       "request_rejected": "Friend request rejected",
       "followed": "Followed",
       "unfollowed": "Unfollowed"
-    }
+    },
+    "time": {
+      "anytime": "Anytime"
+    },
+    "selfPrefix": "Me: ",
+    "group": {
+      "memberCount": "{{count}} members",
+      "onlineFallback": "Online",
+      "lastSeenFallback": "Last seen: 2 hours ago"
+    },
+    "loadingMessages": "Loading messages...",
+    "today": "Today",
+    "yesterdayAt": "Yesterday {{time}}"
   },
   "time": {
     "just_now": "Just now",

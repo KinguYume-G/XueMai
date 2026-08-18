@@ -22,7 +22,7 @@ const ChatView: React.FC<ChatViewProps> = ({
   onSendMessage,
   isLoading,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -65,14 +65,15 @@ const ChatView: React.FC<ChatViewProps> = ({
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-    const timeStr = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    const locale = i18n.language === 'en' ? 'en-US' : 'zh-CN';
+    const timeStr = date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
 
     if (messageDate.getTime() === today.getTime()) {
       return timeStr;
     } else if (messageDate.getTime() === today.getTime() - 86400000) {
-      return `昨天 ${timeStr}`;
+      return t('chat.yesterdayAt', { time: timeStr });
     } else {
-      return date.toLocaleString('zh-CN', {
+      return date.toLocaleString(locale, {
         month: '2-digit',
         day: '2-digit',
         hour: '2-digit',
@@ -99,11 +100,11 @@ const ChatView: React.FC<ChatViewProps> = ({
     const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
     if (messageDate.getTime() === today.getTime()) {
-      return '今天';
+      return t('chat.today');
     } else if (messageDate.getTime() === today.getTime() - 86400000) {
-      return '昨天';
+      return t('time.yesterday');
     } else {
-      return date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+      return date.toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
     }
   };
 
@@ -175,7 +176,7 @@ const ChatView: React.FC<ChatViewProps> = ({
 
   const displayName = recipient?.username || group?.name || '';
   const isOnline = recipient ? true : false; // TODO: 从实际在线状态获取
-  const lastSeenText = isOnline ? '在线' : '上次在线：2小时前'; // TODO: 从实际数据获取
+  const lastSeenText = isOnline ? t('chat.group.onlineFallback') : t('chat.group.lastSeenFallback'); // TODO: 从实际数据获取
 
   return (
     <div className="fixed bottom-24 left-6 w-[400px] h-[600px] bg-white rounded-xl shadow-2xl z-50 flex flex-col animate-slide-up">
@@ -217,7 +218,7 @@ const ChatView: React.FC<ChatViewProps> = ({
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-semibold text-gray-900 truncate">{displayName}</h3>
           <p className="text-xs text-gray-500 truncate">
-            {recipient ? lastSeenText : `${group?.member_count} 成员`}
+            {recipient ? lastSeenText : t('chat.group.memberCount', { count: group?.member_count })}
           </p>
         </div>
 
@@ -234,7 +235,7 @@ const ChatView: React.FC<ChatViewProps> = ({
       <div className="flex-1 overflow-y-auto px-4 py-4 bg-gray-50">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
-            <div className="text-gray-400 text-sm">加载消息中...</div>
+            <div className="text-gray-400 text-sm">{t('chat.loadingMessages')}</div>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
