@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, GraduationCap, Link as LinkIcon, Github } from 'lucide-react'
+import { ArrowLeft, GraduationCap, Link as LinkIcon, Github, UserPlus, UserCheck } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -10,15 +10,19 @@ import SkeletonCard from '@/components/common/SkeletonCard'
 import ErrorState from '@/components/common/ErrorState'
 import { parseApiError } from '@/lib/api/error'
 import { usersApi } from '@/services/api/users'
+import { socialApi } from '@/services/api/social'
+import { useAuthStore } from '@/store/authStore'
 import type { User } from '@/types/api'
 
 export default function UserProfile() {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const currentUser = useAuthStore((state) => state.user)
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [followBusy, setFollowBusy] = useState(false)
 
   const load = () => {
     if (!id) return
@@ -32,6 +36,36 @@ export default function UserProfile() {
   }
 
   useEffect(load, [id])
+
+  const toggleFollow = async () => {
+    if (!user || followBusy) return
+    setFollowBusy(true)
+    try {
+      if (user.is_following) {
+        await socialApi.unfollowUser(user.id)
+        setUser({
+          ...user,
+          is_following: false,
+          profile: user.profile
+            ? { ...user.profile, followers_count: Math.max(0, user.profile.followers_count - 1) }
+            : user.profile,
+        })
+      } else {
+        await socialApi.followUser(user.id)
+        setUser({
+          ...user,
+          is_following: true,
+          profile: user.profile
+            ? { ...user.profile, followers_count: user.profile.followers_count + 1 }
+            : user.profile,
+        })
+      }
+    } catch (reason) {
+      setError(parseApiError(reason))
+    } finally {
+      setFollowBusy(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -64,19 +98,33 @@ export default function UserProfile() {
 
       <Card className="border shadow-sm">
         <CardContent className="p-6 space-y-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={profile?.avatar_url || user.avatar} />
-              <AvatarFallback>{user.username.slice(0, 1).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <div>
-              <h1 className="text-2xl font-bold">{user.username}</h1>
-              {(profile?.major || profile?.university_name) && (
-                <p className="text-sm text-muted-foreground">
-                  {[profile?.major, profile?.university_name].filter(Boolean).join(' · ')}
-                </p>
-              )}
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16">
+                <AvatarImage src={profile?.avatar_url || user.avatar} />
+                <AvatarFallback>{user.username.slice(0, 1).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <div>
+                <h1 className="text-2xl font-bold">{user.username}</h1>
+                {(profile?.major || profile?.university_name) && (
+                  <p className="text-sm text-muted-foreground">
+                    {[profile?.major, profile?.university_name].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+              </div>
             </div>
+            {currentUser && currentUser.id !== user.id && (
+              <Button
+                size="sm"
+                variant={user.is_following ? 'secondary' : 'default'}
+                onClick={toggleFollow}
+                disabled={followBusy}
+                className="shrink-0 gap-2"
+              >
+                {user.is_following ? <UserCheck className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
+                {user.is_following ? '已关注' : '关注'}
+              </Button>
+            )}
           </div>
 
           {(user.bio || profile?.bio) && (

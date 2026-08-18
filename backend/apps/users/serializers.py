@@ -80,11 +80,20 @@ class UserDetailSerializer(serializers.ModelSerializer):
     """详细用户序列化器（含profile）- 仅认证用户可见"""
 
     profile = ProfileSerializer(read_only=True)
+    is_following = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "bio", "profile", "created_at"]
+        fields = ["id", "username", "email", "bio", "profile", "is_following", "created_at"]
         read_only_fields = ["id", "created_at"]
+
+    def get_is_following(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated or request.user.id == obj.id:
+            return False
+        from apps.social.models import Follow
+
+        return Follow.objects.filter(follower_id=request.user.id, following_id=obj.id).exists()
 
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):

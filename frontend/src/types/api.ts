@@ -57,6 +57,7 @@ export interface User {
   bio?: string;
   created_at?: string;
   profile?: Profile | null;
+  is_following?: boolean;
 }
 
 export interface PublicUser {

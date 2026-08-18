@@ -3,10 +3,10 @@ import type { Follow, PaginatedResponse } from '@/types/api';
 
 export const socialApi = {
   /**
-   * 关注/取消关注用户（幂等操作）
-   * 第一次调用=关注，第二次调用=取消关注
+   * 关注用户
+   * POST /follow/ (data: { user_id })
    */
-  toggleFollow: async (userId: number): Promise<{ action: string; status: string }> => {
+  followUser: async (userId: number): Promise<{ action: string; status: string }> => {
     const response = await apiClient.post<{ action: string; status: string }>('/follow/', {
       user_id: userId,
     });
@@ -14,17 +14,17 @@ export const socialApi = {
   },
 
   /**
-   * 关注用户（便捷方法）
-   */
-  followUser: async (userId: number): Promise<{ action: string; status: string }> => {
-    return socialApi.toggleFollow(userId);
-  },
-
-  /**
-   * 取消关注（便捷方法）
+   * 取消关注
+   * DELETE /follow/{userId}/
+   * Bug fix: this previously called the same POST /follow/ endpoint as
+   * followUser (via a shared toggleFollow helper), so "unfollow" never
+   * actually removed the Follow row — it just re-created it (a no-op
+   * thanks to get_or_create on the backend). It now hits the dedicated
+   * unfollow endpoint.
    */
   unfollowUser: async (userId: number): Promise<{ action: string; status: string }> => {
-    return socialApi.toggleFollow(userId);
+    await apiClient.delete(`/follow/${userId}/`);
+    return { action: 'unfollowed', status: 'ok' };
   },
 
   /**

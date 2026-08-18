@@ -12,6 +12,7 @@ from .models import Profile, User
 from .serializers import (
     ProfileSerializer,
     ProfileUpdateSerializer,
+    UserDetailSerializer,
     UserPrivateSerializer,
     UserPublicSerializer,
 )
@@ -31,9 +32,15 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         """根据认证状态返回不同的序列化器"""
-        if self.request.user.is_authenticated:
-            return UserPrivateSerializer
-        return UserPublicSerializer
+        if not self.request.user.is_authenticated:
+            return UserPublicSerializer
+        # Detail view (e.g. /users/{id}/, user profile page) needs the
+        # embedded profile (avatar/major/university/follow counts) —
+        # UserPrivateSerializer omits it entirely, which left profile pages
+        # rendering almost nothing for every viewer.
+        if self.action == "retrieve":
+            return UserDetailSerializer
+        return UserPrivateSerializer
 
     def get_search_fields(self):
         """未认证用户不能通过 email/bio 搜索"""
